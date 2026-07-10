@@ -17,7 +17,6 @@
 
 @interface YLController : NSObject {
     IBOutlet NSPanel *_sitesWindow;
-    IBOutlet NSPanel *_emoticonsWindow;
     IBOutlet NSWindow *_mainWindow;
 	IBOutlet id _telnetView;
 	IBOutlet id _addressBar;
@@ -28,9 +27,7 @@
     IBOutlet NSMenuItem *_closeWindowMenuItem;
     IBOutlet NSMenuItem *_closeTabMenuItem;
     NSMutableArray *_sites;
-    NSMutableArray *_emoticons;
     IBOutlet NSArrayController *_sitesController;
-    IBOutlet NSArrayController *_emoticonsController;
     IBOutlet NSMenuItem *_sitesMenu;
     IBOutlet NSTextField *_siteNameField;
     IBOutlet NSMenuItem *_showHiddenTextMenuItem;
@@ -42,7 +39,6 @@
 
 - (void) updateSitesMenu;
 - (void) loadSites;
-- (void) loadEmoticons;
 - (void) loadLastConnections;
 
 - (IBAction) setEncoding: (id)sender;
@@ -55,19 +51,15 @@
 - (IBAction) selectPrevTab: (id)sender;
 - (IBAction) selectTabNumber: (int)index;
 - (IBAction) closeTab: (id)sender;
-- (IBAction) reconnect: (id)sender;
 - (IBAction) openSites: (id)sender;
 - (IBAction) editSites: (id)sender;
 - (IBAction) closeSites: (id)sender;
-- (IBAction) addSites: (id)sender;
 - (IBAction) autoLogin: (id)sender;
 - (IBAction) showHiddenText: (id)sender;
 - (IBAction) openPreferencesWindow: (id)sender;
 - (void) newConnectionWithSite: (YLSite *)site;
 
-- (IBAction) closeEmoticons: (id)sender;
-- (IBAction) inputEmoticons: (id)sender;
-- (IBAction) openEmoticonsWindow: (id)sender;
+
 
 - (YLExifController *) exifController;
 - (id) telnetView;
@@ -82,12 +74,6 @@
 
 - (void) refreshTabLabelNumber: (NSTabView *)tabView;
 
-- (NSArray *) emoticons;
-- (unsigned) countOfEmoticons;
-- (id) objectInEmoticonsAtIndex: (unsigned)theIndex;
-- (void) getEmoticons: (id *)objsPtr range: (NSRange)range;
-- (void) insertObject: (id)obj inEmoticonsAtIndex: (unsigned)theIndex;
-- (void) removeObjectFromEmoticonsAtIndex: (unsigned)theIndex;
-- (void) replaceObjectInEmoticonsAtIndex: (unsigned)theIndex withObject: (id)obj;
+
 
 @end

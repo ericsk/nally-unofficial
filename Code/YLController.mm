@@ -11,7 +11,7 @@
 #import "YLTerminal.h"
 #import "YLLGlobalConfig.h"
 #import "DBPrefsWindowController.h"
-#import "YLEmoticon.h"
+
 #import "SSKeychain.h"
 @interface NSWindow (YLAdditions)
 - (void) _setContentHasShadow: (BOOL)hasShadow;
@@ -45,19 +45,36 @@
     
     [self loadSites];
     [self updateSitesMenu];
-    [self loadEmoticons];
     
     _pluginLoader = [[YLPluginLoader alloc] init];
 
     [_mainWindow _setContentHasShadow: NO];
     [_mainWindow setOpaque: NO];
+    if (@available(macOS 11.0, *)) {
+        [_mainWindow setToolbarStyle: NSWindowToolbarStyleExpanded];
+    }
 
     [_mainWindow setFrameAutosaveName: @"nallyMainWindowFrame"];
+
+    // Recalculate window frame size to fit cell configuration and toolbar/tab bar on startup
+    {
+        YLLGlobalConfig *config = [YLLGlobalConfig sharedInstance];
+        NSRect r = [_mainWindow frame];
+        CGFloat topLeftCorner = r.origin.y + r.size.height;
+        CGFloat shift = NSHeight([_mainWindow frame]) - NSHeight([[_mainWindow contentView] frame]) + 22;
+        r.size.width = [config cellWidth] * [config column];
+        r.size.height = [config cellHeight] * [config row] + shift;
+        r.origin.y = topLeftCorner - r.size.height;
+        [_mainWindow setFrame: r display: YES animate: NO];
+        [_telnetView configure];
+        NSRect tabRect = [_tab frame];
+        tabRect.size.width = r.size.width;
+        [_tab setFrame: tabRect];
+    }
 
     if ([[NSUserDefaults standardUserDefaults] boolForKey: @"RestoreConnection"]) 
         [self loadLastConnections];
     
-    [NSTimer scheduledTimerWithTimeInterval: 120 target: self selector: @selector(antiIdle:) userInfo: nil repeats: YES];
     [NSTimer scheduledTimerWithTimeInterval: 1 target: self selector: @selector(updateBlinkTicker:) userInfo: nil repeats: YES];    
 }
 
@@ -103,18 +120,6 @@
         [_telnetView setNeedsDisplay: YES];
 }
 
-- (void) antiIdle: (NSTimer *)timer
-{
-    if (![[NSUserDefaults standardUserDefaults] boolForKey: @"AntiIdle"]) return;
-    NSArray *tabs = [_telnetView tabViewItems];
-    for (NSTabViewItem *item in tabs) {
-        id telnet = [item identifier];
-        if ([telnet connected] && [telnet lastTouchDate] && [[NSDate date] timeIntervalSinceDate: [telnet lastTouchDate]] >= 119) {
-            unsigned char msg[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-            [telnet sendBytes: msg length: 6];
-        }
-    }
-}
 
 - (void) newConnectionWithSite: (YLSite *)site
 {
@@ -249,21 +254,6 @@
     [self updateSitesMenu];
 }
 
-- (void) loadEmoticons
-{
-    NSArray *dictionaries = [[NSUserDefaults standardUserDefaults] arrayForKey: @"Emoticons"];
-    for (NSDictionary *emoticonDictionary in dictionaries)
-        [self insertObject: [YLEmoticon emoticonWithDictionary: emoticonDictionary] inEmoticonsAtIndex: [self countOfEmoticons]];
-}
-
-- (void) saveEmoticons 
-{
-    NSMutableArray *dictionaries = [NSMutableArray array];
-    for (YLEmoticon *emoticon in _emoticons) 
-        [dictionaries addObject: [emoticon dictionaryOfEmoticon]];
-    [[NSUserDefaults standardUserDefaults] setObject: dictionaries forKey: @"Emoticons"];    
-    [[NSUserDefaults standardUserDefaults] synchronize];
-}
 
 - (void) loadLastConnections 
 {
@@ -393,10 +383,6 @@
 	[_addressBar becomeFirstResponder];
 }
 
-- (IBAction) reconnect: (id)sender
-{
-    [[_telnetView frontMostConnection] reconnect];
-}
 
 - (IBAction) selectNextTab: (id)sender
 {
@@ -465,22 +451,6 @@
     [self saveSites];
 }
 
-- (IBAction) addSites: (id)sender
-{
-    if ([_telnetView numberOfTabViewItems] == 0) return;
-    NSString *address = [[_telnetView frontMostConnection] connectionAddress];
-    
-    for (YLSite *site in _sites) 
-        if ([[site address] isEqualToString: address]) 
-            return;
-    
-    YLSite *site = [[[[_telnetView frontMostConnection] site] copy] autorelease];
-    [_sitesController addObject: site];
-    [_sitesController setSelectedObjects: [NSArray arrayWithObject: site]];
-    [self performSelector: @selector(editSites:) withObject: sender afterDelay: 0.1];
-    if ([_siteNameField acceptsFirstResponder])
-        [_sitesWindow makeFirstResponder: _siteNameField];
-}
 
 - (IBAction)autoLogin:(id)sender
 {
@@ -513,32 +483,6 @@
     [[DBPrefsWindowController sharedPrefsWindowController] showWindow:nil];
 }
 
-- (IBAction) openEmoticonsWindow: (id)sender
-{
-    [_emoticonsWindow makeKeyAndOrderFront: self];
-}
-
-- (IBAction) closeEmoticons: (id)sender
-{
-    [_emoticonsWindow endEditingFor: nil];
-    [_emoticonsWindow makeFirstResponder: _emoticonsWindow];
-    [_emoticonsWindow orderOut: self];
-    [self saveEmoticons];
-}
-
-- (IBAction) inputEmoticons: (id)sender
-{
-    [self closeEmoticons: sender];
-    
-    if ([[_telnetView frontMostConnection] connected]) {
-        NSArray *selectedEmoticons = [_emoticonsController selectedObjects];
-        
-        if ([selectedEmoticons count] == 1) {
-            YLEmoticon *emoticon = [selectedEmoticons objectAtIndex: 0];
-            [_telnetView insertText: [emoticon content]];
-        }
-    }
-}
 
 #pragma mark -
 #pragma mark Accessor
@@ -598,61 +542,7 @@
     }
 }
 
-- (NSArray *) emoticons
-{
-    if (!_emoticons) {
-        _emoticons = [[NSMutableArray alloc] init];
-    }
-    return [[_emoticons retain] autorelease];
-}
 
-- (unsigned) countOfEmoticons
-{
-    if (!_emoticons) {
-        _emoticons = [[NSMutableArray alloc] init];
-    }
-    return [_emoticons count];
-}
-
-- (id) objectInEmoticonsAtIndex: (unsigned)theIndex
-{
-    if (!_emoticons) {
-        _emoticons = [[NSMutableArray alloc] init];
-    }
-    return [_emoticons objectAtIndex: theIndex];
-}
-
-- (void) getEmoticons: (id *)objsPtr range: (NSRange)range
-{
-    if (!_emoticons) {
-        _emoticons = [[NSMutableArray alloc] init];
-    }
-    [_emoticons getObjects: objsPtr range: range];
-}
-
-- (void) insertObject: (id)obj inEmoticonsAtIndex: (unsigned)theIndex
-{
-    if (!_emoticons) {
-        _emoticons = [[NSMutableArray alloc] init];
-    }
-    [_emoticons insertObject: obj atIndex: theIndex];
-}
-
-- (void) removeObjectFromEmoticonsAtIndex: (unsigned)theIndex
-{
-    if (!_emoticons) {
-        _emoticons = [[NSMutableArray alloc] init];
-    }
-    [_emoticons removeObjectAtIndex: theIndex];
-}
-
-- (void) replaceObjectInEmoticonsAtIndex: (unsigned)theIndex withObject: (id)obj
-{
-    if (!_emoticons) {
-        _emoticons = [[NSMutableArray alloc] init];
-    }
-    [_emoticons replaceObjectAtIndex: theIndex withObject: obj];
-}
 
 - (YLExifController *) exifController
 {
@@ -669,9 +559,7 @@
 - (BOOL) validateMenuItem: (NSMenuItem *)item
 {
     SEL action = [item action];
-    if ((action == @selector(addSites:) ||
-         action == @selector(reconnect:) ||
-         action == @selector(selectNextTab:) ||
+    if ((action == @selector(selectNextTab:) ||
          action == @selector(selectPrevTab:) )
         && [_telnetView numberOfTabViewItems] == 0) {
         return NO;
@@ -696,7 +584,7 @@
         [self saveLastConnections];
     
     if (![[NSUserDefaults standardUserDefaults] boolForKey: @"ConfirmOnClose"]) 
-        return YES;
+        return NSTerminateNow;
     
     BOOL hasConnectedConnetion = NO;
     for (i = 0; i < tabNumber; i++) {
@@ -704,7 +592,7 @@
         if ([connection connected]) 
             hasConnectedConnetion = YES;
     }
-    if (!hasConnectedConnetion) return YES;
+    if (!hasConnectedConnetion) return NSTerminateNow;
     
     NSString *errorMessage = [NSString stringWithFormat: NSLocalizedString(@"There are %d tabs open in Nally. Do you want to quit anyway?", @"Sheet Message"), tabNumber];
     NSBeginAlertSheet(NSLocalizedString(@"Are you sure you want to quit Nally?", @"Sheet Title"),

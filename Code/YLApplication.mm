@@ -64,15 +64,7 @@ static NSString *gLeftString, *gRightString;
             [_controller selectTabNumber: [[event characters] intValue]];
             [pool release];
             return;
-        } else if (([event modifierFlags] & NSCommandKeyMask) == NSCommandKeyMask && 
-                   ([event modifierFlags] & NSAlternateKeyMask) == 0 && 
-                   ([event modifierFlags] & NSControlKeyMask) == 0 && 
-                   ([event modifierFlags] & NSShiftKeyMask) == 0 && 
-                   [[event characters] isEqualToString: @"r"] &&
-                   [[NSUserDefaults standardUserDefaults] boolForKey: @"CommandRHotkey"]) {
-            [_controller reconnect: self];
-            [pool release];
-            return;
+
         } else if (([event modifierFlags] & NSCommandKeyMask) == NSCommandKeyMask && 
                    ([event modifierFlags] & NSAlternateKeyMask) == 0 && 
                    ([event modifierFlags] & NSControlKeyMask) == 0 && 

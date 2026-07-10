@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="4510" systemVersion="13A603" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none">
     <dependencies>
-        <deployment version="1050" defaultVersion="1060" identifier="macosx"/>
+        <deployment version="1200" defaultVersion="1200" identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="4510"/>
     </dependencies>
     <objects>
@@ -14,7 +14,7 @@
         <customObject id="-1" userLabel="First Responder" customClass="FirstResponder"/>
         <customObject id="-3" userLabel="Application"/>
         <window title="Nally" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" releasedWhenClosed="NO" wantsToBeColor="NO" animationBehavior="default" id="21" userLabel="Window">
-            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" texturedBackground="YES" unifiedTitleAndToolbar="YES"/>
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="1" y="211" width="960" height="598"/>
             <rect key="screenRect" x="0.0" y="0.0" width="1366" height="746"/>
@@ -48,7 +48,7 @@
                     </customView>
                 </subviews>
             </view>
-            <toolbar key="toolbar" implicitIdentifier="9220F62B-2726-4C84-80F3-70296DDE6D4C" showsBaselineSeparator="NO" displayMode="iconAndLabel" sizeMode="regular" id="231">
+            <toolbar key="toolbar" implicitIdentifier="9220F62B-2726-4C84-80F3-70296DDE6D4F" showsBaselineSeparator="NO" displayMode="iconAndLabel" sizeMode="regular" id="231">
                 <allowedToolbarItems>
                     <toolbarItem implicitItemIdentifier="7953CAC6-DC4D-41BB-83E0-CE03467AB4CC" label="Sites" paletteLabel="Sites" image="bookmark" id="418">
                         <nil key="toolTip"/>
@@ -66,38 +66,7 @@
                             </connections>
                         </button>
                     </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="67DD75FD-4809-4D58-9BE7-61AE89E4E6FC" label="Reconnect" paletteLabel="Reconnect" image="reload" id="422">
-                        <nil key="toolTip"/>
-                        <size key="minSize" width="28" height="25"/>
-                        <size key="maxSize" width="28" height="25"/>
-                        <button key="view" verticalHuggingPriority="750" id="423">
-                            <rect key="frame" x="18" y="14" width="28" height="25"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="reload" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="424">
-                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                <font key="font" metaFont="system"/>
-                            </buttonCell>
-                            <connections>
-                                <action selector="reconnect:" target="207" id="482"/>
-                            </connections>
-                        </button>
-                    </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="555803AF-8D9A-43AB-8B7B-B6D57B41522F" label="Add Site" paletteLabel="Add Site" image="NSAddTemplate" id="419">
-                        <nil key="toolTip"/>
-                        <size key="minSize" width="28" height="25"/>
-                        <size key="maxSize" width="28" height="25"/>
-                        <button key="view" verticalHuggingPriority="750" id="420">
-                            <rect key="frame" x="12" y="14" width="28" height="25"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="NSAddTemplate" imagePosition="only" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="421">
-                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                <font key="font" metaFont="system"/>
-                            </buttonCell>
-                        </button>
-                        <connections>
-                            <action selector="addSites:" target="207" id="427"/>
-                        </connections>
-                    </toolbarItem>
+
                     <toolbarItem implicitItemIdentifier="05966687-5F23-47E3-B508-E2541AC0DE11" label="Address" paletteLabel="Address" id="257">
                         <nil key="toolTip"/>
                         <size key="minSize" width="251" height="22"/>
@@ -154,38 +123,6 @@
                             </connections>
                         </button>
                     </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="7B9B3D76-7332-4EB9-A104-D37311A16A5C" label="Anti-Idle" paletteLabel="Anti-Idle" image="sleep" id="442">
-                        <nil key="toolTip"/>
-                        <size key="minSize" width="30" height="25"/>
-                        <size key="maxSize" width="30" height="25"/>
-                        <button key="view" verticalHuggingPriority="750" id="440">
-                            <rect key="frame" x="13" y="14" width="30" height="25"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="roundTextured" bezelStyle="texturedRounded" image="sleep" imagePosition="overlaps" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="441">
-                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES" changeBackground="YES" changeGray="YES"/>
-                                <font key="font" metaFont="system"/>
-                            </buttonCell>
-                            <connections>
-                                <binding destination="401" name="value" keyPath="values.AntiIdle" id="451"/>
-                            </connections>
-                        </button>
-                    </toolbarItem>
-                    <toolbarItem implicitItemIdentifier="DC4B72A9-7BA2-406A-8B68-E8EBF9D918AE" label="Emoticon" paletteLabel="Emoticon" id="831">
-                        <nil key="toolTip"/>
-                        <size key="minSize" width="30" height="25"/>
-                        <size key="maxSize" width="30" height="25"/>
-                        <button key="view" verticalHuggingPriority="750" id="829">
-                            <rect key="frame" x="14" y="14" width="30" height="25"/>
-                            <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                            <buttonCell key="cell" type="roundTextured" title="'Д`" bezelStyle="texturedRounded" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="830">
-                                <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                                <font key="font" size="13" name="Helvetica"/>
-                            </buttonCell>
-                            <connections>
-                                <action selector="openEmoticonsWindow:" target="207" id="833"/>
-                            </connections>
-                        </button>
-                    </toolbarItem>
                     <toolbarItem implicitItemIdentifier="NSToolbarSeparatorItem" id="234"/>
                     <toolbarItem implicitItemIdentifier="4FB0C03D-5E64-4A41-9E1D-285A43B57BB5" label="Login" paletteLabel="Login" id="szN-5x-6U7">
                         <nil key="toolTip"/>
@@ -206,11 +143,7 @@
                 </allowedToolbarItems>
                 <defaultToolbarItems>
                     <toolbarItem reference="418"/>
-                    <toolbarItem reference="422"/>
-                    <toolbarItem reference="419"/>
                     <toolbarItem reference="257"/>
-                    <toolbarItem reference="831"/>
-                    <toolbarItem reference="442"/>
                     <toolbarItem reference="436"/>
                     <toolbarItem reference="415"/>
                     <toolbarItem reference="szN-5x-6U7"/>
@@ -292,11 +225,7 @@
                                     <action selector="openLocation:" target="207" id="273"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Reconnect" id="330">
-                                <connections>
-                                    <action selector="reconnect:" target="207" id="481"/>
-                                </connections>
-                            </menuItem>
+
                             <menuItem isSeparatorItem="YES" id="79">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
@@ -351,14 +280,7 @@
                             <menuItem isSeparatorItem="YES" id="476">
                                 <modifierMask key="keyEquivalentModifierMask" command="YES"/>
                             </menuItem>
-                            <menuItem title="Emoticons..." keyEquivalent="e" id="836">
-                                <connections>
-                                    <action selector="openEmoticonsWindow:" target="207" id="838"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" id="837">
-                                <modifierMask key="keyEquivalentModifierMask" command="YES"/>
-                            </menuItem>
+
                             <menuItem title="Customize Toolbar..." id="475">
                                 <connections>
                                     <action selector="runToolbarCustomizationPalette:" target="21" id="477"/>
@@ -370,11 +292,7 @@
                 <menuItem title="View" id="484">
                     <menu key="submenu" title="View" id="485">
                         <items>
-                            <menuItem title="Anti-Idle" id="486">
-                                <connections>
-                                    <binding destination="401" name="value" keyPath="values.AntiIdle" id="491"/>
-                                </connections>
-                            </menuItem>
+
                             <menuItem title="Show Hidden Text" id="487">
                                 <connections>
                                     <action selector="showHiddenText:" target="207" id="494"/>
@@ -487,8 +405,7 @@
                 <outlet property="_closeWindowMenuItem" destination="73" id="320"/>
                 <outlet property="_detectDoubleByteButton" destination="413" id="945"/>
                 <outlet property="_detectDoubleByteMenuItem" destination="488" id="946"/>
-                <outlet property="_emoticonsController" destination="764" id="835"/>
-                <outlet property="_emoticonsWindow" destination="729" id="834"/>
+
                 <outlet property="_encodingMenuItem" destination="840" id="853"/>
                 <outlet property="_exifController" destination="1047" id="1053"/>
                 <outlet property="_mainWindow" destination="21" id="377"/>
@@ -809,226 +726,6 @@ Gw
             </connections>
         </arrayController>
         <userDefaultsController representsSharedInstance="YES" id="401"/>
-        <window title="Emoticon" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" hidesOnDeactivate="YES" oneShot="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="729" userLabel="Emoticon Panel" customClass="NSPanel">
-            <windowStyleMask key="styleMask" titled="YES" resizable="YES" utility="YES"/>
-            <windowPositionMask key="initialPositionMask" leftStrut="YES" bottomStrut="YES"/>
-            <rect key="contentRect" x="63" y="464" width="408" height="382"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1366" height="746"/>
-            <view key="contentView" id="730">
-                <rect key="frame" x="0.0" y="0.0" width="408" height="382"/>
-                <autoresizingMask key="autoresizingMask"/>
-                <subviews>
-                    <button verticalHuggingPriority="750" id="746">
-                        <rect key="frame" x="285" y="12" width="96" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="Input" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="747">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <string key="keyEquivalent" base64-UTF8="YES">
-DQ
-</string>
-                        </buttonCell>
-                        <connections>
-                            <action selector="inputEmoticons:" target="207" id="801"/>
-                        </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" id="756">
-                        <rect key="frame" x="189" y="12" width="96" height="32"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMinX="YES" flexibleMaxY="YES"/>
-                        <buttonCell key="cell" type="push" title="Cancel" bezelStyle="rounded" alignment="center" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="757">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <string key="keyEquivalent" base64-UTF8="YES">
-Gw
-</string>
-                        </buttonCell>
-                        <connections>
-                            <action selector="closeEmoticons:" target="207" id="802"/>
-                        </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" id="760">
-                        <rect key="frame" x="35" y="351" width="30" height="25"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSRemoveTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="761">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                            <string key="keyEquivalent"></string>
-                        </buttonCell>
-                        <connections>
-                            <action selector="remove:" target="764" id="767"/>
-                        </connections>
-                    </button>
-                    <button verticalHuggingPriority="750" id="762">
-                        <rect key="frame" x="64" y="351" width="30" height="25"/>
-                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMinY="YES"/>
-                        <buttonCell key="cell" type="smallSquare" bezelStyle="smallSquare" image="NSAddTemplate" imagePosition="overlaps" alignment="center" state="on" borderStyle="border" imageScaling="proportionallyDown" inset="2" id="763">
-                            <behavior key="behavior" pushIn="YES" lightByBackground="YES" lightByGray="YES"/>
-                            <font key="font" metaFont="system"/>
-                        </buttonCell>
-                        <connections>
-                            <action selector="add:" target="764" id="766"/>
-                        </connections>
-                    </button>
-                    <splitView vertical="YES" id="799">
-                        <rect key="frame" x="0.0" y="48" width="408" height="299"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <subviews>
-                            <scrollView autohidesScrollers="YES" horizontalLineScroll="22" horizontalPageScroll="10" verticalLineScroll="22" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="731">
-                                <rect key="frame" x="0.0" y="0.0" width="158" height="299"/>
-                                <autoresizingMask key="autoresizingMask" widthSizable="YES" flexibleMaxX="YES" heightSizable="YES"/>
-                                <clipView key="contentView" id="6Jd-le-MDw">
-                                    <rect key="frame" x="1" y="1" width="156" height="297"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                    <subviews>
-                                        <tableView verticalHuggingPriority="750" allowsExpansionToolTips="YES" columnAutoresizingStyle="lastColumnOnly" alternatingRowBackgroundColors="YES" columnSelection="YES" multipleSelection="NO" emptySelection="NO" autosaveColumns="NO" rowHeight="20" id="734">
-                                            <rect key="frame" x="0.0" y="0.0" width="156" height="297"/>
-                                            <autoresizingMask key="autoresizingMask"/>
-                                            <size key="intercellSpacing" width="3" height="2"/>
-                                            <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                            <tableViewGridLines key="gridStyleMask" horizontal="YES"/>
-                                            <color key="gridColor" name="gridColor" catalog="System" colorSpace="catalog"/>
-                                            <tableColumns>
-                                                <tableColumn editable="NO" width="153" minWidth="40" maxWidth="1000" id="736">
-                                                    <tableHeaderCell key="headerCell" lineBreakMode="truncatingTail" borderStyle="border" alignment="left">
-                                                        <font key="font" metaFont="smallSystem"/>
-                                                        <color key="textColor" name="headerTextColor" catalog="System" colorSpace="catalog"/>
-                                                        <color key="backgroundColor" white="0.33333299" alpha="1" colorSpace="calibratedWhite"/>
-                                                    </tableHeaderCell>
-                                                    <textFieldCell key="dataCell" lineBreakMode="truncatingTail" selectable="YES" editable="YES" alignment="left" title="Text Cell" id="739">
-                                                        <font key="font" metaFont="system"/>
-                                                        <color key="textColor" name="controlTextColor" catalog="System" colorSpace="catalog"/>
-                                                        <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                                    </textFieldCell>
-                                                    <tableColumnResizingMask key="resizingMask" resizeWithTable="YES" userResizable="YES"/>
-                                                    <connections>
-                                                        <binding destination="764" name="value" keyPath="arrangedObjects.description" id="854">
-                                                            <dictionary key="options">
-                                                                <integer key="NSConditionallySetsEditable" value="1"/>
-                                                            </dictionary>
-                                                        </binding>
-                                                    </connections>
-                                                </tableColumn>
-                                            </tableColumns>
-                                        </tableView>
-                                    </subviews>
-                                    <color key="backgroundColor" name="controlBackgroundColor" catalog="System" colorSpace="catalog"/>
-                                </clipView>
-                                <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" id="733">
-                                    <rect key="frame" x="-100" y="-100" width="322" height="15"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                </scroller>
-                                <scroller key="verticalScroller" hidden="YES" verticalHuggingPriority="750" id="732">
-                                    <rect key="frame" x="142" y="1" width="15" height="290"/>
-                                    <autoresizingMask key="autoresizingMask"/>
-                                </scroller>
-                            </scrollView>
-                            <box autoresizesSubviews="NO" title="Box" borderType="none" titlePosition="noTitle" id="792">
-                                <rect key="frame" x="167" y="0.0" width="241" height="299"/>
-                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
-                                <view key="contentView">
-                                    <rect key="frame" x="0.0" y="0.0" width="241" height="299"/>
-                                    <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                    <subviews>
-                                        <scrollView horizontalLineScroll="10" horizontalPageScroll="10" verticalLineScroll="10" verticalPageScroll="10" hasHorizontalScroller="NO" usesPredominantAxisScrolling="NO" id="777">
-                                            <rect key="frame" x="4" y="1" width="238" height="298"/>
-                                            <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                            <clipView key="contentView" id="00G-fG-OG0">
-                                                <rect key="frame" x="1" y="1" width="221" height="296"/>
-                                                <autoresizingMask key="autoresizingMask"/>
-                                                <subviews>
-                                                    <textView importsGraphics="NO" richText="NO" continuousSpellChecking="YES" verticallyResizable="YES" spellingCorrection="YES" id="780">
-                                                        <rect key="frame" x="0.0" y="0.0" width="221" height="374"/>
-                                                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                                                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                                        <size key="minSize" width="221" height="296"/>
-                                                        <size key="maxSize" width="459" height="10000000"/>
-                                                        <attributedString key="textStorage">
-                                                            <fragment>
-                                                                <mutableString key="content">Lorem ipsum dolor sit er elit lamet, consectetaur cillium adipisicing pecu, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum Et harumd und lookum like Greek to me, dereud facilis est er expedit distinct. Nam liber te conscient to factor tum poen legum odioque civiuda</mutableString>
-                                                                <attributes>
-                                                                    <font key="NSFont" size="14" name="LucidaGrande"/>
-                                                                    <paragraphStyle key="NSParagraphStyle" alignment="justified" lineBreakMode="wordWrapping" baseWritingDirection="natural">
-                                                                        <tabStops>
-                                                                            <textTab alignment="left" location="0.0"/>
-                                                                            <textTab alignment="left" location="56"/>
-                                                                            <textTab alignment="left" location="112"/>
-                                                                            <textTab alignment="left" location="168"/>
-                                                                            <textTab alignment="left" location="224"/>
-                                                                            <textTab alignment="left" location="280"/>
-                                                                            <textTab alignment="left" location="336"/>
-                                                                            <textTab alignment="left" location="392"/>
-                                                                            <textTab alignment="left" location="448"/>
-                                                                            <textTab alignment="left" location="504"/>
-                                                                            <textTab alignment="left" location="560"/>
-                                                                            <textTab alignment="left" location="616"/>
-                                                                            <textTab alignment="left" location="672"/>
-                                                                            <textTab alignment="left" location="728"/>
-                                                                            <textTab alignment="left" location="784"/>
-                                                                            <textTab alignment="left" location="840"/>
-                                                                            <textTab alignment="left" location="896"/>
-                                                                            <textTab alignment="left" location="952"/>
-                                                                            <textTab alignment="left" location="1008"/>
-                                                                            <textTab alignment="left" location="1064"/>
-                                                                            <textTab alignment="left" location="1120"/>
-                                                                            <textTab alignment="left" location="1176"/>
-                                                                            <textTab alignment="left" location="1232"/>
-                                                                            <textTab alignment="left" location="1288"/>
-                                                                            <textTab alignment="left" location="1344"/>
-                                                                            <textTab alignment="left" location="1400"/>
-                                                                            <textTab alignment="left" location="1456"/>
-                                                                            <textTab alignment="left" location="1512"/>
-                                                                            <textTab alignment="left" location="1568"/>
-                                                                            <textTab alignment="left" location="1624"/>
-                                                                            <textTab alignment="left" location="1680"/>
-                                                                            <textTab alignment="left" location="1736"/>
-                                                                        </tabStops>
-                                                                    </paragraphStyle>
-                                                                </attributes>
-                                                            </fragment>
-                                                        </attributedString>
-                                                        <color key="insertionPointColor" white="0.0" alpha="1" colorSpace="calibratedWhite"/>
-                                                        <size key="minSize" width="221" height="296"/>
-                                                        <size key="maxSize" width="459" height="10000000"/>
-                                                        <connections>
-                                                            <binding destination="764" name="value" keyPath="selection.content" id="782"/>
-                                                        </connections>
-                                                    </textView>
-                                                </subviews>
-                                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
-                                            </clipView>
-                                            <scroller key="horizontalScroller" hidden="YES" verticalHuggingPriority="750" doubleValue="1" id="779">
-                                                <rect key="frame" x="-100" y="-100" width="87" height="18"/>
-                                                <autoresizingMask key="autoresizingMask"/>
-                                            </scroller>
-                                            <scroller key="verticalScroller" verticalHuggingPriority="750" id="778">
-                                                <rect key="frame" x="222" y="1" width="15" height="296"/>
-                                                <autoresizingMask key="autoresizingMask"/>
-                                            </scroller>
-                                        </scrollView>
-                                    </subviews>
-                                </view>
-                                <color key="borderColor" white="0.0" alpha="0.41999999999999998" colorSpace="calibratedWhite"/>
-                                <color key="fillColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
-                            </box>
-                        </subviews>
-                        <holdingPriorities>
-                            <real value="250"/>
-                            <real value="250"/>
-                        </holdingPriorities>
-                    </splitView>
-                </subviews>
-            </view>
-        </window>
-        <arrayController objectClassName="YLEmoticon" id="764" userLabel="Emoticons Array">
-            <declaredKeys>
-                <string>content</string>
-                <string>name</string>
-                <string>description</string>
-            </declaredKeys>
-            <connections>
-                <binding destination="207" name="contentArray" keyPath="emoticons" id="845"/>
-            </connections>
-        </arrayController>
         <customObject id="846" customClass="YLLGlobalConfig"/>
         <window title="EXIF Data" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" oneShot="NO" releasedWhenClosed="NO" visibleAtLaunch="NO" animationBehavior="default" id="962" customClass="NSPanel">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" utility="YES" HUD="YES"/>

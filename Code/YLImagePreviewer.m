@@ -132,7 +132,7 @@
     [_window setViewsNeedDisplay: NO];
     [_window makeKeyAndOrderFront: nil];
     
-    _indicator = [[HMBlkProgressIndicator alloc] initWithFrame: NSMakeRect(10, 10, 380, 10)];
+    _indicator = [[NSProgressIndicator alloc] initWithFrame: NSMakeRect(10, 10, 380, 10)];
     [[_window contentView] addSubview: _indicator];
     // [_indicator release];
 
