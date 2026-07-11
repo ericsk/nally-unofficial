@@ -733,4 +733,13 @@
     }
     
 }
+
+- (void)setAddressBar:(id)addressBar {
+    _addressBar = addressBar;
+}
+
+- (void)setDetectDoubleByteButton:(id)detectDoubleByteButton {
+    _detectDoubleByteButton = detectDoubleByteButton;
+}
+
 @end

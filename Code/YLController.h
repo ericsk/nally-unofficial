@@ -56,6 +56,8 @@
 - (IBAction) showHiddenText: (id)sender;
 - (IBAction) openPreferencesWindow: (id)sender;
 - (void) newConnectionWithSite: (YLSite *)site;
+- (void)setAddressBar:(id)addressBar;
+- (void)setDetectDoubleByteButton:(id)detectDoubleByteButton;
 
 
 

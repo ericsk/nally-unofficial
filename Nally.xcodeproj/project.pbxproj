@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5690CA5C46CE454E8E12248B /* NallyToolbarDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FEB60EFE5F4AC69374F3C4 /* NallyToolbarDelegate.swift */; };
 		E2665651C95547EDB97441CA /* NallyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74C4D5473A24D27B9222EB3 /* NallyApp.swift */; };
 		E6239651091B4E9C86AA895A /* NallyAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */; };
 		105B234BF52D4039A30D3682 /* NallyCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80104742B2954F909E42FC73 /* NallyCommands.swift */; };
@@ -87,6 +88,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		70FEB60EFE5F4AC69374F3C4 /* NallyToolbarDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyToolbarDelegate.swift; sourceTree = "<group>"; };
 		A74C4D5473A24D27B9222EB3 /* NallyApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyApp.swift; sourceTree = "<group>"; };
 		49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyAppDelegate.swift; sourceTree = "<group>"; };
 		80104742B2954F909E42FC73 /* NallyCommands.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyCommands.swift; sourceTree = "<group>"; };
@@ -210,6 +212,7 @@
 		080E96DDFE201D6D7F000001 /* Code */ = {
 			isa = PBXGroup;
 			children = (
+				70FEB60EFE5F4AC69374F3C4 /* NallyToolbarDelegate.swift */,
 				A74C4D5473A24D27B9222EB3 /* NallyApp.swift */,
 				49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */,
 				80104742B2954F909E42FC73 /* NallyCommands.swift */,
@@ -577,6 +580,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5690CA5C46CE454E8E12248B /* NallyToolbarDelegate.swift in Sources */,
 				E2665651C95547EDB97441CA /* NallyApp.swift in Sources */,
 				E6239651091B4E9C86AA895A /* NallyAppDelegate.swift in Sources */,
 				105B234BF52D4039A30D3682 /* NallyCommands.swift in Sources */,
