@@ -12,7 +12,6 @@
 #import "YLSite.h"
 #import "YLLGlobalConfig.h"
 #import "Nally-Swift.h"
-#import "YLMarkedTextView.h"
 #import "YLContextualMenuManager.h"
 #import "YLImagePreviewer.h"
 #import "YLTextSuite.h"
