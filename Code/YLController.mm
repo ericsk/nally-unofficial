@@ -131,6 +131,7 @@
     BOOL emptyTab = [_telnetView frontMostConnection] && ([_telnetView frontMostTerminal] == nil);
     
     [terminal setEncoding: [site encoding]];
+    [terminal setAllDirty];
 	[connection setTerminal: terminal];
     [connection setConnectionName: [site name]];
     [connection setConnectionAddress: [site address]];
