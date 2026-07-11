@@ -1,6 +1,8 @@
-# Nally
+# Nally Unofficial
 
 Open-Source telnet/ssh BBS client.
+
+這個專案的目標是將原本的 Nally 從 Intel 架構逐步往 Apple Silicon 架構移植，並使用 Swift 生態系改寫其程式碼與 UI 介面。
 
 ## History
 
