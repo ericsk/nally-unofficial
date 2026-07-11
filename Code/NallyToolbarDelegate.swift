@@ -42,7 +42,8 @@ public class NallyToolbarDelegate: NSObject, NSToolbarDelegate {
         let btnDoubleByte = NSButton(frame: NSRect(x: 0, y: 0, width: 36, height: 28))
         btnDoubleByte.setButtonType(.pushOnPushOff)
         btnDoubleByte.bezelStyle = .texturedRounded
-        btnDoubleByte.image = NSImage(systemSymbolName: "character.text.tw", accessibilityDescription: "Double Byte") ?? NSImage(systemSymbolName: "textformat", accessibilityDescription: "Double Byte")
+        btnDoubleByte.title = "雙"
+        btnDoubleByte.font = NSFont.systemFont(ofSize: 13, weight: .bold)
         btnDoubleByte.target = controller
         btnDoubleByte.action = #selector(YLController.setDetectDoubleByteAction(_:))
         btnDoubleByte.toolTip = "Toggle Double Byte Detection"
