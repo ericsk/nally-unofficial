@@ -152,6 +152,8 @@
 	
 	[connection connectToSite: site];
     [_telnetView selectTabViewItem: tabItem];
+    [_telnetView updateBackedImage];
+    [_telnetView setNeedsDisplay: YES];
     [terminal release];
     [self refreshTabLabelNumber: _telnetView];
     [self updateEncodingMenu];
