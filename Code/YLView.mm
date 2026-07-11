@@ -1649,3 +1649,9 @@ BOOL isSpecialSymbol(unichar ch)
 }
 
 @end
+
+@implementation YLView (SwiftBridge)
+- (id)swiftFrontMostTerminal {
+    return [self frontMostTerminal];
+}
+@end

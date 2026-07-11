@@ -4,6 +4,14 @@
 #import "CommonType.h"
 #import <Cocoa/Cocoa.h>
 #import "YLController.h"
+#import "YLView.h"
+@interface NSObject (YLTerminalSwiftBridge)
+- (YLEncoding)encoding;
+@end
+
+@interface YLView (SwiftBridge)
+- (id)swiftFrontMostTerminal;
+@end
 
 @interface NSUserDefaults (myColorSupport)
 - (void)setMyColor:(NSColor *)aColor forKey:(NSString *)aKey;

@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E2665651C95547EDB97441CA /* NallyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74C4D5473A24D27B9222EB3 /* NallyApp.swift */; };
+		E6239651091B4E9C86AA895A /* NallyAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */; };
+		105B234BF52D4039A30D3682 /* NallyCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80104742B2954F909E42FC73 /* NallyCommands.swift */; };
 		02A5DAA01EFF4F8996F0203C /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F5FFE76102B4FF89F7D4501 /* PreferencesView.swift */; };
 		70FBA727BB5A46478C054CFE /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB0ABA97A66411D956D72E1 /* PreferencesWindowController.swift */; };
 		09CBA2F51FA74189BF59B060 /* SitesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949F3018955547859CEC2E24 /* SitesManager.swift */; };
@@ -50,7 +53,6 @@
 		85AD6FE70D227F1D00992A1C /* DragonBall.icns in Resources */ = {isa = PBXBuildFile; fileRef = 85B247E60CEA1B840090046C /* DragonBall.icns */; };
 		85AE9DA70CB1597A0045317F /* reload.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DA60CB1597A0045317F /* reload.pdf */; };
 		85AE9DAE0CB15D220045317F /* bookmark.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DAD0CB15D220045317F /* bookmark.pdf */; };
-		85AF012712912A8C00728C12 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 85AF012512912A8C00728C12 /* main.m */; };
 		85AF012B12912AD000728C12 /* nally.public.pem in Resources */ = {isa = PBXBuildFile; fileRef = 85AF012A12912AD000728C12 /* nally.public.pem */; };
 
 		85B0176E12913CA5004F06E4 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 85B0176C12913CA5004F06E4 /* MainMenu.xib */; };
@@ -85,6 +87,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A74C4D5473A24D27B9222EB3 /* NallyApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyApp.swift; sourceTree = "<group>"; };
+		49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyAppDelegate.swift; sourceTree = "<group>"; };
+		80104742B2954F909E42FC73 /* NallyCommands.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyCommands.swift; sourceTree = "<group>"; };
 		7F5FFE76102B4FF89F7D4501 /* PreferencesView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		EFB0ABA97A66411D956D72E1 /* PreferencesWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
 		949F3018955547859CEC2E24 /* SitesManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SitesManager.swift; sourceTree = "<group>"; };
@@ -152,7 +157,6 @@
 		85ABEB800C966FEF008227D6 /* YLController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = YLController.mm; sourceTree = "<group>"; };
 		85AE9DA60CB1597A0045317F /* reload.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = reload.pdf; sourceTree = "<group>"; };
 		85AE9DAD0CB15D220045317F /* bookmark.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = bookmark.pdf; sourceTree = "<group>"; };
-		85AF012512912A8C00728C12 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = Code/main.m; sourceTree = "<group>"; };
 		85AF012612912A8C00728C12 /* Nally_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Nally_Prefix.pch; path = Code/Nally_Prefix.pch; sourceTree = "<group>"; };
 		85AF012A12912AD000728C12 /* nally.public.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = nally.public.pem; path = Deploy/nally.public.pem; sourceTree = SOURCE_ROOT; };
 		85B0176D12913CA5004F06E4 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Resources/English.lproj/MainMenu.xib; sourceTree = "<group>"; };
@@ -206,6 +210,9 @@
 		080E96DDFE201D6D7F000001 /* Code */ = {
 			isa = PBXGroup;
 			children = (
+				A74C4D5473A24D27B9222EB3 /* NallyApp.swift */,
+				49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */,
+				80104742B2954F909E42FC73 /* NallyCommands.swift */,
 				7F5FFE76102B4FF89F7D4501 /* PreferencesView.swift */,
 				EFB0ABA97A66411D956D72E1 /* PreferencesWindowController.swift */,
 				949F3018955547859CEC2E24 /* SitesManager.swift */,
@@ -282,7 +289,6 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				85AF012512912A8C00728C12 /* main.m */,
 				85AF012612912A8C00728C12 /* Nally_Prefix.pch */,
 			);
 			name = "Other Sources";
@@ -571,6 +577,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E2665651C95547EDB97441CA /* NallyApp.swift in Sources */,
+				E6239651091B4E9C86AA895A /* NallyAppDelegate.swift in Sources */,
+				105B234BF52D4039A30D3682 /* NallyCommands.swift in Sources */,
 				02A5DAA01EFF4F8996F0203C /* PreferencesView.swift in Sources */,
 				70FBA727BB5A46478C054CFE /* PreferencesWindowController.swift in Sources */,
 				09CBA2F51FA74189BF59B060 /* SitesManager.swift in Sources */,
@@ -597,7 +606,6 @@
 				07B73D900E5816FF00CC97D3 /* YLPluginLoader.m in Sources */,
 				079E9BCA0F08C4820089C9E2 /* YLFloatingView.m in Sources */,
 				071AE8710F12012100FDD307 /* YLExifController.m in Sources */,
-				85AF012712912A8C00728C12 /* main.m in Sources */,
 				8540FBC512AB3D00000FE1D6 /* YLTextSuite.m in Sources */,
 				8540FBF412AB5938000FE1D6 /* YLRun.m in Sources */,
 				8540FBF712AB5AF4000FE1D6 /* YLLine.m in Sources */,
