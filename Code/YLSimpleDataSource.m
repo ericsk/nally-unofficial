@@ -8,6 +8,7 @@
 
 #import "YLSimpleDataSource.h"
 #import "YLLGlobalConfig.h"
+#import "Nally-Swift.h"
 
 static char *templateString = "我達達的馬蹄是美麗的錯誤。我不是歸人，是個澳客。";
 

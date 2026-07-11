@@ -4,7 +4,6 @@
 #import <Cocoa/Cocoa.h>
 #import "CommonType.h"
 
-// Bridge Swift class back to Objective-C
-#import "Nally-Swift.h"
+@class YLSite;
 
 #endif /* YLSite_h */

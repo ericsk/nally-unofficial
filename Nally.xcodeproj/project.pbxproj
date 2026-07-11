@@ -7,6 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02A5DAA01EFF4F8996F0203C /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F5FFE76102B4FF89F7D4501 /* PreferencesView.swift */; };
+		70FBA727BB5A46478C054CFE /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB0ABA97A66411D956D72E1 /* PreferencesWindowController.swift */; };
+		09CBA2F51FA74189BF59B060 /* SitesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949F3018955547859CEC2E24 /* SitesManager.swift */; };
+		9F2EBBE877A24C96811D3B8C /* SitesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B6BE7F372734231B6A39829 /* SitesView.swift */; };
+		B4EA8B034E014F96BF4549BB /* SitesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FE8F77BC375454396299F9E /* SitesWindowController.swift */; };
 		070D50430D9BF40400EC2660 /* YLImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 070D50420D9BF40400EC2660 /* YLImageView.m */; };
 		071AE8710F12012100FDD307 /* YLExifController.m in Sources */ = {isa = PBXBuildFile; fileRef = 071AE8700F12012100FDD307 /* YLExifController.m */; };
 		079E9BB00F08B9480089C9E2 /* HUDSave.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */; };
@@ -45,11 +50,9 @@
 		85AD6FE70D227F1D00992A1C /* DragonBall.icns in Resources */ = {isa = PBXBuildFile; fileRef = 85B247E60CEA1B840090046C /* DragonBall.icns */; };
 		85AE9DA70CB1597A0045317F /* reload.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DA60CB1597A0045317F /* reload.pdf */; };
 		85AE9DAE0CB15D220045317F /* bookmark.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DAD0CB15D220045317F /* bookmark.pdf */; };
-		85AF012412912A3300728C12 /* DBPrefsWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 85AF012312912A3300728C12 /* DBPrefsWindowController.m */; };
 		85AF012712912A8C00728C12 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 85AF012512912A8C00728C12 /* main.m */; };
 		85AF012B12912AD000728C12 /* nally.public.pem in Resources */ = {isa = PBXBuildFile; fileRef = 85AF012A12912AD000728C12 /* nally.public.pem */; };
 
-		85B0176212913B30004F06E4 /* Preferences.xib in Resources */ = {isa = PBXBuildFile; fileRef = 85B0176012913B30004F06E4 /* Preferences.xib */; };
 		85B0176E12913CA5004F06E4 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 85B0176C12913CA5004F06E4 /* MainMenu.xib */; };
 		85B0177212913CF3004F06E4 /* PSMTabBarControl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 85B0177112913CF3004F06E4 /* PSMTabBarControl.framework */; };
 		85B017D81291441F004F06E4 /* PSMTabBarControl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 85B0177112913CF3004F06E4 /* PSMTabBarControl.framework */; };
@@ -82,6 +85,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		7F5FFE76102B4FF89F7D4501 /* PreferencesView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
+		EFB0ABA97A66411D956D72E1 /* PreferencesWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
+		949F3018955547859CEC2E24 /* SitesManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SitesManager.swift; sourceTree = "<group>"; };
+		1B6BE7F372734231B6A39829 /* SitesView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SitesView.swift; sourceTree = "<group>"; };
+		9FE8F77BC375454396299F9E /* SitesWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SitesWindowController.swift; sourceTree = "<group>"; };
 		070D50410D9BF40400EC2660 /* YLImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLImageView.h; sourceTree = "<group>"; };
 		070D50420D9BF40400EC2660 /* YLImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLImageView.m; sourceTree = "<group>"; };
 		071AE86F0F12012100FDD307 /* YLExifController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLExifController.h; sourceTree = "<group>"; };
@@ -144,12 +152,9 @@
 		85ABEB800C966FEF008227D6 /* YLController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = YLController.mm; sourceTree = "<group>"; };
 		85AE9DA60CB1597A0045317F /* reload.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = reload.pdf; sourceTree = "<group>"; };
 		85AE9DAD0CB15D220045317F /* bookmark.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = bookmark.pdf; sourceTree = "<group>"; };
-		85AF012212912A3300728C12 /* DBPrefsWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DBPrefsWindowController.h; sourceTree = "<group>"; };
-		85AF012312912A3300728C12 /* DBPrefsWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DBPrefsWindowController.m; sourceTree = "<group>"; };
 		85AF012512912A8C00728C12 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = Code/main.m; sourceTree = "<group>"; };
 		85AF012612912A8C00728C12 /* Nally_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Nally_Prefix.pch; path = Code/Nally_Prefix.pch; sourceTree = "<group>"; };
 		85AF012A12912AD000728C12 /* nally.public.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = nally.public.pem; path = Deploy/nally.public.pem; sourceTree = SOURCE_ROOT; };
-		85B0176112913B30004F06E4 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Resources/English.lproj/Preferences.xib; sourceTree = "<group>"; };
 		85B0176D12913CA5004F06E4 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Resources/English.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		85B0177112913CF3004F06E4 /* PSMTabBarControl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PSMTabBarControl.framework; path = Dependencies/PSMTabBarControl.framework; sourceTree = "<group>"; };
 		85B247E60CEA1B840090046C /* DragonBall.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = DragonBall.icns; sourceTree = "<group>"; };
@@ -201,6 +206,11 @@
 		080E96DDFE201D6D7F000001 /* Code */ = {
 			isa = PBXGroup;
 			children = (
+				7F5FFE76102B4FF89F7D4501 /* PreferencesView.swift */,
+				EFB0ABA97A66411D956D72E1 /* PreferencesWindowController.swift */,
+				949F3018955547859CEC2E24 /* SitesManager.swift */,
+				1B6BE7F372734231B6A39829 /* SitesView.swift */,
+				9FE8F77BC375454396299F9E /* SitesWindowController.swift */,
 				07B370670D6840600035E87D /* YLImagePreviewer.h */,
 				07B370680D6840600035E87D /* YLImagePreviewer.m */,
 				85ED53BA0D0934DC003296D4 /* Constant & Utilities */,
@@ -296,7 +306,6 @@
 				8D1107310486CEB800E47090 /* Info.plist */,
 				85A0E73B0D06B72900ACA26F /* Localizable.strings */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
-				85B0176012913B30004F06E4 /* Preferences.xib */,
 				85B0176C12913CA5004F06E4 /* MainMenu.xib */,
 			);
 			path = Resources;
@@ -338,8 +347,6 @@
 			isa = PBXGroup;
 			children = (
 				8DCEE142182CDF24008A9259 /* SSKeychain */,
-				85AF012212912A3300728C12 /* DBPrefsWindowController.h */,
-				85AF012312912A3300728C12 /* DBPrefsWindowController.m */,
 			);
 			path = Dependencies;
 			sourceTree = "<group>";
@@ -509,7 +516,6 @@
 				079E9BB00F08B9480089C9E2 /* HUDSave.tiff in Resources */,
 				079E9BB10F08B9480089C9E2 /* HUDSaveActive.tiff in Resources */,
 				85AF012B12912AD000728C12 /* nally.public.pem in Resources */,
-				85B0176212913B30004F06E4 /* Preferences.xib in Resources */,
 				85B0176E12913CA5004F06E4 /* MainMenu.xib in Resources */,
 				8DCEE149182CDF24008A9259 /* SSKeychain.strings in Resources */,
 			);
@@ -529,7 +535,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Extract English strings (use this to check if you added new strings to your nibs)\n\n\n\nfor LANG in zh_TW zh_CN; do\n  for NIB in MainMenu Preferences; do\n    LPROJ_DIR=${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/${LANG}.lproj\n    ibtool --export-strings-file Resources/English.lproj/${NIB}.English.strings Resources/English.lproj/${NIB}.xib\n    ibtool --import-strings-file Resources/${LANG}.lproj/${NIB}.${LANG}.strings Resources/English.lproj/${NIB}.xib --write ${LPROJ_DIR}/${NIB}.full.xib\n    ibtool --compile ${LPROJ_DIR}/${NIB}.nib ${LPROJ_DIR}/${NIB}.full.xib\n    rm -rf ${LPROJ_DIR}/${NIB}.full.xib\n  done\ndone\n\n# Remove .svn\nfind ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Resources -type d -name \".svn\" | xargs rm -rf\n\n# Remove .DS_Store\nfind ${BUILT_PRODUCTS_DIR}/Nally.app -name \".DS_Store\" -delete\n\n# Remove Headers\nfind ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Frameworks -name \"Headers\" | xargs rm -rf\n";
+			shellScript = "# Extract English strings (use this to check if you added new strings to your nibs)\n\n\n\nfor LANG in zh_TW zh_CN; do\n  for NIB in MainMenu; do\n    LPROJ_DIR=${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/${LANG}.lproj\n    ibtool --export-strings-file Resources/English.lproj/${NIB}.English.strings Resources/English.lproj/${NIB}.xib\n    ibtool --import-strings-file Resources/${LANG}.lproj/${NIB}.${LANG}.strings Resources/English.lproj/${NIB}.xib --write ${LPROJ_DIR}/${NIB}.full.xib\n    ibtool --compile ${LPROJ_DIR}/${NIB}.nib ${LPROJ_DIR}/${NIB}.full.xib\n    rm -rf ${LPROJ_DIR}/${NIB}.full.xib\n  done\ndone\n\n# Remove .svn\nfind ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Resources -type d -name \".svn\" | xargs rm -rf\n\n# Remove .DS_Store\nfind ${BUILT_PRODUCTS_DIR}/Nally.app -name \".DS_Store\" -delete\n\n# Remove Headers\nfind ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Frameworks -name \"Headers\" | xargs rm -rf\n";
 		};
 		8540FE4512AB8BA3000FE1D6 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -565,6 +571,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				02A5DAA01EFF4F8996F0203C /* PreferencesView.swift in Sources */,
+				70FBA727BB5A46478C054CFE /* PreferencesWindowController.swift in Sources */,
+				09CBA2F51FA74189BF59B060 /* SitesManager.swift in Sources */,
+				9F2EBBE877A24C96811D3B8C /* SitesView.swift in Sources */,
+				B4EA8B034E014F96BF4549BB /* SitesWindowController.swift in Sources */,
 				8570AD5F0A3923A900838442 /* YLView.mm in Sources */,
 				85145AA10AB40053009FC710 /* YLTelnet.mm in Sources */,
 				85145AAE0AB40192009FC710 /* YLTerminal.mm in Sources */,
@@ -586,7 +597,6 @@
 				07B73D900E5816FF00CC97D3 /* YLPluginLoader.m in Sources */,
 				079E9BCA0F08C4820089C9E2 /* YLFloatingView.m in Sources */,
 				071AE8710F12012100FDD307 /* YLExifController.m in Sources */,
-				85AF012412912A3300728C12 /* DBPrefsWindowController.m in Sources */,
 				85AF012712912A8C00728C12 /* main.m in Sources */,
 				8540FBC512AB3D00000FE1D6 /* YLTextSuite.m in Sources */,
 				8540FBF412AB5938000FE1D6 /* YLRun.m in Sources */,
@@ -616,15 +626,6 @@
 				71585BD70EFE06C200E04E4E /* zh_CN */,
 			);
 			name = Localizable.strings;
-			sourceTree = "<group>";
-		};
-		85B0176012913B30004F06E4 /* Preferences.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				85B0176112913B30004F06E4 /* English */,
-			);
-			name = Preferences.xib;
-			path = ..;
 			sourceTree = "<group>";
 		};
 		85B0176C12913CA5004F06E4 /* MainMenu.xib */ = {

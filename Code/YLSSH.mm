@@ -10,6 +10,7 @@
 
 #import "YLSSH.h"
 #import "YLLGlobalConfig.h"
+#import "Nally-Swift.h"
 #include <util.h>
 #include <sys/types.h>
 #include <sys/time.h>

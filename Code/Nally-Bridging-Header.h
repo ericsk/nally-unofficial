@@ -3,6 +3,7 @@
 
 #import "CommonType.h"
 #import <Cocoa/Cocoa.h>
+#import "YLController.h"
 
 @interface NSUserDefaults (myColorSupport)
 - (void)setMyColor:(NSColor *)aColor forKey:(NSString *)aKey;

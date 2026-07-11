@@ -8,6 +8,7 @@
 
 #import "YLTerminal.h"
 #import "YLLGlobalConfig.h"
+#import "Nally-Swift.h"
 #import "encoding.h"
 
 #define CURSOR_MOVETO(x, y) \

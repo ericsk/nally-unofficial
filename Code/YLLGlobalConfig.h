@@ -4,7 +4,6 @@
 #import <Cocoa/Cocoa.h>
 #import "CommonType.h"
 
-// Bridge Swift YLLGlobalConfig class to Objective-C files importing YLLGlobalConfig.h
-#import "Nally-Swift.h"
+@class YLLGlobalConfig;
 
 #endif /* YLLGlobalConfig_h */

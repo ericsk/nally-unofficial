@@ -16,7 +16,6 @@
 @class YLTerminal;
 
 @interface YLController : NSObject {
-    IBOutlet NSPanel *_sitesWindow;
     IBOutlet NSWindow *_mainWindow;
 	IBOutlet id _telnetView;
 	IBOutlet id _addressBar;
@@ -27,9 +26,7 @@
     IBOutlet NSMenuItem *_closeWindowMenuItem;
     IBOutlet NSMenuItem *_closeTabMenuItem;
     NSMutableArray *_sites;
-    IBOutlet NSArrayController *_sitesController;
     IBOutlet NSMenuItem *_sitesMenu;
-    IBOutlet NSTextField *_siteNameField;
     IBOutlet NSMenuItem *_showHiddenTextMenuItem;
     IBOutlet NSMenuItem *_encodingMenuItem;
     IBOutlet YLExifController *_exifController;
@@ -39,6 +36,7 @@
 
 - (void) updateSitesMenu;
 - (void) loadSites;
+- (void) saveSites;
 - (void) loadLastConnections;
 
 - (IBAction) setEncoding: (id)sender;

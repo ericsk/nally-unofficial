@@ -8,6 +8,7 @@
 
 #import "CommonType.h"
 #import "YLSite.h"
+#import "Nally-Swift.h"
 #import "YLImagePreviewer.h"
 #import "YLImageView.h"
 

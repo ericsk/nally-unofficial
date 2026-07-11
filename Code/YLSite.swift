@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 
+@Observable
 @objc(YLSite)
 @objcMembers
 public class YLSite: NSObject, NSCopying {

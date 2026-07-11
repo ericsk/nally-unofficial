@@ -10,7 +10,7 @@
 #import "YLTelnet.h"
 #import "YLTerminal.h"
 #import "YLLGlobalConfig.h"
-#import "DBPrefsWindowController.h"
+#import "Nally-Swift.h"
 
 #import "SSKeychain.h"
 @interface NSWindow (YLAdditions)
@@ -423,32 +423,13 @@
 
 - (IBAction) editSites: (id)sender
 {
-    [NSApp beginSheet: _sitesWindow modalForWindow: _mainWindow modalDelegate: nil didEndSelector: NULL contextInfo: nil];
-}
-
-- (IBAction) openSites: (id)sender
-{
-    NSArray *selectedSites = [_sitesController selectedObjects];
-    [self closeSites: sender];
-    
-    if ([selectedSites count] == 1) {
-        YLSite *s = [selectedSites objectAtIndex: 0];
-        [self newConnectionWithSite: [[s copy] autorelease]];
-    }
+    [SitesWindowController showOver: _mainWindow controller: self];
 }
 
 - (IBAction) openSiteMenu: (id)sender
 {
     YLSite *site = [sender representedObject];
     [self newConnectionWithSite: site];
-}
-
-- (IBAction) closeSites: (id)sender
-{
-    [_sitesWindow endEditingFor: nil];
-    [NSApp endSheet: _sitesWindow];
-    [_sitesWindow orderOut: self];
-    [self saveSites];
 }
 
 
@@ -480,7 +461,7 @@
 
 - (IBAction) openPreferencesWindow: (id)sender
 {
-    [[DBPrefsWindowController sharedPrefsWindowController] showWindow:nil];
+    [PreferencesWindowController show];
 }
 
 
