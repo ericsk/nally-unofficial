@@ -924,8 +924,8 @@ if (_cursorX <= _column - 1) { \
 {
     _cursorX = _cursorY = 0;
     attribute t;
-    t.f.fgColor = [YLLGlobalConfig sharedInstance]->_fgColorIndex;
-    t.f.bgColor = [YLLGlobalConfig sharedInstance]->_bgColorIndex;
+    t.f.fgColor = [YLLGlobalConfig sharedInstance].fgColorIndex;
+    t.f.bgColor = [YLLGlobalConfig sharedInstance].bgColorIndex;
     t.f.bold = 0;
     t.f.underline = 0;
     t.f.blink = 0;
@@ -945,8 +945,8 @@ if (_cursorX <= _column - 1) { \
         _csArg->clear();
     else
         _csArg = new std::deque<int>();
-    _fgColor = [YLLGlobalConfig sharedInstance]->_fgColorIndex;
-    _bgColor = [YLLGlobalConfig sharedInstance]->_bgColorIndex;
+    _fgColor = [YLLGlobalConfig sharedInstance].fgColorIndex;
+    _bgColor = [YLLGlobalConfig sharedInstance].bgColorIndex;
     _csTemp = 0;
     _state = TP_NORMAL;
     _bold = NO;

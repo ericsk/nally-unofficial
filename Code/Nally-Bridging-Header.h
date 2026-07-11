@@ -1,0 +1,12 @@
+#ifndef Nally_Bridging_Header_h
+#define Nally_Bridging_Header_h
+
+#import "CommonType.h"
+#import <Cocoa/Cocoa.h>
+
+@interface NSUserDefaults (myColorSupport)
+- (void)setMyColor:(NSColor *)aColor forKey:(NSString *)aKey;
+- (NSColor *)myColorForKey:(NSString *)aKey;
+@end
+
+#endif /* Nally_Bridging_Header_h */

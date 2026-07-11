@@ -304,8 +304,8 @@ BOOL isSpecialSymbol(unichar ch)
 	int bufferLength = [[pb dataForType: ANSIColorPBoardType] length] / sizeof(cell);
 		
 	attribute defaultANSI;
-	defaultANSI.f.bgColor = gConfig->_bgColorIndex;
-	defaultANSI.f.fgColor = gConfig->_fgColorIndex;
+	defaultANSI.f.bgColor = gConfig.bgColorIndex;
+	defaultANSI.f.fgColor = gConfig.fgColorIndex;
 	defaultANSI.f.blink = 0;
 	defaultANSI.f.bold = 0;
 	defaultANSI.f.underline = 0;
@@ -344,14 +344,14 @@ BOOL isSpecialSymbol(unichar ch)
 			(currentANSI.f.bold == 0 && previousANSI.f.bold == 1) ||
 			(currentANSI.f.underline == 0 && previousANSI.f.underline == 1) ||
 			(currentANSI.f.reverse == 0 && previousANSI.f.reverse == 1) ||
-            (currentANSI.f.bgColor ==  gConfig->_bgColorIndex && previousANSI.f.reverse != gConfig->_bgColorIndex) ) {
+            (currentANSI.f.bgColor ==  gConfig.bgColorIndex && previousANSI.f.reverse != gConfig.bgColorIndex) ) {
 			strcpy(tmp, "[0");
 			if (currentANSI.f.blink == 1) strcat(tmp, ";5");
 			if (currentANSI.f.bold == 1) strcat(tmp, ";1");
 			if (currentANSI.f.underline == 1) strcat(tmp, ";4");
 			if (currentANSI.f.reverse == 1) strcat(tmp, ";7");
-			if (currentANSI.f.fgColor != gConfig->_fgColorIndex) sprintf(tmp, "%s;%d", tmp, currentANSI.f.fgColor + 30);
-			if (currentANSI.f.bgColor != gConfig->_bgColorIndex) sprintf(tmp, "%s;%d", tmp, currentANSI.f.bgColor + 40);
+			if (currentANSI.f.fgColor != gConfig.fgColorIndex) sprintf(tmp, "%s;%d", tmp, currentANSI.f.fgColor + 30);
+			if (currentANSI.f.bgColor != gConfig.bgColorIndex) sprintf(tmp, "%s;%d", tmp, currentANSI.f.bgColor + 40);
 			strcat(tmp, "m");
             [writeBuffer appendData: escData];
 			[writeBuffer appendBytes: tmp length: strlen(tmp)];
@@ -896,7 +896,7 @@ BOOL isSpecialSymbol(unichar ch)
                     operation: NSCompositeCopy
                      fraction: 1.0];
 
-	[gConfig->_colorTable[0][gConfig->_bgColorIndex] set];
+	[[gConfig colorAtIndex:gConfig.bgColorIndex hilite:NO] set];
 	NSRectFill(NSMakeRect(0, (gRow - end - 1) * _fontHeight, gColumn * _fontWidth, _fontHeight));
 	[_backedImage unlockFocus];
     [pool release];
@@ -919,7 +919,7 @@ BOOL isSpecialSymbol(unichar ch)
                     operation: NSCompositeCopy
                      fraction: 1.0];
 	
-	[gConfig->_colorTable[0][gConfig->_bgColorIndex] set];
+	[[gConfig colorAtIndex:gConfig.bgColorIndex hilite:NO] set];
 	NSRectFill(NSMakeRect(0, (gRow - start - 1) * _fontHeight, gColumn * _fontWidth, _fontHeight));
 	[_backedImage unlockFocus];
     [pool release];
@@ -945,7 +945,7 @@ BOOL isSpecialSymbol(unichar ch)
         }
         CGContextSaveGState(myCGContext);
         CGContextSetShouldSmoothFonts(myCGContext, 
-                                      gConfig->_shouldSmoothFonts == YES ? true : false);
+                                      gConfig.shouldSmoothFonts == YES ? true : false);
         
         /* Draw String row by row */
         for (y = 0; y < gRow; y++) {
@@ -1011,7 +1011,7 @@ BOOL isSpecialSymbol(unichar ch)
             isDoubleByte[bufLength] = NO;
             textBuf[bufLength] = 0x0000 + (currRow[x].byte ?: ' ');
             bufIndex[bufLength] = x;
-            position[bufLength] = CGPointMake(x * _fontWidth + ePaddingLeft, (gRow - 1 - r) * _fontHeight + CTFontGetDescent(gConfig->_eCTFont) + ePaddingBottom);
+            position[bufLength] = CGPointMake(x * _fontWidth + ePaddingLeft, (gRow - 1 - r) * _fontHeight + CTFontGetDescent(gConfig.englishCTFont) + ePaddingBottom);
             isDoubleColor[bufLength] = NO;
             bufLength++;
 		} else if (db == 1) {
@@ -1027,7 +1027,7 @@ BOOL isSpecialSymbol(unichar ch)
 				isDoubleByte[bufLength] = YES;
 				textBuf[bufLength] = ch;
 				bufIndex[bufLength] = x;
-				position[bufLength] = CGPointMake((x - 1) * _fontWidth + cPaddingLeft, (gRow - 1 - r) * _fontHeight + CTFontGetDescent(gConfig->_cCTFont) + cPaddingBottom);
+				position[bufLength] = CGPointMake((x - 1) * _fontWidth + cPaddingLeft, (gRow - 1 - r) * _fontHeight + CTFontGetDescent(gConfig.chineseCTFont) + cPaddingBottom);
 				bufLength++;
 			}
             // FIXME: why?
@@ -1058,9 +1058,9 @@ BOOL isSpecialSymbol(unichar ch)
 		
 		CFDictionaryRef attr;
 		if (db) 
-			attr = gConfig->_cCTAttribute[fgBoldOfAttribute(lastAttr)][fgColorIndexOfAttribute(lastAttr)];
+			attr = [gConfig chineseAttributeWithHilite:fgBoldOfAttribute(lastAttr) index:fgColorIndexOfAttribute(lastAttr)];
 		else
-			attr = gConfig->_eCTAttribute[fgBoldOfAttribute(lastAttr)][fgColorIndexOfAttribute(lastAttr)];
+			attr = [gConfig englishAttributeWithHilite:fgBoldOfAttribute(lastAttr) index:fgColorIndexOfAttribute(lastAttr)];
 		CFAttributedStringSetAttributes(mutableAttributedString, CFRangeMake(location, length), attr, YES);
 	}
     
@@ -1107,7 +1107,7 @@ BOOL isSpecialSymbol(unichar ch)
         for (runGlyphIndex = 0; runGlyphIndex <= runGlyphCount; runGlyphIndex++) {
             int index = bufIndex[glyphOffset + runGlyphIndex];
             if (runGlyphIndex == runGlyphCount || 
-                (gConfig->_showHiddenText && isHiddenAttribute(currRow[index].attr) != hidden) ||
+                (gConfig.showHiddenText && isHiddenAttribute(currRow[index].attr) != hidden) ||
                 (isDoubleByte[runGlyphIndex + glyphOffset] && index != lastIndex + 2) ||
                 (!isDoubleByte[runGlyphIndex + glyphOffset] && index != lastIndex + 1) ||
                 (isDoubleByte[runGlyphIndex + glyphOffset] != lastDoubleByte)) {
@@ -1154,7 +1154,7 @@ BOOL isSpecialSymbol(unichar ch)
                 
                 CGContextRef tempContext = (CGContextRef)[[NSGraphicsContext currentContext] graphicsPort];
                 
-                CGContextSetShouldSmoothFonts(tempContext, gConfig->_shouldSmoothFonts == YES ? true : false);
+                CGContextSetShouldSmoothFonts(tempContext, gConfig.shouldSmoothFonts == YES ? true : false);
                 
                 NSColor *tempColor = [gConfig colorAtIndex: fgColor hilite: fgBoldOfAttribute(currRow[index].attr)];
                 CGContextSetFont(tempContext, cgFont);
@@ -1165,7 +1165,7 @@ BOOL isSpecialSymbol(unichar ch)
                                          [tempColor blueComponent], 
                                          1.0);
                 
-                CGContextShowGlyphsAtPoint(tempContext, cPaddingLeft, CTFontGetDescent(gConfig->_cCTFont) + cPaddingBottom, &glyph, 1);
+                CGContextShowGlyphsAtPoint(tempContext, cPaddingLeft, CTFontGetDescent(gConfig.chineseCTFont) + cPaddingBottom, &glyph, 1);
                 [gLeftImage unlockFocus];
                 [gLeftImage drawAtPoint: NSMakePoint(index * _fontWidth, (gRow - 1 - r) * _fontHeight) fromRect: rect operation: NSCompositeCopy fraction: 1.0];
             }

@@ -9,6 +9,23 @@
 #import "YLApplication.h"
 #import "YLController.h"
 
+@implementation NSUserDefaults (myColorSupport)
+
+- (void)setMyColor:(NSColor *)aColor forKey:(NSString *)aKey {
+    NSData *theData = [NSArchiver archivedDataWithRootObject:aColor];
+    [self setObject:theData forKey:aKey];
+}
+
+- (NSColor *)myColorForKey:(NSString *)aKey {
+    NSColor *theColor = nil;
+    NSData *theData = [self dataForKey:aKey];
+    if (theData != nil)
+        theColor = (NSColor *)[NSUnarchiver unarchiveObjectWithData:theData];
+    return theColor;
+}
+
+@end
+
 static NSString *gLeftString, *gRightString;
 
 @implementation YLApplication

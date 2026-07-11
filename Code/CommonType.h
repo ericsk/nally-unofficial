@@ -7,6 +7,8 @@
  *
  */
 
+#import <Foundation/Foundation.h>
+
 typedef union {
 	unsigned short v;
 	struct {
@@ -29,15 +31,15 @@ typedef struct {
 
 typedef enum {C0, INTERMEDIATE, ALPHABETIC, DELETE, C1, G1, SPECIAL, ERROR} ASCII_CODE;
 
-typedef enum YLEncoding {
+typedef NS_ENUM(unsigned short, YLEncoding) {
     YLBig5Encoding, 
     YLGBKEncoding
-} YLEncoding;
+};
 
-typedef enum YLANSIColorKey {
+typedef NS_ENUM(unsigned short, YLANSIColorKey) {
     YLCtrlUANSIColorKey, 
     YLEscEscEscANSIColorKey
-} YLANSIColorKey;
+};
 
 int isHiddenAttribute(attribute a) ;
 int isBlinkCell(cell c) ;
