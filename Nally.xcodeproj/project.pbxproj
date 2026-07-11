@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		721248E781FC4EE79CF48A58 /* YLExifController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED64F2661F241159554F130 /* YLExifController.swift */; };
 		5690CA5C46CE454E8E12248B /* NallyToolbarDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FEB60EFE5F4AC69374F3C4 /* NallyToolbarDelegate.swift */; };
 		E2665651C95547EDB97441CA /* NallyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74C4D5473A24D27B9222EB3 /* NallyApp.swift */; };
 		E6239651091B4E9C86AA895A /* NallyAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */; };
@@ -17,7 +18,6 @@
 		9F2EBBE877A24C96811D3B8C /* SitesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B6BE7F372734231B6A39829 /* SitesView.swift */; };
 		B4EA8B034E014F96BF4549BB /* SitesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FE8F77BC375454396299F9E /* SitesWindowController.swift */; };
 		070D50430D9BF40400EC2660 /* YLImageView.m in Sources */ = {isa = PBXBuildFile; fileRef = 070D50420D9BF40400EC2660 /* YLImageView.m */; };
-		071AE8710F12012100FDD307 /* YLExifController.m in Sources */ = {isa = PBXBuildFile; fileRef = 071AE8700F12012100FDD307 /* YLExifController.m */; };
 		079E9BB00F08B9480089C9E2 /* HUDSave.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */; };
 		079E9BB10F08B9480089C9E2 /* HUDSaveActive.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */; };
 		079E9BCA0F08C4820089C9E2 /* YLFloatingView.m in Sources */ = {isa = PBXBuildFile; fileRef = 079E9BC90F08C4820089C9E2 /* YLFloatingView.m */; };
@@ -88,6 +88,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		DED64F2661F241159554F130 /* YLExifController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLExifController.swift; sourceTree = "<group>"; };
 		70FEB60EFE5F4AC69374F3C4 /* NallyToolbarDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyToolbarDelegate.swift; sourceTree = "<group>"; };
 		A74C4D5473A24D27B9222EB3 /* NallyApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyApp.swift; sourceTree = "<group>"; };
 		49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyAppDelegate.swift; sourceTree = "<group>"; };
@@ -99,8 +100,6 @@
 		9FE8F77BC375454396299F9E /* SitesWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SitesWindowController.swift; sourceTree = "<group>"; };
 		070D50410D9BF40400EC2660 /* YLImageView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLImageView.h; sourceTree = "<group>"; };
 		070D50420D9BF40400EC2660 /* YLImageView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLImageView.m; sourceTree = "<group>"; };
-		071AE86F0F12012100FDD307 /* YLExifController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLExifController.h; sourceTree = "<group>"; };
-		071AE8700F12012100FDD307 /* YLExifController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLExifController.m; sourceTree = "<group>"; };
 		079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = HUDSave.tiff; sourceTree = "<group>"; };
 		079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = HUDSaveActive.tiff; sourceTree = "<group>"; };
 		079E9BC80F08C4820089C9E2 /* YLFloatingView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLFloatingView.h; sourceTree = "<group>"; };
@@ -212,6 +211,7 @@
 		080E96DDFE201D6D7F000001 /* Code */ = {
 			isa = PBXGroup;
 			children = (
+				DED64F2661F241159554F130 /* YLExifController.swift */,
 				70FEB60EFE5F4AC69374F3C4 /* NallyToolbarDelegate.swift */,
 				A74C4D5473A24D27B9222EB3 /* NallyApp.swift */,
 				49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */,
@@ -238,8 +238,6 @@
 				07B73D8E0E5816FF00CC97D3 /* YLPluginLoader.h */,
 				07B73D8F0E5816FF00CC97D3 /* YLPluginLoader.m */,
 				07B73D9D0E581E2C00CC97D3 /* YLBundle.h */,
-				071AE86F0F12012100FDD307 /* YLExifController.h */,
-				071AE8700F12012100FDD307 /* YLExifController.m */,
 			);
 			path = Code;
 			sourceTree = "<group>";
@@ -580,6 +578,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				721248E781FC4EE79CF48A58 /* YLExifController.swift in Sources */,
 				5690CA5C46CE454E8E12248B /* NallyToolbarDelegate.swift in Sources */,
 				E2665651C95547EDB97441CA /* NallyApp.swift in Sources */,
 				E6239651091B4E9C86AA895A /* NallyAppDelegate.swift in Sources */,
@@ -609,7 +608,6 @@
 				070D50430D9BF40400EC2660 /* YLImageView.m in Sources */,
 				07B73D900E5816FF00CC97D3 /* YLPluginLoader.m in Sources */,
 				079E9BCA0F08C4820089C9E2 /* YLFloatingView.m in Sources */,
-				071AE8710F12012100FDD307 /* YLExifController.m in Sources */,
 				8540FBC512AB3D00000FE1D6 /* YLTextSuite.m in Sources */,
 				8540FBF412AB5938000FE1D6 /* YLRun.m in Sources */,
 				8540FBF712AB5AF4000FE1D6 /* YLLine.m in Sources */,

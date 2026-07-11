@@ -8,6 +8,7 @@
 
 #import "YLImageView.h"
 #import "YLController.h"
+#import "Nally-Swift.h"
 
 enum {
     kFloatRectWidth  = 100,

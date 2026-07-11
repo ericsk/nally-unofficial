@@ -11,9 +11,9 @@
 #import <PSMTabBarControl/PSMTabBarControl.h>
 #import "YLSite.h"
 #import "YLPluginLoader.h"
-#import "YLExifController.h"
 
 @class YLTerminal;
+@class YLExifController;
 
 @interface YLController : NSObject {
     IBOutlet NSWindow *_mainWindow;
