@@ -4,21 +4,24 @@ struct NallyCommands: Commands {
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
             Button("New Tab") {
-                if let controller = NSApp.delegate as? YLController {
+                if let controller = NallyAppDelegate.shared.controller {
                     controller.newTab(nil)
                 }
             }
             .keyboardShortcut("t", modifiers: .command)
             
             Button("Open Location...") {
-                if let controller = NSApp.delegate as? YLController {
+                NSLog("[Nally] Open Location... menu item clicked")
+                if let controller = NallyAppDelegate.shared.controller {
                     controller.openLocation(nil)
+                } else {
+                    NSLog("[Nally] FAILED to get controller in menu action!")
                 }
             }
             .keyboardShortcut("l", modifiers: .command)
             
             Button("Close Tab") {
-                if let controller = NSApp.delegate as? YLController {
+                if let controller = NallyAppDelegate.shared.controller {
                     controller.closeTab(nil)
                 }
             }
@@ -55,7 +58,7 @@ struct NallyCommands: Commands {
         
         CommandMenu("Sites") {
             Button("Edit Sites...") {
-                if let controller = NSApp.delegate as? YLController {
+                if let controller = NallyAppDelegate.shared.controller {
                     controller.editSites(nil)
                 }
             }
@@ -73,14 +76,14 @@ struct NallyCommands: Commands {
         
         CommandGroup(after: .windowList) {
             Button("Select Next Tab") {
-                if let controller = NSApp.delegate as? YLController {
+                if let controller = NallyAppDelegate.shared.controller {
                     controller.selectNextTab(nil)
                 }
             }
             .keyboardShortcut("}", modifiers: .command)
             
             Button("Select Previous Tab") {
-                if let controller = NSApp.delegate as? YLController {
+                if let controller = NallyAppDelegate.shared.controller {
                     controller.selectPrevTab(nil)
                 }
             }
@@ -119,7 +122,7 @@ struct EncodingPicker: View {
     }
     
     private func updateCurrentEncoding() {
-        if let controller = NSApp.delegate as? YLController,
+        if let controller = NallyAppDelegate.shared.controller,
            let telnetView = controller.telnetView() as? YLView,
            let terminal = telnetView.swiftFrontMostTerminal() as? NSObject {
             self.currentEncoding = terminal.encoding()
@@ -127,7 +130,7 @@ struct EncodingPicker: View {
     }
     
     private func setEncoding(_ tag: Int) {
-        if let controller = NSApp.delegate as? YLController {
+        if let controller = NallyAppDelegate.shared.controller {
             let item = NSMenuItem()
             item.tag = tag
             controller.setEncoding(item)
@@ -140,7 +143,7 @@ struct DynamicSitesMenu: View {
     
     var body: some View {
         Group {
-            if let controller = NSApp.delegate as? YLController,
+            if let controller = NallyAppDelegate.shared.controller,
                let sites = controller.sites() as? [YLSite] {
                 ForEach(sites, id: \.self) { site in
                     Button(site.name) {

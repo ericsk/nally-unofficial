@@ -4,18 +4,41 @@ private var toolbarDelegateKey: UInt8 = 0
 
 @objc(NallyAppDelegate)
 public class NallyAppDelegate: NSObject, NSApplicationDelegate {
-    public func applicationDidFinishLaunching(_ notification: Notification) {
-        var objects: NSArray? = []
-        Bundle.main.loadNibNamed("MainMenu", owner: NSApp, topLevelObjects: &objects)
-        
-        setupToolbar()
+    public static var shared: NallyAppDelegate!
+    
+    public override init() {
+        super.init()
+        NallyAppDelegate.shared = self
     }
     
-    private func setupToolbar() {
-        guard let controller = NSApp.delegate as? YLController,
-              let window = controller.value(forKey: "_mainWindow") as? NSWindow else {
+    @objc public var controller: YLController?
+    
+    public func applicationDidFinishLaunching(_ notification: Notification) {
+        NSLog("[Nally] Loading MainMenu.xib...")
+        var objects: NSArray? = []
+        let success = Bundle.main.loadNibNamed("MainMenu", owner: NSApp, topLevelObjects: &objects)
+        NSLog("[Nally] loadNibNamed success: \(success), objects count: \(objects?.count ?? 0)")
+        
+        guard let objects = objects else { return }
+        
+        if let controller = objects.first(where: { $0 is YLController }) as? YLController {
+            NSLog("[Nally] Found YLController instance!")
+            self.controller = controller
+            setupToolbar(for: controller)
+            NSApp.activate(ignoringOtherApps: true)
+            NSLog("[Nally] NSApp.activate called")
+        } else {
+            NSLog("[Nally] FAILED to find YLController in Nib objects!")
+        }
+    }
+    
+    private func setupToolbar(for controller: YLController) {
+        NSLog("[Nally] setupToolbar started")
+        guard let window = controller.value(forKey: "_mainWindow") as? NSWindow else {
+            NSLog("[Nally] FAILED to get _mainWindow from YLController!")
             return
         }
+        NSLog("[Nally] Found _mainWindow! title: \(window.title)")
         
         let toolbarDelegate = NallyToolbarDelegate(controller: controller)
         objc_setAssociatedObject(window, &toolbarDelegateKey, toolbarDelegate, .OBJC_ASSOCIATION_RETAIN_NONATOMIC)
@@ -27,5 +50,7 @@ public class NallyAppDelegate: NSObject, NSApplicationDelegate {
         toolbar.displayMode = .iconOnly
         
         window.toolbar = toolbar
+        window.makeKeyAndOrderFront(nil)
+        NSLog("[Nally] makeKeyAndOrderFront called on window")
     }
 }

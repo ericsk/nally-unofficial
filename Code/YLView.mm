@@ -680,8 +680,11 @@ BOOL isSpecialSymbol(unichar ch)
             default:
                 break;
         }
-        if (buf[2] != 0x00)
+        if (buf[2] != 0x00) {
             [[self frontMostConnection] sendBytes:buf length:4];
+        } else {
+            [super keyDown:e];
+        }
         return;
     }
 	

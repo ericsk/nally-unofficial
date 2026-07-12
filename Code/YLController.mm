@@ -382,8 +382,13 @@
 - (IBAction) openLocation: (id)sender
 {
     [_mainWindow makeKeyAndOrderFront: self];
-	[_telnetView resignFirstResponder];
-	[_addressBar becomeFirstResponder];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        BOOL success = [[_addressBar window] makeFirstResponder: _addressBar];
+        if (success && [_addressBar respondsToSelector:@selector(selectText:)]) {
+            [_addressBar selectText:self];
+        }
+        NSLog(@"[Nally] async makeFirstResponder success: %d, _addressBar: %@", success, _addressBar);
+    });
 }
 
 
