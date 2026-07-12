@@ -7,8 +7,10 @@ struct SitesView: View {
     var onConnect: (YLSite) -> Void
     var onClose: () -> Void
     
+    @State private var columnVisibility = NavigationSplitViewVisibility.all
+    
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             VStack(spacing: 0) {
                 List(selection: $selectedSite) {
                     ForEach(manager.sites, id: \.self) { site in
