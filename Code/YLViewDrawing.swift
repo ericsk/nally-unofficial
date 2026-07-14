@@ -77,7 +77,7 @@ extension YLView {
         let cPaddingLeft = config.chineseFontPaddingLeft
         let cPaddingBottom = config.chineseFontPaddingBottom
         
-        let termEncoding = ds.encoding()
+        let termEncoding = ds.encoding
         ds.updateDoubleByteState(forRow: r)
         
         guard let currRow = ds.cells(ofRow: r) else { return }

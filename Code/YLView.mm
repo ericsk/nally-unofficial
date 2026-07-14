@@ -7,7 +7,6 @@
 //
 
 #import "YLView.h"
-#import "YLTerminal.h"
 #import "YLSite.h"
 #import "YLLGlobalConfig.h"
 #import "Nally-Swift.h"
@@ -758,11 +757,11 @@ BOOL isSpecialSymbol(unichar ch)
 	[self updateBackedImage];
     YLTerminal *ds = [self frontMostTerminal];
 
-	if (ds && (_x != ds->_cursorX || _y != ds->_cursorY)) {
+	if (ds && (_x != [ds cursorColumn] || _y != [ds cursorRow])) {
 		[self setNeedsDisplayInRect: NSMakeRect(_x * _fontWidth, (gRow - 1 - _y) * _fontHeight, _fontWidth, _fontHeight)];
-		[self setNeedsDisplayInRect: NSMakeRect(ds->_cursorX * _fontWidth, (gRow - 1 - ds->_cursorY) * _fontHeight, _fontWidth, _fontHeight)];
-		_x = ds->_cursorX;
-		_y = ds->_cursorY;
+		[self setNeedsDisplayInRect: NSMakeRect([ds cursorColumn] * _fontWidth, (gRow - 1 - [ds cursorRow]) * _fontHeight, _fontWidth, _fontHeight)];
+		_x = [ds cursorColumn];
+		_y = [ds cursorRow];
 	}
     [pool release];
 }
@@ -808,10 +807,10 @@ BOOL isSpecialSymbol(unichar ch)
 		/* Draw the cursor */
 		[[NSColor whiteColor] set];
 		[NSBezierPath setDefaultLineWidth: 2.0];
-		[NSBezierPath strokeLineFromPoint: NSMakePoint(ds->_cursorX * _fontWidth, (gRow - 1 - ds->_cursorY) * _fontHeight + 1) 
-								  toPoint: NSMakePoint((ds->_cursorX + 1) * _fontWidth, (gRow - 1 - ds->_cursorY) * _fontHeight + 1) ];
+		[NSBezierPath strokeLineFromPoint: NSMakePoint([ds cursorColumn] * _fontWidth, (gRow - 1 - [ds cursorRow]) * _fontHeight + 1) 
+								  toPoint: NSMakePoint(([ds cursorColumn] + 1) * _fontWidth, (gRow - 1 - [ds cursorRow]) * _fontHeight + 1) ];
         [NSBezierPath setDefaultLineWidth: 1.0];
-        _x = ds->_cursorX, _y = ds->_cursorY;
+        _x = [ds cursorColumn], _y = [ds cursorRow];
 
         /* Draw the selection */
         if (_selectionLength != 0) 
@@ -1198,18 +1197,18 @@ BOOL isSpecialSymbol(unichar ch)
 	[_textField setSelectedRange: selRange];
 	[_textField setMarkedRange: _markedRange];
 
-	NSPoint o = NSMakePoint(ds->_cursorX * _fontWidth, (gRow - 1 - ds->_cursorY) * _fontHeight + 5.0);
+	NSPoint o = NSMakePoint([ds cursorColumn] * _fontWidth, (gRow - 1 - [ds cursorRow]) * _fontHeight + 5.0);
 	CGFloat dy;
 	if (o.x + [_textField frame].size.width > gColumn * _fontWidth) 
 		o.x = gColumn * _fontWidth - [_textField frame].size.width;
 	if (o.y + [_textField frame].size.height > gRow * _fontHeight) {
-		o.y = (gRow - ds->_cursorY) * _fontHeight - 5.0 - [_textField frame].size.height;
+		o.y = (gRow - [ds cursorRow]) * _fontHeight - 5.0 - [_textField frame].size.height;
 		dy = o.y + [_textField frame].size.height;
 	} else {
 		dy = o.y;
 	}
 	[_textField setFrameOrigin: o];
-	[_textField setDestination: [_textField convertPoint: NSMakePoint((ds->_cursorX + 0.5) * _fontWidth, dy)
+	[_textField setDestination: [_textField convertPoint: NSMakePoint(([ds cursorColumn] + 0.5) * _fontWidth, dy)
 												fromView: self]];
 	[_textField setHidden: NO];
 }

@@ -77,6 +77,7 @@ extern "C" {
 - (BOOL) hasBlinkCell;
 
 - (void) insertText: (id)aString withDelay: (int)microsecond;
+- (void) tick;
 
 - (void) loadUrlOfString: (NSString *)url;
 @end

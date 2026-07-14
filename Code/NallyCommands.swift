@@ -124,8 +124,8 @@ struct EncodingPicker: View {
     private func updateCurrentEncoding() {
         if let controller = NallyAppDelegate.shared.controller,
            let telnetView = controller.telnetView() as? YLView,
-           let terminal = telnetView.swiftFrontMostTerminal() as? NSObject {
-            self.currentEncoding = terminal.encoding()
+           let terminal = telnetView.swiftFrontMostTerminal() as? YLTerminal {
+            self.currentEncoding = terminal.encoding
         }
     }
     
