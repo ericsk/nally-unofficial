@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		9E9A1D34D2954474A29D890D /* MainContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07865512AF61492F98C0DAC8 /* MainContentView.swift */; };
+		6ABBEE0D97F646E68759628D /* TabBarRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AE3BC084E14F4EB69EE672 /* TabBarRepresentable.swift */; };
 		E5A600F899A24A63B0AE81C0 /* TerminalViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE1511238C74DF7885CF963 /* TerminalViewRepresentable.swift */; };
 		E32052940E5B45E095566BDA /* YLMarkedTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A609D0540DF044A0AF45A8F0 /* YLMarkedTextView.swift */; };
 		721248E781FC4EE79CF48A58 /* YLExifController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED64F2661F241159554F130 /* YLExifController.swift */; };
@@ -89,6 +91,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		07865512AF61492F98C0DAC8 /* MainContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainContentView.swift; sourceTree = "<group>"; };
+		29AE3BC084E14F4EB69EE672 /* TabBarRepresentable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabBarRepresentable.swift; sourceTree = "<group>"; };
 		9EE1511238C74DF7885CF963 /* TerminalViewRepresentable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalViewRepresentable.swift; sourceTree = "<group>"; };
 		A609D0540DF044A0AF45A8F0 /* YLMarkedTextView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLMarkedTextView.swift; sourceTree = "<group>"; };
 		DED64F2661F241159554F130 /* YLExifController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLExifController.swift; sourceTree = "<group>"; };
@@ -212,6 +216,8 @@
 		080E96DDFE201D6D7F000001 /* Code */ = {
 			isa = PBXGroup;
 			children = (
+				07865512AF61492F98C0DAC8 /* MainContentView.swift */,
+				29AE3BC084E14F4EB69EE672 /* TabBarRepresentable.swift */,
 				9EE1511238C74DF7885CF963 /* TerminalViewRepresentable.swift */,
 				A609D0540DF044A0AF45A8F0 /* YLMarkedTextView.swift */,
 				DED64F2661F241159554F130 /* YLExifController.swift */,
@@ -579,6 +585,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9E9A1D34D2954474A29D890D /* MainContentView.swift in Sources */,
+				6ABBEE0D97F646E68759628D /* TabBarRepresentable.swift in Sources */,
 				E5A600F899A24A63B0AE81C0 /* TerminalViewRepresentable.swift in Sources */,
 				E32052940E5B45E095566BDA /* YLMarkedTextView.swift in Sources */,
 				721248E781FC4EE79CF48A58 /* YLExifController.swift in Sources */,

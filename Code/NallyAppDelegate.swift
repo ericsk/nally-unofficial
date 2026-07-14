@@ -1,4 +1,5 @@
 import Cocoa
+import SwiftUI
 
 private var toolbarDelegateKey: UInt8 = 0
 
@@ -50,6 +51,10 @@ public class NallyAppDelegate: NSObject, NSApplicationDelegate {
         toolbar.displayMode = .iconOnly
         
         window.toolbar = toolbar
+        
+        let mainContentView = MainContentView(controller: controller)
+        window.contentView = NSHostingView(rootView: mainContentView)
+        
         window.makeKeyAndOrderFront(nil)
         NSLog("[Nally] makeKeyAndOrderFront called on window")
     }
