@@ -17,6 +17,11 @@
    - **文字與圖形渲染現代化**：將原本 `YLView.mm` 內雙位元組中文字、ANSI 色彩、框線及特殊區塊字元（如三角塊等）的底層 CoreGraphics/CoreText 渲染引擎完全用 Swift (`YLViewDrawing.swift`) 重寫，大幅提升 GPU 加速的效能。
    - **輸入法 Marked Text 現代化**：以 Swift 重寫 IME 文字輸入視圖 `YLMarkedTextView`，提供穩定的 Marked Text 繪製與輸入法高度相容。
    - **圖片預覽 HUD 面板現代化**：用 `URLSession` + SwiftUI HUD 視窗重新實作 `YLImagePreviewer` 與 `ImagePreviewerView`，去除過時的 `NSURLConnection` 與手動 EXIF 剖析。
+5. **底層核心邏輯、網路協定與完全 Swift 化 (Phase 5 - 規劃中目標)**
+   - **終端機模擬引擎現代化**：將核心解析器 `YLTerminal` 改寫為 Swift，重新實作 VT100 / ANSI 跳脫序列（Escape Sequence）剖析與字元緩衝區管理。
+   - **網路通訊與 Socket 核心重構**：使用 Swift Network 框架 (`NWConnection`) 取代舊型 Socket 與 Stream，重寫 `YLConnection`、`YLTelnet` 與 `YLSSH` 連線引擎。
+   - **主控制器與外掛載入器現代化**：將主要 App 邏輯控制器 `YLController` 及外掛模組載入器 `YLPluginLoader` 移轉至 Swift。
+   - **完全去 Objective-C 化**：清除 Bridging Header，移除所有殘留的 `.m`/`.mm` 檔案，讓專案成為純粹的 Swift Target。
 
 ---
 
@@ -33,6 +38,12 @@
 - [x] **分頁外觀修正**：修正分頁列背景黑條問題，使其與視窗工具列 (Toolbar) 外觀自然融合。
 - [x] **預覽視窗修正**：修正 Swift 初始器與 Objective-C 選擇器（Selector）名稱不相符導致點按圖片無預覽之問題。
 - [x] **啟動空分頁行為最佳化**：取消啟動時強制建立空分頁，維持無分頁啟動，並在連線後自動新增分頁。
+
+### 📌 待做目標清單 (Phase 5 - 未來規劃)
+- [ ] **重構 `YLTerminal` 模擬引擎**：將終端機文字暫存與 ANSI 分析重寫為 Swift。
+- [ ] **重構 `YLConnection` 網路層**：以 Swift Network (`NWConnection`) 重寫 Telnet 與 SSH。
+- [ ] **重構 `YLController` 主控制器**：以 Swift 重新實作選單事件與分頁動作管理。
+- [ ] **重構 `YLPluginLoader` 外掛管理**：以 Swift 重寫 Plugin 機制。
 
 ---
 
