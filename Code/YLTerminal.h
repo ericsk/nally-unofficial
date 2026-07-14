@@ -7,7 +7,9 @@
 //
 
 #import <Cocoa/Cocoa.h>
+#ifdef __cplusplus
 #import <deque>
+#endif
 #import "CommonType.h"
 #import "YLView.h"
 #import "YLConnection.h"
@@ -168,8 +170,13 @@
     
 // YLEncoding _encoding;
     
+#ifdef __cplusplus
 	std::deque<unsigned char> *_csBuf;
 	std::deque<int> *_csArg;
+#else
+	void *_csBuf;
+	void *_csArg;
+#endif
 	unsigned int _csTemp;
 	YLView *_delegate;
     

@@ -47,3 +47,7 @@ int bgColorIndexOfAttribute(attribute a) ;
 int fgColorIndexOfAttribute(attribute a) ;
 int bgBoldOfAttribute(attribute a) ;
 int fgBoldOfAttribute(attribute a) ;
+
+static inline int underlineOfAttribute(attribute a) { return a.f.underline; }
+static inline int doubleByteOfAttribute(attribute a) { return a.f.doubleByte; }
+static inline int urlOfAttribute(attribute a) { return a.f.url; }

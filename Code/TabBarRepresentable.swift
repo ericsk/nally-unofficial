@@ -11,25 +11,28 @@ public struct TabBarRepresentable: NSViewRepresentable {
     }
     
     public func makeNSView(context: Context) -> PSMTabBarControl {
-        let tabBar = PSMTabBarControl(frame: .zero)
-        tabBar.setDelegate(controller as? PSMTabBarControlDelegate)
-        
-        if let controller = controller {
-            tabBar.setTabView(controller.telnetView() as? NSTabView)
-            tabBar.setCanCloseOnlyTab(true)
-            
-            // Set the outlet in YLController so it can access it (e.g. for resizing/refreshes)
-            controller.setValue(tabBar, forKey: "_tab")
+        // Return the pre-created PSMTabBarControl from controller._tab
+        if let tabBar = controller?.value(forKey: "_tab") as? PSMTabBarControl {
+            return tabBar
         }
         
+        // Fallback: create a new one (should not happen in normal flow)
+        let tabBar = PSMTabBarControl(frame: NSRect(x: 0, y: 0, width: 800, height: 22))
+        tabBar.setHideForSingleTab(false)
+        tabBar.setCanCloseOnlyTab(true)
+        if let controller = controller {
+            tabBar.setDelegate(controller)
+            if let telnetView = controller.telnetView() as? NSTabView {
+                tabBar.setTabView(telnetView)
+                tabBar.setPartnerView(telnetView)
+                telnetView.delegate = (tabBar as AnyObject) as? NSTabViewDelegate
+            }
+            controller.setValue(tabBar, forKey: "_tab")
+        }
         return tabBar
     }
     
     public func updateNSView(_ nsView: PSMTabBarControl, context: Context) {
-        if let controller = controller, let telnetView = controller.telnetView() as? NSTabView {
-            if nsView.tabView() != telnetView {
-                nsView.setTabView(telnetView)
-            }
-        }
+        // No dynamic updates needed; the tab bar is driven by NSTabView delegate callbacks
     }
 }

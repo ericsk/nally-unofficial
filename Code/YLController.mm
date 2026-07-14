@@ -78,6 +78,42 @@
     [NSTimer scheduledTimerWithTimeInterval: 1 target: self selector: @selector(updateBlinkTicker:) userInfo: nil repeats: YES];    
 }
 
+- (void) setupAfterSwiftUI
+{
+    // _telnetView and _tab were nil during awakeFromNib because they were removed from the XIB.
+    // Now that SwiftUI has created them, re-run the critical initialization.
+
+    // Wire PSMTabBarControl: set it as the NSTabView's delegate so it receives tab change notifications.
+    // The delegate chain is: YLView(NSTabView).delegate -> PSMTabBarControl -> YLController
+    [_telnetView setDelegate: _tab];
+    [_tab setPartnerView: _telnetView];
+    [_tab setCanCloseOnlyTab: YES];
+
+    // Re-configure the view
+    [_telnetView configure];
+
+    // Recalculate window frame
+    {
+        YLLGlobalConfig *config = [YLLGlobalConfig sharedInstance];
+        NSRect r = [_mainWindow frame];
+        CGFloat topLeftCorner = r.origin.y + r.size.height;
+        CGFloat shift = NSHeight([_mainWindow frame]) - NSHeight([[_mainWindow contentView] frame]) + 22;
+        r.size.width = [config cellWidth] * [config column];
+        r.size.height = [config cellHeight] * [config row] + shift;
+        r.origin.y = topLeftCorner - r.size.height;
+        [_mainWindow setFrame: r display: YES animate: NO];
+    }
+
+    // Restore last connections or create an empty tab
+    if ([[NSUserDefaults standardUserDefaults] boolForKey: @"RestoreConnection"]) {
+        [self loadLastConnections];
+    }
+    
+    if ([_telnetView numberOfTabViewItems] == 0) {
+        [self newTab: nil];
+    }
+}
+
 - (void) dealloc
 {
     [_pluginLoader release];

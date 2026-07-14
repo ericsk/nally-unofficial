@@ -4,7 +4,9 @@
 #import "CommonType.h"
 #import <Cocoa/Cocoa.h>
 #import "YLController.h"
+#import "YLTerminal.h"
 #import "YLView.h"
+#import "encoding.h"
 @interface NSObject (YLTerminalSwiftBridge)
 - (YLEncoding)encoding;
 @end

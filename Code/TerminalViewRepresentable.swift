@@ -11,6 +11,10 @@ public struct TerminalViewRepresentable: NSViewRepresentable {
     }
     
     public func makeNSView(context: Context) -> YLView {
+        if let view = controller?.telnetView() as? YLView {
+            return view
+        }
+        
         let view = YLView(frame: .zero)
         
         // 1. Create and associate YLMarkedTextView programmatically

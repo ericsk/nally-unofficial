@@ -68,6 +68,8 @@ extern "C" {
 - (void) drawStringForRow: (int)r context: (CGContextRef)myCGContext;
 - (void) updateBackgroundForRow: (int)r from: (int)start to: (int)end;
 
+@property (readonly) CGFloat fontWidth;
+@property (readonly) CGFloat fontHeight;
 @property int x;
 @property int y;
 

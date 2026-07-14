@@ -15,7 +15,7 @@
 @class YLTerminal;
 @class YLExifController;
 
-@interface YLController : NSObject {
+@interface YLController : NSObject <PSMTabBarControlDelegate> {
     IBOutlet NSWindow *_mainWindow;
 	IBOutlet id _telnetView;
 	IBOutlet id _addressBar;
@@ -56,6 +56,7 @@
 - (IBAction) showHiddenText: (id)sender;
 - (IBAction) openPreferencesWindow: (id)sender;
 - (void) newConnectionWithSite: (YLSite *)site;
+- (void) setupAfterSwiftUI;
 - (void)setAddressBar:(id)addressBar;
 - (void)setDetectDoubleByteButton:(id)detectDoubleByteButton;
 
