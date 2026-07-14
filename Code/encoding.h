@@ -18,3 +18,5 @@ extern void init_table();
 
 static inline unichar lookupBig5(unsigned short index) { return B2U[index]; }
 static inline unichar lookupGBK(unsigned short index) { return G2U[index]; }
+static inline unichar lookupU2B(unsigned short val) { return U2B[val]; }
+static inline unichar lookupU2G(unsigned short val) { return U2G[val]; }

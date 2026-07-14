@@ -16,12 +16,7 @@
 @interface YLView (SwiftBridge)
 - (id)swiftFrontMostTerminal;
 @end
-
-@interface NSUserDefaults (myColorSupport)
-- (void)setMyColor:(NSColor *)aColor forKey:(NSString *)aKey;
-- (NSColor *)myColorForKey:(NSString *)aKey;
-@end
-
+// Category removed as it is now implemented in Swift extension
 @interface NSWindow (YLPrivateShadow)
 - (void)_setContentHasShadow:(BOOL)hasShadow;
 @end
