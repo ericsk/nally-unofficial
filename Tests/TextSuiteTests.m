@@ -7,9 +7,8 @@
 //
 
 #import "TextSuiteTests.h"
-#import "YLTextSuite.h"
+#import "Nally-Swift.h"
 #import "encoding.h"
-#import "YLApplicationKitAddition.h"
 
 @implementation TextSuiteTests
 - (void) setUp

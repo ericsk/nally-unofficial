@@ -59,8 +59,6 @@
 	</dict>
 	<key>NSHumanReadableCopyright</key>
 	<string>© 2010, yllan.org</string>
-	<key>NSMainNibFile</key>
-	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>YLApplication</string>
 </dict>
