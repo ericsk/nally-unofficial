@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		ADD0001E4E44D1B43ED8F9C8 /* CommonType.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD0002313DA553B87270B44 /* CommonType.swift */; };
 		DAE10B3BED2F493E815B0126 /* ImagePreviewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E568408F064A5CA6079187 /* ImagePreviewerView.swift */; };
 		CF077DECCA3246279792BA50 /* YLImagePreviewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF3B7EEA050E444887AB782D /* YLImagePreviewer.swift */; };
 		C54B4B3F2B60495FAD09F58A /* YLViewDrawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E066B4D1A8E4543BDC3006C /* YLViewDrawing.swift */; };
@@ -91,6 +92,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		ADD0002313DA553B87270B44 /* CommonType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommonType.swift; sourceTree = "<group>"; };
 		90E568408F064A5CA6079187 /* ImagePreviewerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImagePreviewerView.swift; sourceTree = "<group>"; };
 		DF3B7EEA050E444887AB782D /* YLImagePreviewer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLImagePreviewer.swift; sourceTree = "<group>"; };
 		3E066B4D1A8E4543BDC3006C /* YLViewDrawing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLViewDrawing.swift; sourceTree = "<group>"; };
@@ -213,6 +215,7 @@
 		080E96DDFE201D6D7F000001 /* Code */ = {
 			isa = PBXGroup;
 			children = (
+				ADD0002313DA553B87270B44 /* CommonType.swift */,
 				90E568408F064A5CA6079187 /* ImagePreviewerView.swift */,
 				DF3B7EEA050E444887AB782D /* YLImagePreviewer.swift */,
 				3E066B4D1A8E4543BDC3006C /* YLViewDrawing.swift */,
@@ -579,6 +582,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ADD0001E4E44D1B43ED8F9C8 /* CommonType.swift in Sources */,
 				DAE10B3BED2F493E815B0126 /* ImagePreviewerView.swift in Sources */,
 				CF077DECCA3246279792BA50 /* YLImagePreviewer.swift in Sources */,
 				C54B4B3F2B60495FAD09F58A /* YLViewDrawing.swift in Sources */,
