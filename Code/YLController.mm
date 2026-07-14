@@ -104,13 +104,9 @@
         [_mainWindow setFrame: r display: YES animate: NO];
     }
 
-    // Restore last connections or create an empty tab
+    // Restore last connections
     if ([[NSUserDefaults standardUserDefaults] boolForKey: @"RestoreConnection"]) {
         [self loadLastConnections];
-    }
-    
-    if ([_telnetView numberOfTabViewItems] == 0) {
-        [self newTab: nil];
     }
 }
 

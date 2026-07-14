@@ -18,7 +18,7 @@ public struct MainContentView: View {
                 .frame(height: 22)
             TerminalViewRepresentable(controller: controller)
                 .frame(width: width, height: height)
+                .background(Color.black)
         }
-        .background(Color.black)
     }
 }

@@ -13,7 +13,6 @@
 #import "YLLGlobalConfig.h"
 #import "Nally-Swift.h"
 #import "YLContextualMenuManager.h"
-#import "YLImagePreviewer.h"
 #import "YLTextSuite.h"
 
 #include <deque>
