@@ -13,7 +13,7 @@
 #import "CommonType.h"
 #import "YLView.h"
 #import "YLConnection.h"
-#import "YLPluginLoader.h"
+@class YLPluginLoader;
 
 // single character control command
 #define ASC_NUL     0x00 // NULL

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		ADD00038F1129BC18B451762 /* YLPluginLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD000494100586642EA350B /* YLPluginLoader.swift */; };
 		ADD0001E4E44D1B43ED8F9C8 /* CommonType.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD0002313DA553B87270B44 /* CommonType.swift */; };
 		DAE10B3BED2F493E815B0126 /* ImagePreviewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E568408F064A5CA6079187 /* ImagePreviewerView.swift */; };
 		CF077DECCA3246279792BA50 /* YLImagePreviewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF3B7EEA050E444887AB782D /* YLImagePreviewer.swift */; };
@@ -27,7 +28,6 @@
 		B4EA8B034E014F96BF4549BB /* SitesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FE8F77BC375454396299F9E /* SitesWindowController.swift */; };
 		079E9BB00F08B9480089C9E2 /* HUDSave.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */; };
 		079E9BB10F08B9480089C9E2 /* HUDSaveActive.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */; };
-		07B73D900E5816FF00CC97D3 /* YLPluginLoader.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B73D8F0E5816FF00CC97D3 /* YLPluginLoader.m */; };
 		850711AB0CA7A347005F4734 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 850711AA0CA7A347005F4734 /* ApplicationServices.framework */; };
 		85137B330D02192800833909 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 85137B320D02192800833909 /* Credits.rtf */; };
 		85145AA10AB40053009FC710 /* YLTelnet.mm in Sources */ = {isa = PBXBuildFile; fileRef = 85145AA00AB40053009FC710 /* YLTelnet.mm */; };
@@ -92,6 +92,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		ADD000494100586642EA350B /* YLPluginLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLPluginLoader.swift; sourceTree = "<group>"; };
 		ADD0002313DA553B87270B44 /* CommonType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommonType.swift; sourceTree = "<group>"; };
 		90E568408F064A5CA6079187 /* ImagePreviewerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImagePreviewerView.swift; sourceTree = "<group>"; };
 		DF3B7EEA050E444887AB782D /* YLImagePreviewer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLImagePreviewer.swift; sourceTree = "<group>"; };
@@ -113,8 +114,6 @@
 		079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = HUDSave.tiff; sourceTree = "<group>"; };
 		079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = HUDSaveActive.tiff; sourceTree = "<group>"; };
 
-		07B73D8E0E5816FF00CC97D3 /* YLPluginLoader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLPluginLoader.h; sourceTree = "<group>"; };
-		07B73D8F0E5816FF00CC97D3 /* YLPluginLoader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YLPluginLoader.m; sourceTree = "<group>"; };
 		07B73D9D0E581E2C00CC97D3 /* YLBundle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLBundle.h; sourceTree = "<group>"; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
@@ -215,6 +214,7 @@
 		080E96DDFE201D6D7F000001 /* Code */ = {
 			isa = PBXGroup;
 			children = (
+				ADD000494100586642EA350B /* YLPluginLoader.swift */,
 				ADD0002313DA553B87270B44 /* CommonType.swift */,
 				90E568408F064A5CA6079187 /* ImagePreviewerView.swift */,
 				DF3B7EEA050E444887AB782D /* YLImagePreviewer.swift */,
@@ -245,8 +245,6 @@
 				85D9B9D20C97DF7B006C5E0F /* Views */,
 				85ED53B90D09349C003296D4 /* Abstract Interface */,
 				85F701440C895C8600E27A1E /* Model */,
-				07B73D8E0E5816FF00CC97D3 /* YLPluginLoader.h */,
-				07B73D8F0E5816FF00CC97D3 /* YLPluginLoader.m */,
 				07B73D9D0E581E2C00CC97D3 /* YLBundle.h */,
 			);
 			path = Code;
@@ -582,6 +580,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ADD00038F1129BC18B451762 /* YLPluginLoader.swift in Sources */,
 				ADD0001E4E44D1B43ED8F9C8 /* CommonType.swift in Sources */,
 				DAE10B3BED2F493E815B0126 /* ImagePreviewerView.swift in Sources */,
 				CF077DECCA3246279792BA50 /* YLImagePreviewer.swift in Sources */,
@@ -615,7 +614,6 @@
 				85ED52290D0920E6003296D4 /* CommonType.m in Sources */,
 				85ED53220D092B5F003296D4 /* YLConnection.mm in Sources */,
 				85CE53390D0D687800F55B7B /* YLSSH.mm in Sources */,
-				07B73D900E5816FF00CC97D3 /* YLPluginLoader.m in Sources */,
 				8540FBC512AB3D00000FE1D6 /* YLTextSuite.m in Sources */,
 				8540FBF412AB5938000FE1D6 /* YLRun.m in Sources */,
 				8540FBF712AB5AF4000FE1D6 /* YLLine.m in Sources */,

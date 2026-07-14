@@ -10,7 +10,7 @@
 #import "YLView.h"
 #import <PSMTabBarControl/PSMTabBarControl.h>
 #import "YLSite.h"
-#import "YLPluginLoader.h"
+@class YLPluginLoader;
 
 @class YLTerminal;
 @class YLExifController;
