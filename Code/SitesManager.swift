@@ -24,13 +24,13 @@ public class SitesManager: NSObject {
         let newSite = YLSite()
         newSite.name = "New Site"
         newSite.address = "bbs.example.com"
-        controller.insert(newSite, inSitesAt: controller.countOfSites())
+        controller.insertObject(newSite, inSitesAtIndex: controller.countOfSites())
         reload()
     }
     
     public func removeSite(at index: Int) {
         guard let controller = controller else { return }
-        controller.removeObjectFromSites(at: UInt32(index))
+        controller.removeObjectFromSitesAtIndex(index)
         reload()
     }
     

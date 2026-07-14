@@ -7,7 +7,7 @@
 //
 
 #import "YLContextualMenuManager.h"
-#import "YLController.h"
+#import "Nally-Swift.h"
 
 static YLContextualMenuManager *gSharedInstance;
 

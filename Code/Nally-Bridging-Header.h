@@ -3,9 +3,10 @@
 
 #import "CommonType.h"
 #import <Cocoa/Cocoa.h>
-#import "YLController.h"
 #import "YLView.h"
 #import "encoding.h"
+#import <PSMTabBarControl/PSMTabBarControl.h>
+#import "SSKeychain.h"
 #include <util.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -19,6 +20,10 @@
 @interface NSUserDefaults (myColorSupport)
 - (void)setMyColor:(NSColor *)aColor forKey:(NSString *)aKey;
 - (NSColor *)myColorForKey:(NSString *)aKey;
+@end
+
+@interface NSWindow (YLPrivateShadow)
+- (void)_setContentHasShadow:(BOOL)hasShadow;
 @end
 
 #endif /* Nally_Bridging_Header_h */

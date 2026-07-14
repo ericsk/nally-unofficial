@@ -13,12 +13,8 @@ public struct MainContentView: View {
     }
     
     public var body: some View {
-        VStack(spacing: 0) {
-            TabBarRepresentable(controller: controller)
-                .frame(height: 22)
-            TerminalViewRepresentable(controller: controller)
-                .frame(width: width, height: height)
-                .background(Color.black)
-        }
+        TerminalViewRepresentable(controller: controller)
+            .frame(width: width, height: height)
+            .background(Color.black)
     }
 }

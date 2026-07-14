@@ -7,7 +7,7 @@
 //
 
 #import "YLApplication.h"
-#import "YLController.h"
+#import "Nally-Swift.h"
 
 @implementation NSUserDefaults (myColorSupport)
 
