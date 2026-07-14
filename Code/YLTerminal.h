@@ -12,7 +12,7 @@
 #endif
 #import "CommonType.h"
 #import "YLView.h"
-#import "YLConnection.h"
+@class YLConnection;
 @class YLPluginLoader;
 
 // single character control command

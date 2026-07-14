@@ -7,6 +7,12 @@
 #import "YLTerminal.h"
 #import "YLView.h"
 #import "encoding.h"
+#include <util.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <termios.h>
 @interface NSObject (YLTerminalSwiftBridge)
 - (YLEncoding)encoding;
 @end

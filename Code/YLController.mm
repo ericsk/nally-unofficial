@@ -7,7 +7,6 @@
 //
 
 #import "YLController.h"
-#import "YLTelnet.h"
 #import "YLTerminal.h"
 #import "YLLGlobalConfig.h"
 #import "Nally-Swift.h"
