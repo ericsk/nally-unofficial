@@ -7,20 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		07B73DE50E5829B000CC97D3 /* HelloNally.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B73DE40E5829B000CC97D3 /* HelloNally.m */; };
+		07B73DE50E5829B000CC97D3 /* HelloNally.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73DE40E5829B000CC97D3 /* HelloNally.swift */; };
 		07B73DF60E582BD300CC97D3 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 07B73DF50E582BD300CC97D3 /* Localizable.strings */; };
-		07B73E0A0E582C6200CC97D3 /* YLBundle.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B73E090E582C6200CC97D3 /* YLBundle.m */; };
+		07B73E0A0E582C6200CC97D3 /* YLBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73E090E582C6200CC97D3 /* YLBundle.swift */; };
 		07B73E1B0E582DA200CC97D3 /* HelloNally.icns in Resources */ = {isa = PBXBuildFile; fileRef = 07B73E1A0E582DA200CC97D3 /* HelloNally.icns */; };
 		8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		07B73DE00E58299A00CC97D3 /* YLBundle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = YLBundle.h; path = ../../YLBundle.h; sourceTree = SOURCE_ROOT; };
-		07B73DE30E5829B000CC97D3 /* HelloNally.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HelloNally.h; sourceTree = "<group>"; };
-		07B73DE40E5829B000CC97D3 /* HelloNally.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HelloNally.m; sourceTree = "<group>"; };
+		07B73DE40E5829B000CC97D3 /* HelloNally.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HelloNally.swift; sourceTree = "<group>"; };
 		07B73DF30E582B9E00CC97D3 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
-		07B73E090E582C6200CC97D3 /* YLBundle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = YLBundle.m; path = ../../YLBundle.m; sourceTree = SOURCE_ROOT; };
+		07B73E090E582C6200CC97D3 /* YLBundle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = YLBundle.swift; path = ../../Code/YLBundle.swift; sourceTree = SOURCE_ROOT; };
 		07B73E1A0E582DA200CC97D3 /* HelloNally.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = HelloNally.icns; sourceTree = "<group>"; };
 		089C1672FE841209C02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		089C167EFE841241C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -79,10 +77,8 @@
 		08FB77AFFE84173DC02AAC07 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				07B73E090E582C6200CC97D3 /* YLBundle.m */,
-				07B73DE00E58299A00CC97D3 /* YLBundle.h */,
-				07B73DE30E5829B000CC97D3 /* HelloNally.h */,
-				07B73DE40E5829B000CC97D3 /* HelloNally.m */,
+				07B73E090E582C6200CC97D3 /* YLBundle.swift */,
+				07B73DE40E5829B000CC97D3 /* HelloNally.swift */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -177,8 +173,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				07B73DE50E5829B000CC97D3 /* HelloNally.m in Sources */,
-				07B73E0A0E582C6200CC97D3 /* YLBundle.m in Sources */,
+				07B73DE50E5829B000CC97D3 /* HelloNally.swift in Sources */,
+				07B73E0A0E582C6200CC97D3 /* YLBundle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -207,6 +203,7 @@
 		1DEB913B08733D840010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				SWIFT_VERSION = 5.0;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -225,6 +222,7 @@
 		1DEB913C08733D840010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				SWIFT_VERSION = 5.0;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
@@ -240,26 +238,30 @@
 		1DEB913F08733D840010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				SWIFT_VERSION = 5.0;
+				ARCHS = "$(ARCHS_STANDARD)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
-				SDKROOT = macosx10.5;
+				SDKROOT = macosx;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 			};
 			name = Debug;
 		};
 		1DEB914008733D840010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				SWIFT_VERSION = 5.0;
+				ARCHS = "$(ARCHS_STANDARD)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
-				SDKROOT = macosx10.5;
+				SDKROOT = macosx;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 			};
 			name = Release;
 		};

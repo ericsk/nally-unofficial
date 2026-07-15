@@ -8,8 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		071EDE3F0EADB3A1007BE5AE /* ImagePreviewer.bundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8D5B49B6048680CD000E48DA /* ImagePreviewer.bundle */; };
-		077CD77F0E5956E300A7A9B3 /* ImagePreviewer.m in Sources */ = {isa = PBXBuildFile; fileRef = 077CD77E0E5956E300A7A9B3 /* ImagePreviewer.m */; };
-		077CD7830E59570200A7A9B3 /* YLBundle.m in Sources */ = {isa = PBXBuildFile; fileRef = 077CD7820E59570200A7A9B3 /* YLBundle.m */; };
+		077CD77F0E5956E300A7A9B3 /* ImagePreviewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 077CD77E0E5956E300A7A9B3 /* ImagePreviewer.swift */; };
+		077CD7830E59570200A7A9B3 /* YLBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 077CD7820E59570200A7A9B3 /* YLBundle.swift */; };
 		077CD7870E59575E00A7A9B3 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 077CD7860E59575E00A7A9B3 /* Localizable.strings */; };
 		8D5B49B0048680CD000E48DA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C167DFE841241C02AAC07 /* InfoPlist.strings */; };
 		8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */; };
@@ -29,10 +29,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		077CD77D0E5956E300A7A9B3 /* ImagePreviewer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ImagePreviewer.h; sourceTree = "<group>"; };
-		077CD77E0E5956E300A7A9B3 /* ImagePreviewer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ImagePreviewer.m; sourceTree = "<group>"; };
-		077CD7810E59570200A7A9B3 /* YLBundle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = YLBundle.h; path = ../../YLBundle.h; sourceTree = SOURCE_ROOT; };
-		077CD7820E59570200A7A9B3 /* YLBundle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = YLBundle.m; path = ../../YLBundle.m; sourceTree = SOURCE_ROOT; };
+		077CD77E0E5956E300A7A9B3 /* ImagePreviewer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImagePreviewer.swift; sourceTree = "<group>"; };
+		077CD7820E59570200A7A9B3 /* YLBundle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = YLBundle.swift; path = ../../Code/YLBundle.swift; sourceTree = SOURCE_ROOT; };
 		077CD7840E59573100A7A9B3 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
 		089C1672FE841209C02AAC07 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		089C167EFE841241C02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -90,10 +88,8 @@
 		08FB77AFFE84173DC02AAC07 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				077CD7810E59570200A7A9B3 /* YLBundle.h */,
-				077CD7820E59570200A7A9B3 /* YLBundle.m */,
-				077CD77D0E5956E300A7A9B3 /* ImagePreviewer.h */,
-				077CD77E0E5956E300A7A9B3 /* ImagePreviewer.m */,
+				077CD7820E59570200A7A9B3 /* YLBundle.swift */,
+				077CD77E0E5956E300A7A9B3 /* ImagePreviewer.swift */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -188,8 +184,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				077CD77F0E5956E300A7A9B3 /* ImagePreviewer.m in Sources */,
-				077CD7830E59570200A7A9B3 /* YLBundle.m in Sources */,
+				077CD77F0E5956E300A7A9B3 /* ImagePreviewer.swift in Sources */,
+				077CD7830E59570200A7A9B3 /* YLBundle.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -218,6 +214,7 @@
 		1DEB913B08733D840010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				SWIFT_VERSION = 5.0;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COPY_PHASE_STRIP = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -236,6 +233,7 @@
 		1DEB913C08733D840010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				SWIFT_VERSION = 5.0;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
@@ -251,26 +249,30 @@
 		1DEB913F08733D840010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				SWIFT_VERSION = 5.0;
+				ARCHS = "$(ARCHS_STANDARD)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
-				SDKROOT = macosx10.5;
+				SDKROOT = macosx;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 			};
 			name = Debug;
 		};
 		1DEB914008733D840010E9CD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				SWIFT_VERSION = 5.0;
+				ARCHS = "$(ARCHS_STANDARD)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				PREBINDING = NO;
-				SDKROOT = macosx10.5;
+				SDKROOT = macosx;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 			};
 			name = Release;
 		};

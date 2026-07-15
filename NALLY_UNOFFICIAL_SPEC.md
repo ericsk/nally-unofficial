@@ -102,7 +102,7 @@ xcodebuild -scheme Nally -configuration Release SYMROOT=build build
 ## 5. 未來持續開發目標 (Roadmap & Todo List)
 
 - [x] **終端機主視圖完全 Swift 化**：將 [YLView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLView.swift) 完全改寫為純 Swift 實作，達成 100% Swift 核心專案目標。
-- [ ] **外掛（Plugins）模組重構**：現有內建外掛如 [HelloNally.m](file:///Users/ericsk/Projects/Nally-Unofficial/Plugins/HelloNally/HelloNally.m) 及 [ImagePreviewer.m](file:///Users/ericsk/Projects/Nally-Unofficial/Plugins/ImagePreviewer/ImagePreviewer.m) 仍以舊版 Objective-C 實作，未來需轉換為 Swift 並設計更現代的外掛擴充介面。
+- [x] **外掛（Plugins）模組重構**：將內建外掛 [HelloNally.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Plugins/HelloNally/HelloNally.swift) 及 [ImagePreviewer.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Plugins/ImagePreviewer/ImagePreviewer.swift) 完全改寫為 Swift，並整合 `YLBundle.swift` 作為統一的 Swift 外掛基類。
 - [ ] **現代網路協議優化**：評估將 `YLTelnet` 的底層通訊架構更進一步整合至 Apple Network 框架中的 `NWConnection`，以獲得更好的網路狀態追蹤與系統效能。
 
 ---

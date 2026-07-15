@@ -51,8 +51,7 @@
 - [x] **終端機主視窗繪圖元件 (`YLView.mm` / `YLView.h`) 轉換**：將 `YLView` 完全改寫為純 Swift 實作，消除 C++ / Objective-C++ 混編，達成 100% 純 Swift 核心的目標。
 
 ### 📌 未來優化目標 (Future Scope)
-- [ ] **外掛 (Plugins) 的 Swift 改寫**：重寫 `HelloNally` 和 `ImagePreviewer` 的外掛程式。
-
+- [x] **外掛 (Plugins) 的 Swift 改寫**：重寫 `HelloNally` 和 `ImagePreviewer` 的外掛程式。
 
 ---
 

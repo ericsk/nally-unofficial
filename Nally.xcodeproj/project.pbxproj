@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		07B73D9E0E581E2C00CC97D3 /* YLBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73D9D0E581E2C00CC97D3 /* YLBundle.swift */; };
 		ADD0046E8995C996CE02389F /* YLRun.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD0047EEFFBB9E5B3F1DF71 /* YLRun.swift */; };
 		ADD0048CF5E8AE89F17C5A32 /* YLLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD0049A21A8637E143E8D94 /* YLLine.swift */; };
 		ADD004ABAD1D6351B7F2739E /* YLTextSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD004B64F3082459AC49E15 /* YLTextSuite.swift */; };
@@ -118,7 +119,7 @@
 		079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = HUDSave.tiff; sourceTree = "<group>"; };
 		079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = HUDSaveActive.tiff; sourceTree = "<group>"; };
 
-		07B73D9D0E581E2C00CC97D3 /* YLBundle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLBundle.h; sourceTree = "<group>"; };
+		07B73D9D0E581E2C00CC97D3 /* YLBundle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLBundle.swift; sourceTree = "<group>"; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
@@ -228,7 +229,7 @@
 				85D9B9D20C97DF7B006C5E0F /* Views */,
 				85ED53B90D09349C003296D4 /* Abstract Interface */,
 				85F701440C895C8600E27A1E /* Model */,
-				07B73D9D0E581E2C00CC97D3 /* YLBundle.h */,
+				07B73D9D0E581E2C00CC97D3 /* YLBundle.swift */,
 			);
 			path = Code;
 			sourceTree = "<group>";
@@ -540,6 +541,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				07B73D9E0E581E2C00CC97D3 /* YLBundle.swift in Sources */,
 				ADD0046E8995C996CE02389F /* YLRun.swift in Sources */,
 				ADD0048CF5E8AE89F17C5A32 /* YLLine.swift in Sources */,
 				ADD004ABAD1D6351B7F2739E /* YLTextSuite.swift in Sources */,
