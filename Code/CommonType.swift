@@ -8,6 +8,104 @@
 
 import Foundation
 
+@objc(YLEncoding)
+public enum YLEncoding: UInt16 {
+    case YLBig5Encoding = 0
+    case YLGBKEncoding = 1
+}
+
+@objc(YLANSIColorKey)
+public enum YLANSIColorKey: UInt16 {
+    case YLCtrlUANSIColorKey = 0
+    case YLEscEscEscANSIColorKey = 1
+}
+
+public enum ASCII_CODE: Int {
+    case C0, INTERMEDIATE, ALPHABETIC, DELETE, C1, G1, SPECIAL, ERROR
+}
+
+// Simulating C union/struct attribute
+public struct attribute: Equatable, Hashable {
+    public var v: UInt16 = 0
+    
+    public init(v: UInt16 = 0) {
+        self.v = v
+    }
+    
+    public struct Fields {
+        private var val: UInt16
+        
+        init(val: UInt16) {
+            self.val = val
+        }
+        
+        public var rawValue: UInt16 {
+            return val
+        }
+        
+        public var fgColor: UInt32 {
+            get { UInt32(val & 0xF) }
+            set { val = (val & ~0xF) | UInt16(newValue & 0xF) }
+        }
+        
+        public var bgColor: UInt32 {
+            get { UInt32((val >> 4) & 0xF) }
+            set { val = (val & ~(0xF << 4)) | (UInt16(newValue & 0xF) << 4) }
+        }
+        
+        public var bold: UInt32 {
+            get { UInt32((val >> 8) & 1) }
+            set { val = (val & ~(1 << 8)) | (UInt16(newValue & 1) << 8) }
+        }
+        
+        public var underline: UInt32 {
+            get { UInt32((val >> 9) & 1) }
+            set { val = (val & ~(1 << 9)) | (UInt16(newValue & 1) << 9) }
+        }
+        
+        public var blink: UInt32 {
+            get { UInt32((val >> 10) & 1) }
+            set { val = (val & ~(1 << 10)) | (UInt16(newValue & 1) << 10) }
+        }
+        
+        public var reverse: UInt32 {
+            get { UInt32((val >> 11) & 1) }
+            set { val = (val & ~(1 << 11)) | (UInt16(newValue & 1) << 11) }
+        }
+        
+        public var doubleByte: UInt32 {
+            get { UInt32((val >> 12) & 3) }
+            set { val = (val & ~(3 << 12)) | (UInt16(newValue & 3) << 12) }
+        }
+        
+        public var url: UInt32 {
+            get { UInt32((val >> 14) & 1) }
+            set { val = (val & ~(1 << 14)) | (UInt16(newValue & 1) << 14) }
+        }
+        
+        public var nothing: UInt32 {
+            get { UInt32((val >> 15) & 1) }
+            set { val = (val & ~(1 << 15)) | (UInt16(newValue & 1) << 15) }
+        }
+    }
+    
+    public var f: Fields {
+        get { Fields(val: v) }
+        set { v = newValue.rawValue }
+    }
+}
+
+// Simulating C struct cell
+public struct cell: Equatable, Hashable {
+    public var byte: UInt8 = 0
+    public var attr: attribute = attribute(v: 0)
+    
+    public init(byte: UInt8 = 0, attr: attribute = attribute(v: 0)) {
+        self.byte = byte
+        self.attr = attr
+    }
+}
+
 public struct TerminalAttribute: Equatable, Hashable {
     public var fgColor: Int      // 0..15
     public var bgColor: Int      // 0..15
@@ -105,7 +203,7 @@ extension attribute {
     }
 
     public init(_ terminalAttribute: TerminalAttribute) {
-        self.init(v: terminalAttribute.rawValue)
+        self.v = terminalAttribute.rawValue
     }
 }
 
@@ -115,6 +213,53 @@ extension cell {
     }
 
     public init(_ terminalCell: TerminalCell) {
-        self.init(byte: terminalCell.byte, attr: attribute(terminalCell.attr))
+        self.byte = terminalCell.byte
+        self.attr = attribute(terminalCell.attr)
     }
+}
+
+// MARK: - Global Helper Functions
+public func isHiddenAttribute(_ a: attribute) -> Int32 {
+    let bold = a.f.bold
+    let fg = a.f.fgColor
+    let bg = a.f.bgColor
+    return (bold == 0 && (fg == bg || (fg == 0 && bg == 9))) ? 1 : 0
+}
+
+public func isBlinkCell(_ c: cell) -> Int32 {
+    let blink = c.attr.f.blink
+    let doubleByte = c.attr.f.doubleByte
+    let byte = c.byte
+    if blink != 0 && (doubleByte != 0 || (byte != 32 && byte != 0)) {
+        return 1
+    }
+    return 0
+}
+
+public func bgColorIndexOfAttribute(_ a: attribute) -> Int32 {
+    return a.f.reverse != 0 ? Int32(a.f.fgColor) : Int32(a.f.bgColor)
+}
+
+public func fgColorIndexOfAttribute(_ a: attribute) -> Int32 {
+    return a.f.reverse != 0 ? Int32(a.f.bgColor) : Int32(a.f.fgColor)
+}
+
+public func bgBoldOfAttribute(_ a: attribute) -> Int32 {
+    return (a.f.reverse != 0 && a.f.bold != 0) ? 1 : 0
+}
+
+public func fgBoldOfAttribute(_ a: attribute) -> Int32 {
+    return (a.f.reverse == 0 && a.f.bold != 0) ? 1 : 0
+}
+
+public func underlineOfAttribute(_ a: attribute) -> Int32 {
+    return Int32(a.f.underline)
+}
+
+public func doubleByteOfAttribute(_ a: attribute) -> Int32 {
+    return Int32(a.f.doubleByte)
+}
+
+public func urlOfAttribute(_ a: attribute) -> Int32 {
+    return Int32(a.f.url)
 }

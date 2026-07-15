@@ -1,7 +1,6 @@
 #ifndef Nally_Bridging_Header_h
 #define Nally_Bridging_Header_h
 
-#import "CommonType.h"
 #import <Cocoa/Cocoa.h>
 #import <PSMTabBarControl/PSMTabBarControl.h>
 #include <util.h>

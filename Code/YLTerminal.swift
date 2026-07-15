@@ -335,7 +335,6 @@ public class YLTerminal: NSObject {
     }
     
     // MARK: - Access Data
-    @objc(attrAtRow:column:)
     public func attrAtRow(_ r: Int32, column c: Int32) -> attribute {
         return grid[Int(r)][Int(c)].attr
     }
@@ -383,7 +382,6 @@ public class YLTerminal: NSObject {
         return String(utf16CodeUnits: textBuf, count: textBuf.count)
     }
     
-    @objc(cellsOfRow:)
     public func cells(ofRow r: Int32) -> UnsafeMutablePointer<cell>? {
         return grid[Int(r)]
     }

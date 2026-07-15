@@ -397,7 +397,6 @@ extension YLView {
         self.setNeedsDisplay(rowRect)
     }
     
-    @objc(drawSpecialSymbol:forRow:column:leftAttribute:rightAttribute:)
     public func drawSpecialSymbol(_ ch: unichar, forRow r: Int32, column c: Int32, leftAttribute attr1: attribute, rightAttribute attr2: attribute) {
         let config = YLLGlobalConfig.sharedInstance()
         let gRow = Int(config.row)
