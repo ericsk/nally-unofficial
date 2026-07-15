@@ -10,18 +10,18 @@
   - [x] 建立 [YLKeychain.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLKeychain.swift)，直接呼叫 Apple `Security` 框架（`SecItemCopyMatching`、`SecItemAdd` 等 API）管理金鑰庫。
   - [x] 修改 [YLController.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLController.swift) 中對 `SSKeychain` 的引用。
   - [x] 自專案中移除 `SSKeychain.h/m` 與 `SSKeychainQuery.h/m` 檔案與編譯目標。
-- [ ] **階段 2：改寫字元編碼對照表 (Encoding Tables)**
-  - [ ] 編寫轉換腳本，將 [encoding.m](file:///Users/ericsk/Projects/Nally-Unofficial/Code/encoding.m) 內巨大的對照陣列（`B2U`、`G2U`、`U2B`、`U2G`）匯出為 `.bin` 二進位資源檔。
-  - [ ] 將產生的二進位資料檔加入 Xcode 專案 Resources。
-  - [ ] 建立 `YLEncodingTable.swift` 實作非同步/延遲載入並讀取上述 binary table。
-  - [ ] 自專案中移除 [encoding.h](file:///Users/ericsk/Projects/Nally-Unofficial/Code/encoding.h) 與 [encoding.m](file:///Users/ericsk/Projects/Nally-Unofficial/Code/encoding.m)。
+- [x] **階段 2：改寫字元編碼對照表 (Encoding Tables)**
+  - [x] 編寫轉換腳本，將 [encoding.m](file:///Users/ericsk/Projects/Nally-Unofficial/Code/encoding.m) 內巨大的對照陣列（`B2U`、`G2U`、`U2B`、`U2G`）匯出為 `.bin` 二進位資源檔。
+  - [x] 將產生的二進位資料檔加入 Xcode 專案 Resources。
+  - [x] 建立 `YLEncodingTable.swift` 實作非同步/延遲載入並讀取上述 binary table。
+  - [x] 自專案中移除 [encoding.h](file:///Users/ericsk/Projects/Nally-Unofficial/Code/encoding.h) 與 [encoding.m](file:///Users/ericsk/Projects/Nally-Unofficial/Code/encoding.m)。
 - [ ] **階段 3：重構核心資料結構為純 Swift**
   - [ ] 重構 [CommonType.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/CommonType.swift)，使其定義的 `TerminalAttribute` 與 `TerminalCell` 成為第一等公民，廢除對 C `cell` 與 `attribute` 結構的依賴與轉型代碼。
   - [ ] 修改 [YLTerminal.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLTerminal.swift) 的字元快取緩衝區與繪圖層 [YLViewDrawing.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLViewDrawing.swift) 等，全面直接使用 Swift 原生 Struct。
   - [ ] 自專案中移除 [CommonType.h](file:///Users/ericsk/Projects/Nally-Unofficial/Code/CommonType.h) 與 [CommonType.m](file:///Users/ericsk/Projects/Nally-Unofficial/Code/CommonType.m)。
   - [ ] **完全刪除 [Nally-Bridging-Header.h](file:///Users/ericsk/Projects/Nally-Unofficial/Code/Nally-Bridging-Header.h)！**
 - [ ] **階段 4：測試模組與編譯清理**
-  - [ ] 將單元測試 [TextSuiteTests.m](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/TextSuiteTests.m) 與 [TextSuiteTests.h](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/TextSuiteTests.h) 重寫為 Swift 版本的 `TextSuiteTests.swift`。
+  - [x] 將單元測試 [TextSuiteTests.m](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/TextSuiteTests.m) 與 [TextSuiteTests.h](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/TextSuiteTests.h) 重寫為 Swift 版本的 `TextSuiteTests.swift`。
   - [ ] 進行專案的 Release 與 Debug 完整編譯與功能手動測試。
 
 ---

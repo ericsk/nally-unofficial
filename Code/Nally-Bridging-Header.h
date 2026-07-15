@@ -3,7 +3,6 @@
 
 #import "CommonType.h"
 #import <Cocoa/Cocoa.h>
-#import "encoding.h"
 #import <PSMTabBarControl/PSMTabBarControl.h>
 #include <util.h>
 #include <sys/types.h>

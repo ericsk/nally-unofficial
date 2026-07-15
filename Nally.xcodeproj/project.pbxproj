@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		07B73DA20E581E2C00CC97D3 /* YLEncodingTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73DA10E581E2C00CC97D3 /* YLEncodingTable.swift */; };
+		07B73DA50E581E2C00CC97D3 /* g2u.bin in Resources */ = {isa = PBXBuildFile; fileRef = 07B73DA30E581E2C00CC97D3 /* g2u.bin */; };
+		07B73DA60E581E2C00CC97D3 /* b2u.bin in Resources */ = {isa = PBXBuildFile; fileRef = 07B73DA40E581E2C00CC97D3 /* b2u.bin */; };
+		07B73DA80E581E2C00CC97D3 /* TextSuiteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73DA70E581E2C00CC97D3 /* TextSuiteTests.swift */; };
 		07B73DA00E581E2C00CC97D3 /* YLKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73D9F0E581E2C00CC97D3 /* YLKeychain.swift */; };
 		07B73D9E0E581E2C00CC97D3 /* YLBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73D9D0E581E2C00CC97D3 /* YLBundle.swift */; };
 		ADD0046E8995C996CE02389F /* YLRun.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD0047EEFFBB9E5B3F1DF71 /* YLRun.swift */; };
@@ -42,10 +46,7 @@
 		079E9BB10F08B9480089C9E2 /* HUDSaveActive.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */; };
 		850711AB0CA7A347005F4734 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 850711AA0CA7A347005F4734 /* ApplicationServices.framework */; };
 		85137B330D02192800833909 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 85137B320D02192800833909 /* Credits.rtf */; };
-		8540FE5412AB8BFA000FE1D6 /* TextSuiteTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 8540FD0512AB886A000FE1D6 /* TextSuiteTests.m */; };
-		8540FE7412AB8D9C000FE1D6 /* encoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 856CDB250C9650550025C754 /* encoding.m */; };
 		8540FE8012AB8E05000FE1D6 /* CommonType.m in Sources */ = {isa = PBXBuildFile; fileRef = 85ED52280D0920E6003296D4 /* CommonType.m */; };
-		856CDB260C9650550025C754 /* encoding.m in Sources */ = {isa = PBXBuildFile; fileRef = 856CDB250C9650550025C754 /* encoding.m */; };
 		8570AD5F0A3923A900838442 /* YLView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8570AD5E0A3923A900838442 /* YLView.swift */; };
 		8579CA2A0CF21D3D005A8353 /* YLSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8579CA290CF21D3D005A8353 /* YLSite.swift */; };
 		857EAE2A0CF1D62900777C15 /* connect.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 857EAE290CF1D62900777C15 /* connect.pdf */; };
@@ -85,6 +86,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		07B73DA10E581E2C00CC97D3 /* YLEncodingTable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLEncodingTable.swift; sourceTree = "<group>"; };
+		07B73DA30E581E2C00CC97D3 /* g2u.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = g2u.bin; sourceTree = "<group>"; };
+		07B73DA40E581E2C00CC97D3 /* b2u.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = b2u.bin; sourceTree = "<group>"; };
+		07B73DA70E581E2C00CC97D3 /* TextSuiteTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextSuiteTests.swift; sourceTree = "<group>"; };
 		07B73D9F0E581E2C00CC97D3 /* YLKeychain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLKeychain.swift; sourceTree = "<group>"; };
 		ADD0047EEFFBB9E5B3F1DF71 /* YLRun.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLRun.swift; sourceTree = "<group>"; };
 		ADD0049A21A8637E143E8D94 /* YLLine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLLine.swift; sourceTree = "<group>"; };
@@ -129,12 +134,8 @@
 		850711AA0CA7A347005F4734 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		85137B320D02192800833909 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		852E798A0C96E7A90027751F /* CommonType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CommonType.h; sourceTree = "<group>"; };
-		8540FD0412AB886A000FE1D6 /* TextSuiteTests.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TextSuiteTests.h; sourceTree = "<group>"; };
-		8540FD0512AB886A000FE1D6 /* TextSuiteTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TextSuiteTests.m; sourceTree = "<group>"; };
 		8540FE4712AB8BA3000FE1D6 /* TextSuiteTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TextSuiteTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8540FE4812AB8BA3000FE1D6 /* TextSuiteTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "TextSuiteTests-Info.plist"; sourceTree = "<group>"; };
-		856CDB240C9650550025C754 /* encoding.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = encoding.h; sourceTree = "<group>"; };
-		856CDB250C9650550025C754 /* encoding.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = encoding.m; sourceTree = "<group>"; };
 		8570AD5E0A3923A900838442 /* YLView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLView.swift; sourceTree = "<group>"; };
 		8579CA280CF21D3D005A8353 /* YLSite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLSite.h; sourceTree = "<group>"; };
 		8579CA290CF21D3D005A8353 /* YLSite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLSite.swift; sourceTree = "<group>"; };
@@ -285,6 +286,8 @@
 			isa = PBXGroup;
 			children = (
 				85AF012A12912AD000728C12 /* nally.public.pem */,
+				07B73DA30E581E2C00CC97D3 /* g2u.bin */,
+				07B73DA40E581E2C00CC97D3 /* b2u.bin */,
 				079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */,
 				079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */,
 				85137B320D02192800833909 /* Credits.rtf */,
@@ -324,8 +327,7 @@
 		8540FD0312AB8843000FE1D6 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				8540FD0412AB886A000FE1D6 /* TextSuiteTests.h */,
-				8540FD0512AB886A000FE1D6 /* TextSuiteTests.m */,
+				07B73DA70E581E2C00CC97D3 /* TextSuiteTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -341,6 +343,7 @@
 			isa = PBXGroup;
 			children = (
 				8570AD5E0A3923A900838442 /* YLView.swift */,
+				07B73DA10E581E2C00CC97D3 /* YLEncodingTable.swift */,
 				07B73D9F0E581E2C00CC97D3 /* YLKeychain.swift */,
 			);
 			name = Views;
@@ -356,8 +359,6 @@
 		85ED53BA0D0934DC003296D4 /* Constant & Utilities */ = {
 			isa = PBXGroup;
 			children = (
-				856CDB240C9650550025C754 /* encoding.h */,
-				856CDB250C9650550025C754 /* encoding.m */,
 				852E798A0C96E7A90027751F /* CommonType.h */,
 				85ED52280D0920E6003296D4 /* CommonType.m */,
 			);
@@ -384,7 +385,6 @@
 				8540FE4212AB8BA3000FE1D6 /* Resources */,
 				8540FE4312AB8BA3000FE1D6 /* Sources */,
 				8540FE4412AB8BA3000FE1D6 /* Frameworks */,
-				8540FE4512AB8BA3000FE1D6 /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -472,6 +472,8 @@
 				079E9BB00F08B9480089C9E2 /* HUDSave.tiff in Resources */,
 				079E9BB10F08B9480089C9E2 /* HUDSaveActive.tiff in Resources */,
 				85AF012B12912AD000728C12 /* nally.public.pem in Resources */,
+				07B73DA50E581E2C00CC97D3 /* g2u.bin in Resources */,
+				07B73DA60E581E2C00CC97D3 /* b2u.bin in Resources */,
 				85B0176E12913CA5004F06E4 /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -492,19 +494,6 @@
 			shellPath = /bin/sh;
 			shellScript = "# Extract English strings (use this to check if you added new strings to your nibs)\n\n\n\nfor LANG in zh_TW zh_CN; do\n  for NIB in MainMenu; do\n    LPROJ_DIR=${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/${LANG}.lproj\n    ibtool --export-strings-file Resources/English.lproj/${NIB}.English.strings Resources/English.lproj/${NIB}.xib\n    ibtool --import-strings-file Resources/${LANG}.lproj/${NIB}.${LANG}.strings Resources/English.lproj/${NIB}.xib --write ${LPROJ_DIR}/${NIB}.full.xib\n    ibtool --compile ${LPROJ_DIR}/${NIB}.nib ${LPROJ_DIR}/${NIB}.full.xib\n    rm -rf ${LPROJ_DIR}/${NIB}.full.xib\n  done\ndone\n\n# Remove .svn\nfind ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Resources -type d -name \".svn\" | xargs rm -rf\n\n# Remove .DS_Store\nfind ${BUILT_PRODUCTS_DIR}/Nally.app -name \".DS_Store\" -delete\n\n# Remove Headers\nfind ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Frameworks -name \"Headers\" | xargs rm -rf\n";
 		};
-		8540FE4512AB8BA3000FE1D6 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Run the unit tests in this test bundle.\n\"${SYSTEM_DEVELOPER_DIR}/Tools/RunUnitTests\"\n";
-		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -512,8 +501,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8540FE5412AB8BFA000FE1D6 /* TextSuiteTests.m in Sources */,
-				8540FE7412AB8D9C000FE1D6 /* encoding.m in Sources */,
+				07B73DA80E581E2C00CC97D3 /* TextSuiteTests.swift in Sources */,
 				8540FE8012AB8E05000FE1D6 /* CommonType.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -553,9 +541,9 @@
 				9F2EBBE877A24C96811D3B8C /* SitesView.swift in Sources */,
 				B4EA8B034E014F96BF4549BB /* SitesWindowController.swift in Sources */,
 				8570AD5F0A3923A900838442 /* YLView.swift in Sources */,
+				07B73DA20E581E2C00CC97D3 /* YLEncodingTable.swift in Sources */,
 				07B73DA00E581E2C00CC97D3 /* YLKeychain.swift in Sources */,
 				85F7F2090B06EE36000C4CDF /* YLLGlobalConfig.swift in Sources */,
-				856CDB260C9650550025C754 /* encoding.m in Sources */,
 				8579CA2A0CF21D3D005A8353 /* YLSite.swift in Sources */,
 				85ED52290D0920E6003296D4 /* CommonType.m in Sources */,
 			);
@@ -602,7 +590,11 @@
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+					"\"$(SRCROOT)/Dependencies\"",
+				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -614,11 +606,15 @@
 					"-framework",
 					Cocoa,
 					"-framework",
-					SenTestingKit,
+					XCTest,
 				);
 				PRODUCT_NAME = TextSuiteTests;
 				SDKROOT = macosx;
-				WRAPPER_EXTENSION = octest;
+				WRAPPER_EXTENSION = xctest;
+				ENABLE_TESTING_SEARCH_PATHS = YES;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Nally.app/Contents/MacOS/Nally";
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -630,7 +626,11 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				FRAMEWORK_SEARCH_PATHS = "$(DEVELOPER_LIBRARY_DIR)/Frameworks";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)\"",
+					"\"$(SRCROOT)/Dependencies\"",
+				);
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
@@ -640,11 +640,15 @@
 					"-framework",
 					Cocoa,
 					"-framework",
-					SenTestingKit,
+					XCTest,
 				);
 				PRODUCT_NAME = TextSuiteTests;
 				SDKROOT = macosx;
-				WRAPPER_EXTENSION = octest;
+				WRAPPER_EXTENSION = xctest;
+				ENABLE_TESTING_SEARCH_PATHS = YES;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Nally.app/Contents/MacOS/Nally";
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				SWIFT_VERSION = 5.0;
 				ZERO_LINK = NO;
 			};
 			name = Release;
@@ -672,6 +676,9 @@
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = "Code/Nally-Bridging-Header.h";
 				WRAPPER_EXTENSION = app;
+				DEFINES_MODULE = YES;
+				ENABLE_TESTABILITY = YES;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -697,6 +704,9 @@
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = "Code/Nally-Bridging-Header.h";
 				WRAPPER_EXTENSION = app;
+				DEFINES_MODULE = YES;
+				ENABLE_TESTABILITY = YES;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
