@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		07B73DA00E581E2C00CC97D3 /* YLKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73D9F0E581E2C00CC97D3 /* YLKeychain.swift */; };
 		07B73D9E0E581E2C00CC97D3 /* YLBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73D9D0E581E2C00CC97D3 /* YLBundle.swift */; };
 		ADD0046E8995C996CE02389F /* YLRun.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD0047EEFFBB9E5B3F1DF71 /* YLRun.swift */; };
 		ADD0048CF5E8AE89F17C5A32 /* YLLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD0049A21A8637E143E8D94 /* YLLine.swift */; };
@@ -66,9 +67,6 @@
 		85F7F2090B06EE36000C4CDF /* YLLGlobalConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.swift */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
-		8DCEE149182CDF24008A9259 /* SSKeychain.strings in Resources */ = {isa = PBXBuildFile; fileRef = 8DCEE143182CDF24008A9259 /* SSKeychain.strings */; };
-		8DCEE14A182CDF24008A9259 /* SSKeychain.m in Sources */ = {isa = PBXBuildFile; fileRef = 8DCEE146182CDF24008A9259 /* SSKeychain.m */; };
-		8DCEE14B182CDF24008A9259 /* SSKeychainQuery.m in Sources */ = {isa = PBXBuildFile; fileRef = 8DCEE148182CDF24008A9259 /* SSKeychainQuery.m */; };
 		8DCEE14D182CDF3D008A9259 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DCEE14C182CDF3D008A9259 /* Security.framework */; };
 /* End PBXBuildFile section */
 
@@ -87,6 +85,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		07B73D9F0E581E2C00CC97D3 /* YLKeychain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLKeychain.swift; sourceTree = "<group>"; };
 		ADD0047EEFFBB9E5B3F1DF71 /* YLRun.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLRun.swift; sourceTree = "<group>"; };
 		ADD0049A21A8637E143E8D94 /* YLLine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLLine.swift; sourceTree = "<group>"; };
 		ADD004B64F3082459AC49E15 /* YLTextSuite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLTextSuite.swift; sourceTree = "<group>"; };
@@ -159,11 +158,6 @@
 		85F7F2070B06EE36000C4CDF /* YLLGlobalConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLLGlobalConfig.h; sourceTree = "<group>"; };
 		85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLLGlobalConfig.swift; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		8DCEE144182CDF24008A9259 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/SSKeychain.strings; sourceTree = "<group>"; };
-		8DCEE145182CDF24008A9259 /* SSKeychain.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSKeychain.h; sourceTree = "<group>"; };
-		8DCEE146182CDF24008A9259 /* SSKeychain.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSKeychain.m; sourceTree = "<group>"; };
-		8DCEE147182CDF24008A9259 /* SSKeychainQuery.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SSKeychainQuery.h; sourceTree = "<group>"; };
-		8DCEE148182CDF24008A9259 /* SSKeychainQuery.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SSKeychainQuery.m; sourceTree = "<group>"; };
 		8DCEE14C182CDF3D008A9259 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -339,7 +333,6 @@
 		85AF0121129129E400728C12 /* Dependencies */ = {
 			isa = PBXGroup;
 			children = (
-				8DCEE142182CDF24008A9259 /* SSKeychain */,
 			);
 			path = Dependencies;
 			sourceTree = "<group>";
@@ -348,6 +341,7 @@
 			isa = PBXGroup;
 			children = (
 				8570AD5E0A3923A900838442 /* YLView.swift */,
+				07B73D9F0E581E2C00CC97D3 /* YLKeychain.swift */,
 			);
 			name = Views;
 			sourceTree = "<group>";
@@ -378,18 +372,6 @@
 				8540FBF812AB5AFB000FE1D6 /* Text Suite */,
 			);
 			name = Model;
-			sourceTree = "<group>";
-		};
-		8DCEE142182CDF24008A9259 /* SSKeychain */ = {
-			isa = PBXGroup;
-			children = (
-				8DCEE143182CDF24008A9259 /* SSKeychain.strings */,
-				8DCEE145182CDF24008A9259 /* SSKeychain.h */,
-				8DCEE146182CDF24008A9259 /* SSKeychain.m */,
-				8DCEE147182CDF24008A9259 /* SSKeychainQuery.h */,
-				8DCEE148182CDF24008A9259 /* SSKeychainQuery.m */,
-			);
-			path = SSKeychain;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -491,7 +473,6 @@
 				079E9BB10F08B9480089C9E2 /* HUDSaveActive.tiff in Resources */,
 				85AF012B12912AD000728C12 /* nally.public.pem in Resources */,
 				85B0176E12913CA5004F06E4 /* MainMenu.xib in Resources */,
-				8DCEE149182CDF24008A9259 /* SSKeychain.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -572,11 +553,10 @@
 				9F2EBBE877A24C96811D3B8C /* SitesView.swift in Sources */,
 				B4EA8B034E014F96BF4549BB /* SitesWindowController.swift in Sources */,
 				8570AD5F0A3923A900838442 /* YLView.swift in Sources */,
+				07B73DA00E581E2C00CC97D3 /* YLKeychain.swift in Sources */,
 				85F7F2090B06EE36000C4CDF /* YLLGlobalConfig.swift in Sources */,
 				856CDB260C9650550025C754 /* encoding.m in Sources */,
-				8DCEE14A182CDF24008A9259 /* SSKeychain.m in Sources */,
 				8579CA2A0CF21D3D005A8353 /* YLSite.swift in Sources */,
-				8DCEE14B182CDF24008A9259 /* SSKeychainQuery.m in Sources */,
 				85ED52290D0920E6003296D4 /* CommonType.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -611,14 +591,6 @@
 			);
 			name = MainMenu.xib;
 			path = ..;
-			sourceTree = "<group>";
-		};
-		8DCEE143182CDF24008A9259 /* SSKeychain.strings */ = {
-			isa = PBXVariantGroup;
-			children = (
-				8DCEE144182CDF24008A9259 /* en */,
-			);
-			name = SSKeychain.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */

@@ -280,9 +280,9 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
         for siteDict in dictionaries {
             let mutableDict = NSMutableDictionary(dictionary: siteDict)
             if let address = mutableDict["address"] as? String {
-                if let accounts = SSKeychain.accounts(forService: address) as? [[String: Any]],
+                if let accounts = YLKeychain.accounts(forService: address),
                    let account = accounts.last?["acct"] as? String {
-                    if let password = SSKeychain.password(forService: address, account: account) {
+                    if let password = YLKeychain.password(forService: address, account: account) {
                         mutableDict.setValue(account, forKey: "account")
                         mutableDict.setValue(password, forKey: "password")
                     }
@@ -301,7 +301,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
             let address = site.address
             if !password.isEmpty && !address.isEmpty {
                 do {
-                    try SSKeychain.setPassword(password, forService: address, account: site.account)
+                    try YLKeychain.setPassword(password, forService: address, account: site.account)
                 } catch {
                     NSLog("keychain error reason: \(error.localizedDescription)")
                 }

@@ -6,10 +6,10 @@
 
 ## 📋 移植追蹤清單 (Migration Checklist)
 
-- [ ] **階段 1：改寫 Keychain 模組為純 Swift**
-  - [ ] 建立 [YLKeychain.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLKeychain.swift)，直接呼叫 Apple `Security` 框架（`SecItemCopyMatching`、`SecItemAdd` 等 API）管理金鑰庫。
-  - [ ] 修改 [YLController.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLController.swift) 中對 `SSKeychain` 的引用。
-  - [ ] 自專案中移除 `SSKeychain.h/m` 與 `SSKeychainQuery.h/m` 檔案與編譯目標。
+- [x] **階段 1：改寫 Keychain 模組為純 Swift**
+  - [x] 建立 [YLKeychain.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLKeychain.swift)，直接呼叫 Apple `Security` 框架（`SecItemCopyMatching`、`SecItemAdd` 等 API）管理金鑰庫。
+  - [x] 修改 [YLController.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLController.swift) 中對 `SSKeychain` 的引用。
+  - [x] 自專案中移除 `SSKeychain.h/m` 與 `SSKeychainQuery.h/m` 檔案與編譯目標。
 - [ ] **階段 2：改寫字元編碼對照表 (Encoding Tables)**
   - [ ] 編寫轉換腳本，將 [encoding.m](file:///Users/ericsk/Projects/Nally-Unofficial/Code/encoding.m) 內巨大的對照陣列（`B2U`、`G2U`、`U2B`、`U2G`）匯出為 `.bin` 二進位資源檔。
   - [ ] 將產生的二進位資料檔加入 Xcode 專案 Resources。

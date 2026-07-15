@@ -5,7 +5,6 @@
 #import <Cocoa/Cocoa.h>
 #import "encoding.h"
 #import <PSMTabBarControl/PSMTabBarControl.h>
-#import "SSKeychain.h"
 #include <util.h>
 #include <sys/types.h>
 #include <sys/time.h>
