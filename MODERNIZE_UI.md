@@ -48,10 +48,11 @@
 - [x] **重構 `YLPluginLoader` 外掛管理**：以 Swift 重寫 Plugin 機制。
 - [x] **重構 `YLApplication` / `YLContextualMenuManager`**：改寫為 Swift 版本。
 - [x] **重構折行機制與清除 legacy 程式碼**：將 `YLRun`、`YLLine`、`YLTextSuite` 改寫為 Swift，移除大批過時且無引用的舊型 Objective-C/C 檔案。
+- [x] **終端機主視窗繪圖元件 (`YLView.mm` / `YLView.h`) 轉換**：將 `YLView` 完全改寫為純 Swift 實作，消除 C++ / Objective-C++ 混編，達成 100% 純 Swift 核心的目標。
 
 ### 📌 未來優化目標 (Future Scope)
-- [ ] **終端機視窗繪圖元件 (`YLView.mm`) 轉換**：雖然 `YLViewDrawing.swift` 已經接管了繪圖邏輯，但 `YLView.mm` 仍為 C++ 混編。未來可規劃將其完全改寫為純 Swift，達成 100% 的純 Swift 專案目標。
 - [ ] **外掛 (Plugins) 的 Swift 改寫**：重寫 `HelloNally` 和 `ImagePreviewer` 的外掛程式。
+
 
 ---
 

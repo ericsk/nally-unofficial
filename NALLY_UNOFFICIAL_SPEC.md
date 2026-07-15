@@ -19,7 +19,7 @@ graph TD
     C -->|Bottom View| E[NSHostingView SwiftUI]
     E --> F[MainContentView.swift]
     F --> G[TerminalViewRepresentable.swift]
-    G --> H[YLView.mm AppKit]
+    G --> H[YLView.swift AppKit]
     H -->|Draw Loop| I[YLViewDrawing.swift Swift]
     H -->|Input/IME| J[YLMarkedTextView.swift]
     H -->|Engine| K[YLTerminal.swift]
@@ -39,7 +39,7 @@ graph TD
 ### 2.2 視圖與橋接層 (UI & Bridging Layer)
 * **[MainContentView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/MainContentView.swift)**: 終端機主要介面的 SwiftUI 封裝，依據全域字型與行列設定動態計算終端機所需尺寸，並顯示 `TerminalViewRepresentable`。
 * **[TerminalViewRepresentable.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/TerminalViewRepresentable.swift)**: 實作 `NSViewRepresentable`，負責將 AppKit 的終端機顯示元件 `YLView` 橋接至 SwiftUI 視圖階層中。
-* **[YLView.h](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLView.h) / [YLView.mm](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLView.mm)**: 終端機主要視圖元件。雖然仍為 Objective-C++ 混編，但大部分繪圖與模擬功能已交由 Swift 完成。負責滑鼠事件、鍵盤輸入、右鍵選單管理以及 NSTextInput 協定。
+* **[YLView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLView.swift)**: 終端機主要視圖元件。已完全轉換為純 Swift 實作，消除 C++ / Objective-C++ 混編。負責滑鼠事件、鍵盤輸入、右鍵選單管理以及 conform `NSTextInputClient` 協定。
 * **[YLMarkedTextView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLMarkedTextView.swift)**: 專責處理輸入法 (IME) Marked Text 的繪製，保證輸入法彈出視窗與中文字元組裝的相容性與穩定性。
 
 ### 2.3 終端機模擬與資料結構 (Terminal Engine & Core Data Models)
@@ -101,7 +101,7 @@ xcodebuild -scheme Nally -configuration Release SYMROOT=build build
 
 ## 5. 未來持續開發目標 (Roadmap & Todo List)
 
-- [ ] **終端機主視圖完全 Swift 化**：目前 [YLView.mm](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLView.mm) 仍為 Objective-C++ 混編檔案，未來規劃將其所有的滑鼠/鍵盤事件與委派管理移轉至純 Swift 實作，以達成 100% Swift 專案目標。
+- [x] **終端機主視圖完全 Swift 化**：將 [YLView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLView.swift) 完全改寫為純 Swift 實作，達成 100% Swift 核心專案目標。
 - [ ] **外掛（Plugins）模組重構**：現有內建外掛如 [HelloNally.m](file:///Users/ericsk/Projects/Nally-Unofficial/Plugins/HelloNally/HelloNally.m) 及 [ImagePreviewer.m](file:///Users/ericsk/Projects/Nally-Unofficial/Plugins/ImagePreviewer/ImagePreviewer.m) 仍以舊版 Objective-C 實作，未來需轉換為 Swift 並設計更現代的外掛擴充介面。
 - [ ] **現代網路協議優化**：評估將 `YLTelnet` 的底層通訊架構更進一步整合至 Apple Network 框架中的 `NWConnection`，以獲得更好的網路狀態追蹤與系統效能。
 

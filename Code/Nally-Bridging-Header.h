@@ -3,7 +3,6 @@
 
 #import "CommonType.h"
 #import <Cocoa/Cocoa.h>
-#import "YLView.h"
 #import "encoding.h"
 #import <PSMTabBarControl/PSMTabBarControl.h>
 #import "SSKeychain.h"
@@ -13,9 +12,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <termios.h>
-@interface YLView (SwiftBridge)
-- (id)swiftFrontMostTerminal;
-@end
+
 // Category removed as it is now implemented in Swift extension
 @interface NSWindow (YLPrivateShadow)
 - (void)_setContentHasShadow:(BOOL)hasShadow;
