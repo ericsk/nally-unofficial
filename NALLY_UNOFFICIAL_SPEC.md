@@ -83,6 +83,7 @@ graph TD
 | **Swift 移植最終化 (100% Swift)** | 將 Keychain、編碼表（改以二進位載入）、以及核心資料結構（`cell`/`attribute`）與全域輔助函數全面重寫為 Swift，完全移除專案內所有 Objective-C 與 C 源碼。 | [YLKeychain.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLKeychain.swift), [YLEncodingTable.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLEncodingTable.swift), [CommonType.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/CommonType.swift), [TextSuiteTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/TextSuiteTests.swift) |
 | **Phase 7: 生命週期與工具列完全 SwiftUI 化** | 淘汰 `MainMenu.nib` 與 `NallyToolbarDelegate`，改以純 SwiftUI `App` / `Window` 接管主視窗生命週期與宣告式 `.toolbar`。 | [NallyApp.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/NallyApp.swift), [NallyAppDelegate.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/NallyAppDelegate.swift), [MainContentView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/MainContentView.swift), [YLController.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLController.swift) |
 | **Phase 8: 資料流與狀態管理現代化** | 淘汰 `NSMutableArray` 與 KVO，改用原生 Swift 陣列 `[YLSite]`、Combine 宣告式訂閱與 `Codable` JSON 序列化儲存。 | [YLSite.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLSite.swift), [YLController.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLController.swift), [CommonType.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/CommonType.swift) |
+| **Phase 9: SSH 通訊 Concurrency 化** | 淘汰 `Thread.detachNewThread` 與 `select()`，改用 GCD `DispatchSourceRead` 及非阻塞式 I/O，並清理子行程防範殭屍行程。 | [YLSSH.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLSSH.swift) |
 
 ---
 
@@ -111,6 +112,7 @@ xcodebuild -scheme Nally -configuration Release SYMROOT=build build
 - [x] **現代網路協議優化**：將 `YLTelnet` 的底層通訊架構更進一步整合至 Apple Network 框架中的 `NWConnection`，以獲得更好的網路狀態追蹤與系統效能。
 - [x] **應用程式生命週期與工具列完全 SwiftUI 化**：淘汰 `MainMenu.nib` 載入邏輯與過時的 AppKit 工具列代理，改由純 SwiftUI 宣告主視窗與工具列項目，徹底實現現代 Swift 技術棧。
 - [x] **資料流與狀態管理現代化**：淘汰 `NSMutableArray` 與 KVO 監聽，改用原生 Swift 陣列 `[YLSite]`、Combine 宣告式訂閱與 `Codable` JSON 序列化儲存。
+- [x] **SSH 通訊 Concurrency 化**：淘汰 `Thread.detachNewThread` 與 `select()`，改用 GCD `DispatchSourceRead` 及非阻塞式 I/O，防範執行緒洩漏與殭屍行程。
 
 ---
 
