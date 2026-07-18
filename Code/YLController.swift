@@ -519,16 +519,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         if let window = _mainWindow {
             window.makeKeyAndOrderFront(self)
         }
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            if let addressBar = self._addressBar {
-                let success = addressBar.window?.makeFirstResponder(addressBar) ?? false
-                if success {
-                    addressBar.selectText(self)
-                }
-                NSLog("[Nally] async makeFirstResponder success: \(success), _addressBar: \(addressBar)")
-            }
-        }
+        AppState.shared.focusAddressBar = true
     }
     
     @IBAction public func selectNextTab(_ sender: Any?) {

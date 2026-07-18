@@ -215,20 +215,26 @@ public class YLView: NSTabView, NSTextInputClient {
     
     private func recreateBitmapContext(width: Int, height: Int) {
         guard width > 0 && height > 0 else { return }
+        let scale = self.window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2.0
+        let pixelWidth = Int(CGFloat(width) * scale)
+        let pixelHeight = Int(CGFloat(height) * scale)
+        
         let colorSpace = CGColorSpaceCreateDeviceRGB()
         let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
         
         guard let context = CGContext(
             data: nil,
-            width: width,
-            height: height,
+            width: pixelWidth,
+            height: pixelHeight,
             bitsPerComponent: 8,
-            bytesPerRow: width * 4,
+            bytesPerRow: pixelWidth * 4,
             space: colorSpace,
             bitmapInfo: bitmapInfo
         ) else {
             return
         }
+        
+        context.scaleBy(x: scale, y: scale)
         
         let config = YLLGlobalConfig.sharedInstance()
         let bgColor = config.colorBG ?? NSColor.black
@@ -245,7 +251,6 @@ public class YLView: NSTabView, NSTextInputClient {
         if _selectionLength == 0 { return }
         
         let config = YLLGlobalConfig.sharedInstance()
-        let gRow = Int(config.row)
         let gColumn = Int(config.column)
         
         let s = selectedPlainString()
@@ -625,7 +630,6 @@ public class YLView: NSTabView, NSTextInputClient {
         // Click to move cursor
         if isCmdPressed {
             let config = YLLGlobalConfig.sharedInstance()
-            let gRow = Int(config.row)
             let gColumn = Int(config.column)
             var cmd = [UInt8]()
             let moveToRow = Int(_selectionLocation) / gColumn
@@ -908,13 +912,9 @@ public class YLView: NSTabView, NSTextInputClient {
             let gColumn = Int(config.column)
             
             if connected() {
-                // Draw the backed image
-                if let img = _backedImageCG, let ctx = NSGraphicsContext.current?.cgContext {
-                    ctx.saveGState()
-                    ctx.translateBy(x: 0, y: bounds.height)
-                    ctx.scaleBy(x: 1.0, y: -1.0)
-                    ctx.draw(img, in: bounds)
-                    ctx.restoreGState()
+                if let img = _backedImageCG {
+                    let nsImage = NSImage(cgImage: img, size: bounds.size)
+                    nsImage.draw(in: bounds)
                 }
                 
                 drawBlink()
@@ -1230,7 +1230,6 @@ public class YLView: NSTabView, NSTextInputClient {
     @objc public func selectedPlainString() -> String? {
         if _selectionLength == 0 { return nil }
         let config = YLLGlobalConfig.sharedInstance()
-        let gColumn = Int(config.column)
         
         var location: Int
         var length: Int

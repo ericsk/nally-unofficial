@@ -18,6 +18,7 @@ public class AppState: NSObject {
     public let exifController: YLExifController
     
     public var addressText: String = ""
+    public var focusAddressBar: Bool = false
     
     public var termWidth: CGFloat = 960
     public var termHeight: CGFloat = 576
@@ -73,6 +74,10 @@ public class AppState: NSObject {
     public func syncTabs(from tabView: NSTabView) {
         self.tabs = tabView.tabViewItems
         self.selectedTab = tabView.selectedTabViewItem
+        NSLog("[Nally] syncTabs called. Tab count: \(tabs.count), selectedTab: \(selectedTab?.label ?? "nil")")
+        for (i, t) in tabs.enumerated() {
+            NSLog("[Nally] Tab \(i): label='\(t.label)', identifier='\(String(describing: t.identifier))'")
+        }
         
         // Observe connection state changes (like icon) to refresh the SwiftUI tab bar
         connectionCancellables.removeAll()
@@ -180,6 +185,7 @@ struct NallyTabBarView: View {
 struct MainSwiftUIWindowView: View {
     var appState: AppState
     @Bindable var config = YLLGlobalConfig.sharedInstance()
+    @FocusState private var isAddressBarFocused: Bool
     
     var body: some View {
         VStack(spacing: 0) {
@@ -204,6 +210,7 @@ struct MainSwiftUIWindowView: View {
                         let finalAddress = appState.controller.connect(toAddressString: appState.addressText)
                         appState.addressText = finalAddress
                     })
+                    .focused($isAddressBarFocused)
                     .textFieldStyle(.roundedBorder)
                     .frame(width: 280)
                 }
@@ -251,6 +258,12 @@ struct MainSwiftUIWindowView: View {
         })
         .onOpenURL { url in
             appState.handleURL(url)
+        }
+        .onChange(of: appState.focusAddressBar) { _, newValue in
+            if newValue {
+                isAddressBarFocused = true
+                appState.focusAddressBar = false
+            }
         }
     }
 }
