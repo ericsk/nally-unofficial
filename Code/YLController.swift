@@ -10,13 +10,12 @@ import Cocoa
 import Combine
 
 @objc(YLController)
-public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTabBarControlDelegate {
+public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     @IBOutlet @objc public dynamic weak var _mainWindow: NSWindow?
     @IBOutlet @objc public dynamic var _telnetView: YLView?
     @IBOutlet @objc public dynamic weak var _addressBar: NSTextField?
     @IBOutlet @objc public dynamic weak var _detectDoubleByteButton: NSButton?
     
-    @IBOutlet @objc public dynamic var _tab: PSMTabBarControl?
     @IBOutlet @objc public dynamic weak var _detectDoubleByteMenuItem: NSMenuItem?
     @IBOutlet @objc public dynamic weak var _closeWindowMenuItem: NSMenuItem?
     @IBOutlet @objc public dynamic weak var _closeTabMenuItem: NSMenuItem?
@@ -122,7 +121,6 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
             }
             .store(in: &cancellables)
             
-        _tab?.setCanCloseOnlyTab(true)
         globalConfig.showHiddenText = globalConfig.showHiddenText
         globalConfig.cellWidth = globalConfig.cellWidth
         
@@ -164,23 +162,9 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
         r.origin.y = topLeftCorner - r.size.height
         window.setFrame(r, display: true, animate: false)
         _telnetView?.configure()
-        
-        if let tab = _tab {
-            var tabRect = tab.frame
-            tabRect.size.width = r.size.width
-            tab.frame = tabRect
-        }
     }
     
     @objc public func setupAfterSwiftUI() {
-        if let telnetView = _telnetView, let tab = _tab {
-            // PSMTabBarControl implements NSTabViewDelegate methods but doesn't formally
-            // declare conformance, so `as? NSTabViewDelegate` returns nil in Swift.
-            telnetView.perform(NSSelectorFromString("setDelegate:"), with: tab)
-        }
-        _tab?.setPartnerView(_telnetView)
-        _tab?.setCanCloseOnlyTab(true)
-        
         _telnetView?.configure()
         
         let globalConfig = YLLGlobalConfig.sharedInstance()
@@ -302,11 +286,6 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
             _telnetView?.updateBackedImage()
             _telnetView?.needsDisplay = true
             
-            if let tab = _tab {
-                var tabRect = tab.frame
-                tabRect.size.width = r.size.width
-                tab.frame = tabRect
-            }
         }
     }
     
@@ -792,6 +771,8 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
         let ddb = (conn.site as? YLSite)?.detectDoubleByte ?? false
         _detectDoubleByteButton?.state = ddb ? .on : .off
         _detectDoubleByteMenuItem?.state = ddb ? .on : .off
+        
+        AppState.shared.syncTabs(from: tabView)
     }
     
     @objc public func tabView(_ tabView: NSTabView, shouldSelect tabViewItem: NSTabViewItem?) -> Bool {
@@ -804,27 +785,9 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
         _telnetView?.clearSelection()
     }
     
-    // MARK: - PSMTabBarControl Delegate
-    @objc public func tabView(_ aTabView: NSTabView, shouldDrag tabViewItem: NSTabViewItem, fromTabBar tabBarControl: PSMTabBarControl) -> Bool {
-        return true
-    }
-    
-    @objc public func tabView(_ aTabView: NSTabView, shouldDrop tabViewItem: NSTabViewItem, inTabBar tabBarControl: PSMTabBarControl) -> Bool {
-        return true
-    }
-    
-    @objc public func tabView(_ aTabView: NSTabView, didDrop tabViewItem: NSTabViewItem, inTabBar tabBarControl: PSMTabBarControl) {
-        if let tv = _telnetView {
-            refreshTabLabelNumber(tv)
-        }
-    }
-    
-    @objc public func tabView(_ aTabView: NSTabView, imageFor tabViewItem: NSTabViewItem, offset: NSSizePointer, styleMask: UnsafeMutablePointer<UInt>) -> NSImage? {
-        return nil
-    }
-    
     @objc public func tabViewDidChangeNumberOfTabViewItems(_ tabView: NSTabView) {
         refreshTabLabelNumber(tabView)
+        AppState.shared.syncTabs(from: tabView)
     }
     
     @objc public func refreshTabLabelNumber(_ tabView: NSTabView) {

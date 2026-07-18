@@ -2,7 +2,6 @@
 #define Nally_Bridging_Header_h
 
 #import <Cocoa/Cocoa.h>
-#import <PSMTabBarControl/PSMTabBarControl.h>
 #include <util.h>
 #include <sys/types.h>
 #include <sys/time.h>

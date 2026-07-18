@@ -1,8 +1,17 @@
+//
+//  NallyApp.swift
+//  Nally
+//
+//  Created by Yung-Luen Lan on 2026/07/18.
+//  Copyright 2026 yllan.org. All rights reserved.
+//
+
 import SwiftUI
 import Cocoa
+import Combine
 
 @Observable
-public class AppState {
+public class AppState: NSObject {
     public static let shared = AppState()
     
     public let controller: YLController
@@ -13,7 +22,12 @@ public class AppState {
     public var termWidth: CGFloat = 960
     public var termHeight: CGFloat = 576
     
-    public init() {
+    // SwiftUI Tab Bar state
+    public var tabs: [NSTabViewItem] = []
+    public var selectedTab: NSTabViewItem?
+    private var connectionCancellables = Set<AnyCancellable>()
+    
+    public override init() {
         let exif = YLExifController()
         let ctrl = YLController()
         
@@ -21,6 +35,8 @@ public class AppState {
         
         self.exifController = exif
         self.controller = ctrl
+        
+        super.init()
         
         // 1. Setup controllers programmatically
         ctrl.setupProgrammatically()
@@ -33,15 +49,8 @@ public class AppState {
         telnetView.configure()
         ctrl.setValue(telnetView, forKey: "_telnetView")
         
-        // 3. Precreate PSMTabBarControl
-        let tabBar = PSMTabBarControl(frame: NSRect(x: 0, y: 0, width: 800, height: 22))
-        tabBar.setHideForSingleTab(false)
-        tabBar.setCanCloseOnlyTab(true)
-        tabBar.setTabView(telnetView)
-        tabBar.setPartnerView(telnetView)
-        tabBar.setDelegate(ctrl)
-        telnetView.perform(NSSelectorFromString("setDelegate:"), with: tabBar)
-        ctrl.setValue(tabBar, forKey: "_tab")
+        // Directly set YLController as delegate of the NSTabView
+        telnetView.delegate = ctrl
         
         updateDimensions()
     }
@@ -59,6 +68,24 @@ public class AppState {
         }
         let finalAddress = controller.connect(toAddressString: address)
         self.addressText = finalAddress
+    }
+    
+    public func syncTabs(from tabView: NSTabView) {
+        self.tabs = tabView.tabViewItems
+        self.selectedTab = tabView.selectedTabViewItem
+        
+        // Observe connection state changes (like icon) to refresh the SwiftUI tab bar
+        connectionCancellables.removeAll()
+        for item in tabs {
+            if let conn = item.identifier as? YLConnection {
+                conn.publisher(for: \.icon)
+                    .sink { [weak self] _ in
+                        guard let self = self else { return }
+                        self.tabs = tabView.tabViewItems
+                    }
+                    .store(in: &connectionCancellables)
+            }
+        }
     }
 }
 
@@ -81,14 +108,82 @@ struct NallyApp: App {
     }
 }
 
+struct NallyTabBarView: View {
+    var appState: AppState
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 2) {
+                    ForEach(appState.tabs, id: \.self) { item in
+                        let isSelected = appState.selectedTab == item
+                        let conn = item.identifier as? YLConnection
+                        
+                        HStack(spacing: 4) {
+                            if let icon = conn?.icon {
+                                Image(nsImage: icon)
+                                    .resizable()
+                                    .frame(width: 13, height: 13)
+                            }
+                            
+                            Text(item.label)
+                                .font(.system(size: 11))
+                                .foregroundColor(isSelected ? .white : .primary.opacity(0.8))
+                                .lineLimit(1)
+                            
+                            // Close button
+                            Button(action: {
+                                if let telnetView = appState.controller.telnetView() as? NSTabView {
+                                    _ = appState.controller.tabView(telnetView, shouldClose: item)
+                                }
+                            }) {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 8, weight: .semibold))
+                                    .foregroundColor(isSelected ? .white.opacity(0.8) : .secondary)
+                                    .padding(3)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(isSelected ? Color.blue.opacity(0.8) : Color.primary.opacity(0.05))
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            if let telnetView = appState.controller.telnetView() as? NSTabView {
+                                telnetView.selectTabViewItem(item)
+                            }
+                        }
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+            
+            Spacer()
+            
+            // "+" Button to open a new tab
+            Button(action: {
+                appState.controller.newTab(nil)
+            }) {
+                Image(systemName: "plus")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.primary.opacity(0.8))
+                    .padding(5)
+            }
+            .buttonStyle(.plain)
+            .padding(.trailing, 6)
+        }
+        .frame(height: 26)
+        .background(Color(nsColor: .windowBackgroundColor))
+    }
+}
+
 struct MainSwiftUIWindowView: View {
     var appState: AppState
     @Bindable var config = YLLGlobalConfig.sharedInstance()
     
     var body: some View {
         VStack(spacing: 0) {
-            TabBarRepresentable(controller: appState.controller)
-                .frame(height: 22)
+            NallyTabBarView(appState: appState)
             
             MainContentView(controller: appState.controller)
         }
