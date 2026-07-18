@@ -9,7 +9,8 @@ public class YLView: NSTabView, NSTextInputClient {
     public var _fontWidth: CGFloat = 12.0
     public var _fontHeight: CGFloat = 24.0
     
-    public var _backedImage: NSImage?
+    public var _bitmapContext: CGContext?
+    public var _backedImageCG: CGImage?
     public var _timer: Timer?
     public var _x: Int32 = 0
     public var _y: Int32 = 0
@@ -101,6 +102,7 @@ public class YLView: NSTabView, NSTextInputClient {
     }
     
     private func setup() {
+        self.wantsLayer = true
         configure()
         _selectionLength = 0
         _selectionLocation = 0
@@ -189,7 +191,7 @@ public class YLView: NSTabView, NSTextInputClient {
         
         createSymbolPath()
         
-        _backedImage = NSImage(size: frame.size)
+        recreateBitmapContext(width: Int(frame.size.width), height: Int(frame.size.height))
         
         YLView.gLeftImage = NSImage(size: NSMakeSize(_fontWidth, _fontHeight))
         
@@ -209,6 +211,32 @@ public class YLView: NSTabView, NSTextInputClient {
         _selectedRange = NSRange(location: NSNotFound, length: 0)
         _markedRange = NSRange(location: NSNotFound, length: 0)
         _textField?.isHidden = true
+    }
+    
+    private func recreateBitmapContext(width: Int, height: Int) {
+        guard width > 0 && height > 0 else { return }
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        let bitmapInfo = CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue
+        
+        guard let context = CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: width * 4,
+            space: colorSpace,
+            bitmapInfo: bitmapInfo
+        ) else {
+            return
+        }
+        
+        let config = YLLGlobalConfig.sharedInstance()
+        let bgColor = config.colorBG ?? NSColor.black
+        context.setFillColor(bgColor.cgColor)
+        context.fill(CGRect(x: 0, y: 0, width: width, height: height))
+        
+        self._bitmapContext = context
+        self._backedImageCG = context.makeImage()
     }
     
     // MARK: - Actions
@@ -881,8 +909,12 @@ public class YLView: NSTabView, NSTextInputClient {
             
             if connected() {
                 // Draw the backed image
-                if let backedImage = _backedImage {
-                    backedImage.draw(at: rect.origin, from: rect, operation: .copy, fraction: 1.0)
+                if let img = _backedImageCG, let ctx = NSGraphicsContext.current?.cgContext {
+                    ctx.saveGState()
+                    ctx.translateBy(x: 0, y: bounds.height)
+                    ctx.scaleBy(x: 1.0, y: -1.0)
+                    ctx.draw(img, in: bounds)
+                    ctx.restoreGState()
                 }
                 
                 drawBlink()
@@ -992,17 +1024,33 @@ public class YLView: NSTabView, NSTextInputClient {
         let gRow = Int(config.row)
         let gColumn = Int(config.column)
         
-        _backedImage?.lockFocus()
-        _backedImage?.draw(
-            at: NSMakePoint(0.0, CGFloat(gRow - Int(end)) * _fontHeight),
-            from: NSMakeRect(0.0, CGFloat(gRow - Int(end) - 1) * _fontHeight, CGFloat(gColumn) * _fontWidth, CGFloat(end - start) * _fontHeight),
-            operation: .copy,
-            fraction: 1.0
-        )
+        guard let context = _bitmapContext, let data = context.data else { return }
+        let bytesMod = context.bytesPerRow
+        
+        let srcY = Int(CGFloat(gRow - Int(end) - 1) * _fontHeight)
+        let destY = Int(CGFloat(gRow - Int(end)) * _fontHeight)
+        let copyHeight = Int(CGFloat(end - start) * _fontHeight)
+        
+        let srcOffset = srcY * bytesMod
+        let destOffset = destY * bytesMod
+        let count = copyHeight * bytesMod
+        
+        let totalBytes = context.height * bytesMod
+        if srcOffset + count <= totalBytes && destOffset + count <= totalBytes {
+            memmove(data.advanced(by: destOffset), data.advanced(by: srcOffset), count)
+        }
+        
+        let previousContext = NSGraphicsContext.current
+        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: true)
+        NSGraphicsContext.current = graphicsContext
         
         config.colorAtIndex(config.bgColorIndex, hilite: false).set()
         NSMakeRect(0.0, CGFloat(gRow - Int(end) - 1) * _fontHeight, CGFloat(gColumn) * _fontWidth, _fontHeight).fill()
-        _backedImage?.unlockFocus()
+        
+        NSGraphicsContext.current = previousContext
+        
+        self._backedImageCG = context.makeImage()
+        self.needsDisplay = true
     }
     
     @objc(extendTopFrom:to:)
@@ -1011,68 +1059,97 @@ public class YLView: NSTabView, NSTextInputClient {
         let gRow = Int(config.row)
         let gColumn = Int(config.column)
         
-        _backedImage?.lockFocus()
-        _backedImage?.draw(
-            at: NSMakePoint(0.0, CGFloat(gRow - Int(end) - 1) * _fontHeight),
-            from: NSMakeRect(0.0, CGFloat(gRow - Int(end)) * _fontHeight, CGFloat(gColumn) * _fontWidth, CGFloat(end - start) * _fontHeight),
-            operation: .copy,
-            fraction: 1.0
-        )
+        guard let context = _bitmapContext, let data = context.data else { return }
+        let bytesMod = context.bytesPerRow
+        
+        let srcY = Int(CGFloat(gRow - Int(end)) * _fontHeight)
+        let destY = Int(CGFloat(gRow - Int(end) - 1) * _fontHeight)
+        let copyHeight = Int(CGFloat(end - start) * _fontHeight)
+        
+        let srcOffset = srcY * bytesMod
+        let destOffset = destY * bytesMod
+        let count = copyHeight * bytesMod
+        
+        let totalBytes = context.height * bytesMod
+        if srcOffset + count <= totalBytes && destOffset + count <= totalBytes {
+            memmove(data.advanced(by: destOffset), data.advanced(by: srcOffset), count)
+        }
+        
+        let previousContext = NSGraphicsContext.current
+        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: true)
+        NSGraphicsContext.current = graphicsContext
         
         config.colorAtIndex(config.bgColorIndex, hilite: false).set()
         NSMakeRect(0.0, CGFloat(gRow - Int(start) - 1) * _fontHeight, CGFloat(gColumn) * _fontWidth, _fontHeight).fill()
-        _backedImage?.unlockFocus()
+        
+        NSGraphicsContext.current = previousContext
+        
+        self._backedImageCG = context.makeImage()
+        self.needsDisplay = true
     }
     
     @objc public func updateBackedImage() {
         let config = YLLGlobalConfig.sharedInstance()
         let gRow = Int(config.row)
         let gColumn = Int(config.column)
+        
+        guard let context = _bitmapContext else { return }
+        
         guard let ds = frontMostTerminal() else {
-            _backedImage?.lockFocus()
-            if let ctx = NSGraphicsContext.current?.cgContext {
-                NSColor.clear.set()
-                ctx.fill(CGRect(x: 0, y: 0, width: CGFloat(gColumn) * _fontWidth, height: CGFloat(gRow) * _fontHeight))
-            }
-            _backedImage?.unlockFocus()
+            let previousContext = NSGraphicsContext.current
+            let graphicsContext = NSGraphicsContext(cgContext: context, flipped: true)
+            NSGraphicsContext.current = graphicsContext
+            
+            NSColor.clear.set()
+            let rect = CGRect(x: 0, y: 0, width: CGFloat(gColumn) * _fontWidth, height: CGFloat(gRow) * _fontHeight)
+            rect.fill()
+            
+            NSGraphicsContext.current = previousContext
+            self._backedImageCG = context.makeImage()
+            self.needsDisplay = true
             return
         }
         
-        _backedImage?.lockFocus()
-        if let ctx = NSGraphicsContext.current?.cgContext {
-            /* Draw Background */
-            var y = 0
-            while y < gRow {
-                var x = 0
-                while x < gColumn {
-                    if ds.isDirty(atRow: Int32(y), column: Int32(x)) {
-                        let startx = x
-                        while x < gColumn && ds.isDirty(atRow: Int32(y), column: Int32(x)) {
-                            x += 1
-                        }
-                        updateBackground(forRow: Int32(y), from: Int32(startx), to: Int32(x))
+        let previousContext = NSGraphicsContext.current
+        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: true)
+        NSGraphicsContext.current = graphicsContext
+        
+        /* Draw Background */
+        var y = 0
+        while y < gRow {
+            var x = 0
+            while x < gColumn {
+                if ds.isDirty(atRow: Int32(y), column: Int32(x)) {
+                    let startx = x
+                    while x < gColumn && ds.isDirty(atRow: Int32(y), column: Int32(x)) {
+                        x += 1
                     }
-                    x += 1
+                    updateBackground(forRow: Int32(y), from: Int32(startx), to: Int32(x))
                 }
-                y += 1
+                x += 1
             }
-            
-            ctx.saveGState()
-            ctx.setShouldSmoothFonts(config.shouldSmoothFonts)
-            
-            /* Draw String row by row */
-            for r in 0..<gRow {
-                drawString(forRow: Int32(r), context: ctx)
-            }
-            ctx.restoreGState()
-            
-            for r in 0..<gRow {
-                for c in 0..<gColumn {
-                    ds.setDirty(false, atRow: Int32(r), column: Int32(c))
-                }
+            y += 1
+        }
+        
+        context.saveGState()
+        context.setShouldSmoothFonts(config.shouldSmoothFonts)
+        
+        /* Draw String row by row */
+        for r in 0..<gRow {
+            drawString(forRow: Int32(r), context: context)
+        }
+        context.restoreGState()
+        
+        for r in 0..<gRow {
+            for c in 0..<gColumn {
+                ds.setDirty(false, atRow: Int32(r), column: Int32(c))
             }
         }
-        _backedImage?.unlockFocus()
+        
+        NSGraphicsContext.current = previousContext
+        
+        self._backedImageCG = context.makeImage()
+        self.needsDisplay = true
     }
     
     // MARK: - Overrides
