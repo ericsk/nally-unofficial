@@ -74,6 +74,10 @@ public class AppState: NSObject {
     public func syncTabs(from tabView: NSTabView) {
         self.tabs = tabView.tabViewItems
         self.selectedTab = tabView.selectedTabViewItem
+        if let conn = selectedTab?.identifier as? YLConnection {
+            self.addressText = conn.connectionAddress ?? ""
+        }
+        
         NSLog("[Nally] syncTabs called. Tab count: \(tabs.count), selectedTab: \(selectedTab?.label ?? "nil")")
         for (i, t) in tabs.enumerated() {
             NSLog("[Nally] Tab \(i): label='\(t.label)', identifier='\(String(describing: t.identifier))'")

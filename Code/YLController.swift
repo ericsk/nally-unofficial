@@ -145,8 +145,25 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         }
     }
     
+    private var isWindowSetupDone = false
+    
+    private func findAddressBar(in view: NSView) -> NSTextField? {
+        if let tf = view as? NSTextField, tf.placeholderString == "Go to this address" {
+            return tf
+        }
+        for subview in view.subviews {
+            if let tf = findAddressBar(in: subview) {
+                return tf
+            }
+        }
+        return nil
+    }
+    
     @objc(setupWindow:)
     public func setupWindow(_ window: NSWindow) {
+        if isWindowSetupDone { return }
+        isWindowSetupDone = true
+        
         self._mainWindow = window
         window._setContentHasShadow(false)
         window.isOpaque = false
@@ -164,6 +181,8 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         r.origin.y = topLeftCorner - r.size.height
         window.setFrame(r, display: true, animate: false)
         _telnetView?.configure()
+        
+        setupAfterSwiftUI()
     }
     
     @objc public func setupAfterSwiftUI() {
@@ -528,8 +547,16 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     @IBAction public func openLocation(_ sender: Any?) {
         if let window = _mainWindow {
             window.makeKeyAndOrderFront(self)
+            if let superview = window.contentView?.superview, let tf = findAddressBar(in: superview) {
+                let success = window.makeFirstResponder(tf)
+                if success {
+                    tf.selectText(self)
+                }
+                NSLog("[Nally] openLocation focus success: \(success)")
+            } else {
+                NSLog("[Nally] openLocation could not find address bar")
+            }
         }
-        AppState.shared.focusAddressBar = true
     }
     
     @IBAction public func selectNextTab(_ sender: Any?) {
