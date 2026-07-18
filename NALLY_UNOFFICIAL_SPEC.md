@@ -81,6 +81,7 @@ graph TD
 | **Phase 6: 視圖繪圖與外掛完全 Swift 化** | 將 `YLView` 視圖繪製與 `YLBundle`、`HelloNally`、`ImagePreviewer` 外掛完全改寫為 Swift，徹底清除 C++ / Objective-C++ 混編。 | [YLView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLView.swift), [YLBundle.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLBundle.swift), [HelloNally.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Plugins/HelloNally/HelloNally.swift), [ImagePreviewer.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Plugins/ImagePreviewer/ImagePreviewer.swift) |
 | **建置架構優化** | 修正目標架構為 `arm64`，並現代化外掛專案設定（包含 SDKROOT, ARCHS, SWIFT_VERSION 與相對路徑），以解決編譯與執行期依賴問題。 | `Nally.xcodeproj`, `HelloNally.xcodeproj`, `ImagePreviewer.xcodeproj` |
 | **Swift 移植最終化 (100% Swift)** | 將 Keychain、編碼表（改以二進位載入）、以及核心資料結構（`cell`/`attribute`）與全域輔助函數全面重寫為 Swift，完全移除專案內所有 Objective-C 與 C 源碼。 | [YLKeychain.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLKeychain.swift), [YLEncodingTable.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLEncodingTable.swift), [CommonType.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/CommonType.swift), [TextSuiteTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/TextSuiteTests.swift) |
+| **Phase 7: 生命週期與工具列完全 SwiftUI 化** | 淘汰 `MainMenu.nib` 與 `NallyToolbarDelegate`，改以純 SwiftUI `App` / `Window` 接管主視窗生命週期與宣告式 `.toolbar`。 | [NallyApp.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/NallyApp.swift), [NallyAppDelegate.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/NallyAppDelegate.swift), [MainContentView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/MainContentView.swift), [YLController.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLController.swift) |
 
 ---
 
@@ -107,6 +108,7 @@ xcodebuild -scheme Nally -configuration Release SYMROOT=build build
 - [x] **外掛（Plugins）模組重構**：將內建外掛 [HelloNally.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Plugins/HelloNally/HelloNally.swift) 及 [ImagePreviewer.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Plugins/ImagePreviewer/ImagePreviewer.swift) 完全改寫為 Swift，並整合 `YLBundle.swift` 作為統一的 Swift 外掛基類。
 - [x] **原始碼 100% Swift 移植完成**：移除了專案中最後的 Objective-C 檔案與 C 橋接定義，僅在 Bridging Header 保留外部 precompiled framework 及底層 C API 參照。
 - [x] **現代網路協議優化**：將 `YLTelnet` 的底層通訊架構更進一步整合至 Apple Network 框架中的 `NWConnection`，以獲得更好的網路狀態追蹤與系統效能。
+- [x] **應用程式生命週期與工具列完全 SwiftUI 化**：淘汰 `MainMenu.nib` 載入邏輯與過時的 AppKit 工具列代理，改由純 SwiftUI 宣告主視窗與工具列項目，徹底實現現代 Swift 技術棧。
 
 ---
 
