@@ -7,6 +7,7 @@
 //
 
 import Cocoa
+import Combine
 
 @objc(YLController)
 public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTabBarControlDelegate {
@@ -25,32 +26,37 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
     @IBOutlet @objc public dynamic weak var _encodingMenuItem: NSMenuItem?
     @IBOutlet @objc public dynamic weak var _exifController: YLExifController?
     
-    @objc public dynamic var _sites = NSMutableArray()
+    public var sitesList: [YLSite] = []
+    private var cancellables = Set<AnyCancellable>()
     @objc public dynamic var _pluginLoader: YLPluginLoader?
     
     // MARK: - KVC Compliance Accessors for Sites
     @objc public func sites() -> NSArray {
-        return _sites
+        return sitesList as NSArray
     }
     
     @objc public func countOfSites() -> Int {
-        return _sites.count
+        return sitesList.count
     }
     
     @objc public func objectInSitesAtIndex(_ index: Int) -> Any {
-        return _sites[index]
+        return sitesList[index]
     }
     
     @objc public func insertObject(_ obj: Any, inSitesAtIndex index: Int) {
-        _sites.insert(obj, at: index)
+        if let site = obj as? YLSite {
+            sitesList.insert(site, at: index)
+        }
     }
     
     @objc public func removeObjectFromSitesAtIndex(_ index: Int) {
-        _sites.removeObject(at: index)
+        sitesList.remove(at: index)
     }
     
     @objc public func replaceObjectInSitesAtIndex(_ index: Int, withObject obj: Any) {
-        _sites.replaceObject(at: index, with: obj)
+        if let site = obj as? YLSite {
+            sitesList[index] = site
+        }
     }
     
     // MARK: - Initializer & Lifecycle
@@ -63,20 +69,59 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
             andEventID: AEEventID(kAEGetURL)
         )
         
-        let observeKeys = [
-            "shouldSmoothFonts", "showHiddenText", "messageCount", "cellWidth", "cellHeight",
-            "chineseFontName", "chineseFontSize", "chineseFontPaddingLeft", "chineseFontPaddingBottom",
-            "englishFontName", "englishFontSize", "englishFontPaddingLeft", "englishFontPaddingBottom",
-            "colorBlack", "colorBlackHilite", "colorRed", "colorRedHilite", "colorGreen", "colorGreenHilite",
-            "colorYellow", "colorYellowHilite", "colorBlue", "colorBlueHilite", "colorMagenta", "colorMagentaHilite",
-            "colorCyan", "colorCyanHilite", "colorWhite", "colorWhiteHilite", "colorBG", "colorBGHilite"
+        let globalConfig = YLLGlobalConfig.sharedInstance()
+        
+        globalConfig.publisher(for: \._showHiddenText)
+            .sink { [weak self] show in
+                self?._showHiddenTextMenuItem?.state = show ? .on : .off
+            }
+            .store(in: &cancellables)
+            
+        globalConfig.publisher(for: \._messageCount)
+            .sink { count in
+                let dockTile = NSApp.dockTile
+                if count == 0 {
+                    dockTile.badgeLabel = nil
+                } else {
+                    dockTile.badgeLabel = "\(count)"
+                }
+                dockTile.display()
+            }
+            .store(in: &cancellables)
+            
+        globalConfig.publisher(for: \._shouldSmoothFonts)
+            .sink { [weak self] _ in
+                self?.refreshTerminalState()
+            }
+            .store(in: &cancellables)
+            
+        Publishers.Merge(
+            globalConfig.publisher(for: \._cellWidth).map { _ in () },
+            globalConfig.publisher(for: \._cellHeight).map { _ in () }
+        )
+        .sink { [weak self] _ in
+            self?.updateWindowAndTerminalLayout()
+        }
+        .store(in: &cancellables)
+            
+        let fontAndColorPublishers: [AnyPublisher<Void, Never>] = [
+            globalConfig.publisher(for: \._chineseFontName).map { _ in () }.eraseToAnyPublisher(),
+            globalConfig.publisher(for: \._chineseFontSize).map { _ in () }.eraseToAnyPublisher(),
+            globalConfig.publisher(for: \._englishFontName).map { _ in () }.eraseToAnyPublisher(),
+            globalConfig.publisher(for: \._englishFontSize).map { _ in () }.eraseToAnyPublisher(),
+            globalConfig.publisher(for: \._chineseFontPaddingLeft).map { _ in () }.eraseToAnyPublisher(),
+            globalConfig.publisher(for: \._chineseFontPaddingBottom).map { _ in () }.eraseToAnyPublisher(),
+            globalConfig.publisher(for: \._englishFontPaddingLeft).map { _ in () }.eraseToAnyPublisher(),
+            globalConfig.publisher(for: \._englishFontPaddingBottom).map { _ in () }.eraseToAnyPublisher()
         ]
         
-        let globalConfig = YLLGlobalConfig.sharedInstance()
-        for key in observeKeys {
-            globalConfig.addObserver(self, forKeyPath: key, options: [.old, .new], context: nil)
-        }
-        
+        Publishers.MergeMany(fontAndColorPublishers)
+            .sink { [weak self] _ in
+                globalConfig.refreshFont()
+                self?.refreshTerminalState()
+            }
+            .store(in: &cancellables)
+            
         _tab?.setCanCloseOnlyTab(true)
         globalConfig.showHiddenText = globalConfig.showHiddenText
         globalConfig.cellWidth = globalConfig.cellWidth
@@ -164,7 +209,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
             }
         }
         
-        for case let site as YLSite in _sites {
+        for site in sitesList {
             let menuItem = NSMenuItem(title: site.name, action: #selector(openSiteMenu(_:)), keyEquivalent: "")
             menuItem.representedObject = site
             submenu.addItem(menuItem)
@@ -234,77 +279,78 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
         }
     }
     
-    // MARK: - KVO
-    @objc override public func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        guard let keyPath = keyPath else { return }
-        
+    // MARK: - KVO Observers Helpers
+    private func refreshTerminalState() {
+        (_telnetView?.selectedTabViewItem?.identifier as? YLConnection)?.terminal?.setAllDirty()
+        _telnetView?.updateBackedImage()
+        _telnetView?.needsDisplay = true
+    }
+    
+    private func updateWindowAndTerminalLayout() {
         let globalConfig = YLLGlobalConfig.sharedInstance()
-        if keyPath == "showHiddenText" {
-            _showHiddenTextMenuItem?.state = globalConfig.showHiddenText ? .on : .off
-        } else if keyPath == "messageCount" {
-            let dockTile = NSApp.dockTile
-            if globalConfig.messageCount == 0 {
-                dockTile.badgeLabel = nil
-            } else {
-                dockTile.badgeLabel = "\(globalConfig.messageCount)"
-            }
-            dockTile.display()
-        } else if keyPath == "shouldSmoothFonts" {
+        if let window = _mainWindow {
+            let shift = window.frame.height - (window.contentView?.frame.height ?? 0) + 22
+            var r = window.frame
+            let topLeftCorner = r.origin.y + r.size.height
+            r.size.width = globalConfig.cellWidth * CGFloat(globalConfig.column)
+            r.size.height = globalConfig.cellHeight * CGFloat(globalConfig.row) + shift
+            r.origin.y = topLeftCorner - r.size.height
+            window.setFrame(r, display: true, animate: false)
+            
+            _telnetView?.configure()
             (_telnetView?.selectedTabViewItem?.identifier as? YLConnection)?.terminal?.setAllDirty()
             _telnetView?.updateBackedImage()
             _telnetView?.needsDisplay = true
-        } else if keyPath.hasPrefix("cell") {
-            if let window = _mainWindow {
-                let shift = window.frame.height - (window.contentView?.frame.height ?? 0) + 22
-                var r = window.frame
-                let topLeftCorner = r.origin.y + r.size.height
-                r.size.width = globalConfig.cellWidth * CGFloat(globalConfig.column)
-                r.size.height = globalConfig.cellHeight * CGFloat(globalConfig.row) + shift
-                r.origin.y = topLeftCorner - r.size.height
-                window.setFrame(r, display: true, animate: false)
-                
-                _telnetView?.configure()
-                (_telnetView?.selectedTabViewItem?.identifier as? YLConnection)?.terminal?.setAllDirty()
-                _telnetView?.updateBackedImage()
-                _telnetView?.needsDisplay = true
-                
-                if let tab = _tab {
-                    var tabRect = tab.frame
-                    tabRect.size.width = r.size.width
-                    tab.frame = tabRect
-                }
+            
+            if let tab = _tab {
+                var tabRect = tab.frame
+                tabRect.size.width = r.size.width
+                tab.frame = tabRect
             }
-        } else if keyPath.hasPrefix("chineseFont") || keyPath.hasPrefix("englishFont") || keyPath.hasPrefix("color") {
-            globalConfig.refreshFont()
-            (_telnetView?.selectedTabViewItem?.identifier as? YLConnection)?.terminal?.setAllDirty()
-            _telnetView?.updateBackedImage()
-            _telnetView?.needsDisplay = true
         }
     }
     
     // MARK: - Serialization (User Defaults & Keychain)
     @objc public func loadSites() {
-        guard let dictionaries = UserDefaults.standard.array(forKey: "Sites") as? [[String: Any]] else { return }
-        for siteDict in dictionaries {
-            let mutableDict = NSMutableDictionary(dictionary: siteDict)
-            if let address = mutableDict["address"] as? String {
-                if let accounts = YLKeychain.accounts(forService: address),
-                   let account = accounts.last?["acct"] as? String {
-                    if let password = YLKeychain.password(forService: address, account: account) {
-                        mutableDict.setValue(account, forKey: "account")
-                        mutableDict.setValue(password, forKey: "password")
+        let defaults = UserDefaults.standard
+        if let data = defaults.data(forKey: "SitesCodable") {
+            do {
+                let decodedSites = try JSONDecoder().decode([YLSite].self, from: data)
+                self.sitesList = decodedSites
+                for site in sitesList {
+                    if let accounts = YLKeychain.accounts(forService: site.address),
+                       let account = accounts.last?["acct"] as? String {
+                        if let password = YLKeychain.password(forService: site.address, account: account) {
+                            site.account = account
+                            site.password = password
+                        }
                     }
                 }
+            } catch {
+                NSLog("Failed to decode SitesCodable: \(error)")
             }
-            let site = YLSite.site(withDictionary: mutableDict as! [String : Any])
-            insertObject(site, inSitesAtIndex: countOfSites())
+        } else if let dictionaries = defaults.array(forKey: "Sites") as? [[String: Any]] {
+            // Migration path
+            for siteDict in dictionaries {
+                let mutableDict = NSMutableDictionary(dictionary: siteDict)
+                if let address = mutableDict["address"] as? String {
+                    if let accounts = YLKeychain.accounts(forService: address),
+                       let account = accounts.last?["acct"] as? String {
+                        if let password = YLKeychain.password(forService: address, account: account) {
+                            mutableDict.setValue(account, forKey: "account")
+                            mutableDict.setValue(password, forKey: "password")
+                        }
+                    }
+                }
+                let site = YLSite.site(withDictionary: mutableDict as! [String : Any])
+                insertObject(site, inSitesAtIndex: countOfSites())
+            }
+            saveSites()
         }
     }
     
     @objc public func saveSites() {
-        let dictionaries = NSMutableArray()
-        for case let site as YLSite in _sites {
-            dictionaries.add(site.dictionaryOfSite())
+        for site in sitesList {
             let password = site.password
             let address = site.address
             if !password.isEmpty && !address.isEmpty {
@@ -315,32 +361,54 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
                 }
             }
         }
-        UserDefaults.standard.set(dictionaries, forKey: "Sites")
-        UserDefaults.standard.synchronize()
+        do {
+            let encodedData = try JSONEncoder().encode(sitesList)
+            UserDefaults.standard.set(encodedData, forKey: "SitesCodable")
+            UserDefaults.standard.synchronize()
+        } catch {
+            NSLog("Failed to encode SitesCodable: \(error)")
+        }
         updateSitesMenu()
     }
     
     @objc public func loadLastConnections() {
-        guard let dictionaries = UserDefaults.standard.array(forKey: "LastConnections") as? [[String: Any]] else { return }
-        for siteDict in dictionaries {
-            let site = YLSite.site(withDictionary: siteDict)
-            newConnection(with: site)
+        let defaults = UserDefaults.standard
+        if let data = defaults.data(forKey: "LastConnectionsCodable") {
+            do {
+                let decodedSites = try JSONDecoder().decode([YLSite].self, from: data)
+                for site in decodedSites {
+                    newConnection(with: site)
+                }
+            } catch {
+                NSLog("Failed to decode LastConnectionsCodable: \(error)")
+            }
+        } else if let dictionaries = defaults.array(forKey: "LastConnections") as? [[String: Any]] {
+            // Migration path
+            for siteDict in dictionaries {
+                let site = YLSite.site(withDictionary: siteDict)
+                newConnection(with: site)
+            }
         }
     }
     
     @objc public func saveLastConnections() {
         guard let tv = _telnetView else { return }
         let tabNumber = tv.numberOfTabViewItems
-        let dictionaries = NSMutableArray()
+        var lastConnectedSites: [YLSite] = []
         for i in 0..<tabNumber {
             if let connection = tv.tabViewItem(at: i).identifier as? YLConnection, connection.terminal != nil {
                 if let site = connection.site as? YLSite {
-                    dictionaries.add(site.dictionaryOfSite())
+                    lastConnectedSites.append(site)
                 }
             }
         }
-        UserDefaults.standard.set(dictionaries, forKey: "LastConnections")
-        UserDefaults.standard.synchronize()
+        do {
+            let encodedData = try JSONEncoder().encode(lastConnectedSites)
+            UserDefaults.standard.set(encodedData, forKey: "LastConnectionsCodable")
+            UserDefaults.standard.synchronize()
+        } catch {
+            NSLog("Failed to encode LastConnectionsCodable: \(error)")
+        }
     }
     
     // MARK: - Actions
@@ -409,7 +477,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
         var connectSite = YLSite()
         
         if name.contains(".") { /* Normal address */
-            for case let site as YLSite in _sites {
+            for site in sitesList {
                 let address = site.address
                 if address.contains(name) && !(ssh != address.hasPrefix("ssh://")) {
                     matchedSites.add(site)
@@ -428,7 +496,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
                 connectSite.detectDoubleByte = YLLGlobalConfig.sharedInstance().detectDoubleByte
             }
         } else { /* Short Address? */
-            for case let site as YLSite in _sites {
+            for site in sitesList {
                 let sName = site.name
                 if sName.contains(name) {
                     matchedSites.add(site)
@@ -436,7 +504,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
             }
             matchedSites.sort(using: [NSSortDescriptor(key: "name.length", ascending: true)])
             if matchedSites.count == 0 {
-                for case let site as YLSite in _sites {
+                for site in sitesList {
                     let address = site.address
                     if address.contains(name) {
                         matchedSites.add(site)

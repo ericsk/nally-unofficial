@@ -9,13 +9,13 @@
 import Foundation
 
 @objc(YLEncoding)
-public enum YLEncoding: UInt16 {
+public enum YLEncoding: UInt16, Codable {
     case YLBig5Encoding = 0
     case YLGBKEncoding = 1
 }
 
 @objc(YLANSIColorKey)
-public enum YLANSIColorKey: UInt16 {
+public enum YLANSIColorKey: UInt16, Codable {
     case YLCtrlUANSIColorKey = 0
     case YLEscEscEscANSIColorKey = 1
 }

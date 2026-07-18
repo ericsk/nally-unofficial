@@ -4,7 +4,7 @@ import Observation
 @Observable
 @objc(YLSite)
 @objcMembers
-public class YLSite: NSObject, NSCopying {
+public class YLSite: NSObject, NSCopying, Codable {
     public dynamic var name: String = "Site Name"
     public dynamic var address: String = "(your.site.org)"
     public dynamic var account: String = ""
@@ -13,8 +13,41 @@ public class YLSite: NSObject, NSCopying {
     public dynamic var ansiColorKey: YLANSIColorKey = .YLCtrlUANSIColorKey
     public dynamic var detectDoubleByte: Bool = true
     
+    enum CodingKeys: String, CodingKey {
+        case name
+        case address
+        case account
+        case password
+        case encoding
+        case ansiColorKey
+        case detectDoubleByte
+    }
+    
     public override init() {
         super.init()
+    }
+    
+    public required init(from decoder: Decoder) throws {
+        super.init()
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decode(String.self, forKey: .name)
+        address = try container.decode(String.self, forKey: .address)
+        account = try container.decodeIfPresent(String.self, forKey: .account) ?? ""
+        password = try container.decodeIfPresent(String.self, forKey: .password) ?? ""
+        encoding = try container.decode(YLEncoding.self, forKey: .encoding)
+        ansiColorKey = try container.decode(YLANSIColorKey.self, forKey: .ansiColorKey)
+        detectDoubleByte = try container.decode(Bool.self, forKey: .detectDoubleByte)
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(name, forKey: .name)
+        try container.encode(address, forKey: .address)
+        try container.encode(account, forKey: .account)
+        try container.encode(password, forKey: .password)
+        try container.encode(encoding, forKey: .encoding)
+        try container.encode(ansiColorKey, forKey: .ansiColorKey)
+        try container.encode(detectDoubleByte, forKey: .detectDoubleByte)
     }
     
     public class func site() -> YLSite {
