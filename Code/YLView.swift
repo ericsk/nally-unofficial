@@ -1025,27 +1025,33 @@ public class YLView: NSTabView, NSTextInputClient {
         let gColumn = Int(config.column)
         
         guard let context = _bitmapContext, let data = context.data else { return }
-        let bytesMod = context.bytesPerRow
+        let scale = self.window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2.0
+        let bytesPerRow = context.bytesPerRow
         
-        let srcY = Int(CGFloat(gRow - Int(end) - 1) * _fontHeight)
-        let destY = Int(CGFloat(gRow - Int(end)) * _fontHeight)
-        let copyHeight = Int(CGFloat(end - start) * _fontHeight)
+        let srcYPoints = CGFloat(gRow - Int(end) - 1) * _fontHeight
+        let destYPoints = CGFloat(gRow - Int(end)) * _fontHeight
+        let copyHeightPoints = CGFloat(end - start) * _fontHeight
         
-        let srcOffset = srcY * bytesMod
-        let destOffset = destY * bytesMod
-        let count = copyHeight * bytesMod
+        let srcY = Int(srcYPoints * scale)
+        let destY = Int(destYPoints * scale)
+        let copyHeight = Int(copyHeightPoints * scale)
         
-        let totalBytes = context.height * bytesMod
+        let srcOffset = srcY * bytesPerRow
+        let destOffset = destY * bytesPerRow
+        let count = copyHeight * bytesPerRow
+        
+        let totalBytes = context.height * bytesPerRow
         if srcOffset + count <= totalBytes && destOffset + count <= totalBytes {
             memmove(data.advanced(by: destOffset), data.advanced(by: srcOffset), count)
         }
         
         let previousContext = NSGraphicsContext.current
-        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: true)
+        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
         NSGraphicsContext.current = graphicsContext
         
         config.colorAtIndex(config.bgColorIndex, hilite: false).set()
-        NSMakeRect(0.0, CGFloat(gRow - Int(end) - 1) * _fontHeight, CGFloat(gColumn) * _fontWidth, _fontHeight).fill()
+        let cleanY = CGFloat(gRow - Int(end) - 1) * _fontHeight
+        NSMakeRect(0.0, cleanY, CGFloat(gColumn) * _fontWidth, _fontHeight).fill()
         
         NSGraphicsContext.current = previousContext
         
@@ -1060,27 +1066,33 @@ public class YLView: NSTabView, NSTextInputClient {
         let gColumn = Int(config.column)
         
         guard let context = _bitmapContext, let data = context.data else { return }
-        let bytesMod = context.bytesPerRow
+        let scale = self.window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2.0
+        let bytesPerRow = context.bytesPerRow
         
-        let srcY = Int(CGFloat(gRow - Int(end)) * _fontHeight)
-        let destY = Int(CGFloat(gRow - Int(end) - 1) * _fontHeight)
-        let copyHeight = Int(CGFloat(end - start) * _fontHeight)
+        let srcYPoints = CGFloat(gRow - Int(end)) * _fontHeight
+        let destYPoints = CGFloat(gRow - Int(end) - 1) * _fontHeight
+        let copyHeightPoints = CGFloat(end - start) * _fontHeight
         
-        let srcOffset = srcY * bytesMod
-        let destOffset = destY * bytesMod
-        let count = copyHeight * bytesMod
+        let srcY = Int(srcYPoints * scale)
+        let destY = Int(destYPoints * scale)
+        let copyHeight = Int(copyHeightPoints * scale)
         
-        let totalBytes = context.height * bytesMod
+        let srcOffset = srcY * bytesPerRow
+        let destOffset = destY * bytesPerRow
+        let count = copyHeight * bytesPerRow
+        
+        let totalBytes = context.height * bytesPerRow
         if srcOffset + count <= totalBytes && destOffset + count <= totalBytes {
             memmove(data.advanced(by: destOffset), data.advanced(by: srcOffset), count)
         }
         
         let previousContext = NSGraphicsContext.current
-        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: true)
+        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
         NSGraphicsContext.current = graphicsContext
         
         config.colorAtIndex(config.bgColorIndex, hilite: false).set()
-        NSMakeRect(0.0, CGFloat(gRow - Int(start) - 1) * _fontHeight, CGFloat(gColumn) * _fontWidth, _fontHeight).fill()
+        let cleanY = CGFloat(gRow - Int(start) - 1) * _fontHeight
+        NSMakeRect(0.0, cleanY, CGFloat(gColumn) * _fontWidth, _fontHeight).fill()
         
         NSGraphicsContext.current = previousContext
         
@@ -1097,7 +1109,7 @@ public class YLView: NSTabView, NSTextInputClient {
         
         guard let ds = frontMostTerminal() else {
             let previousContext = NSGraphicsContext.current
-            let graphicsContext = NSGraphicsContext(cgContext: context, flipped: true)
+            let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
             NSGraphicsContext.current = graphicsContext
             
             NSColor.clear.set()
@@ -1111,38 +1123,40 @@ public class YLView: NSTabView, NSTextInputClient {
         }
         
         let previousContext = NSGraphicsContext.current
-        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: true)
+        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
         NSGraphicsContext.current = graphicsContext
         
-        /* Draw Background */
-        var y = 0
-        while y < gRow {
-            var x = 0
-            while x < gColumn {
-                if ds.isDirty(atRow: Int32(y), column: Int32(x)) {
-                    let startx = x
-                    while x < gColumn && ds.isDirty(atRow: Int32(y), column: Int32(x)) {
-                        x += 1
+        if let activeCtx = NSGraphicsContext.current?.cgContext {
+            /* Draw Background */
+            var y = 0
+            while y < gRow {
+                var x = 0
+                while x < gColumn {
+                    if ds.isDirty(atRow: Int32(y), column: Int32(x)) {
+                        let startx = x
+                        while x < gColumn && ds.isDirty(atRow: Int32(y), column: Int32(x)) {
+                            x += 1
+                        }
+                        updateBackground(forRow: Int32(y), from: Int32(startx), to: Int32(x))
                     }
-                    updateBackground(forRow: Int32(y), from: Int32(startx), to: Int32(x))
+                    x += 1
                 }
-                x += 1
+                y += 1
             }
-            y += 1
-        }
-        
-        context.saveGState()
-        context.setShouldSmoothFonts(config.shouldSmoothFonts)
-        
-        /* Draw String row by row */
-        for r in 0..<gRow {
-            drawString(forRow: Int32(r), context: context)
-        }
-        context.restoreGState()
-        
-        for r in 0..<gRow {
-            for c in 0..<gColumn {
-                ds.setDirty(false, atRow: Int32(r), column: Int32(c))
+            
+            activeCtx.saveGState()
+            activeCtx.setShouldSmoothFonts(config.shouldSmoothFonts)
+            
+            /* Draw String row by row */
+            for r in 0..<gRow {
+                drawString(forRow: Int32(r), context: activeCtx)
+            }
+            activeCtx.restoreGState()
+            
+            for r in 0..<gRow {
+                for c in 0..<gColumn {
+                    ds.setDirty(false, atRow: Int32(r), column: Int32(c))
+                }
             }
         }
         
@@ -1155,6 +1169,11 @@ public class YLView: NSTabView, NSTextInputClient {
     // MARK: - Overrides
     public override var acceptsFirstResponder: Bool {
         return true
+    }
+    
+    public override func viewDidChangeBackingProperties() {
+        super.viewDidChangeBackingProperties()
+        configure()
     }
     
     public override var canBecomeKeyView: Bool {
