@@ -3,10 +3,11 @@
 //  Nally
 //
 //  Created by Lan Yung-Luen on 12/7/07.
-//  Copyright 2007 yllan.org. All rights reserved.
+//  Copyright 2007-2026 yllan.org. All rights reserved.
 //
 
 import Cocoa
+import Combine
 
 @objc(YLSSH)
 public class YLSSH: YLConnection {
@@ -15,20 +16,33 @@ public class YLSSH: YLConnection {
     private var loginAsBBS: Bool = false
     private var usePacketMode: Bool = true
     
+    // Modern Dispatch Queue and Source
+    private let queue = DispatchQueue(label: "org.yllan.nally.ssh")
+    private var readSource: DispatchSourceRead?
+    
     deinit {
         close()
     }
     
     @objc public override func close() {
         NSLog("YLSSH: close called")
+        
+        if let source = readSource {
+            source.cancel()
+            readSource = nil
+        }
+        
         if pid > 0 {
             kill(pid, SIGKILL)
+            var status: Int32 = 0
+            waitpid(pid, &status, WNOHANG)
+            pid = 0
         }
+        
         if fileDescriptor >= 0 {
             Darwin.close(fileDescriptor)
+            fileDescriptor = -1
         }
-        fileDescriptor = -1
-        pid = 0
         connected = false
     }
     
@@ -124,7 +138,6 @@ public class YLSSH: YLConnection {
         if forkPid == 0 { // Child
             let portStr = String(port)
             if loginAsBBS {
-                // Correct argv[0] to be "ssh" command name instead of executable path
                 let args = ["ssh", "-e", "none", "-x", "-p", portStr, addr]
                 let cArgs = args.map { strdup($0) } + [nil]
                 cArgs.withUnsafeBufferPointer { bufferPtr in
@@ -152,20 +165,72 @@ public class YLSSH: YLConnection {
             
             var one: Int32 = 1
             let ioctlRet = ioctl(self.fileDescriptor, UInt(TIOCPKT), &one)
-            NSLog("YLSSH: ioctl(TIOCPKT) returned \(ioctlRet), errno: \(errno)")
-            NSLog("YLSSH: TIOCPKT constant value in Swift: \(String(format: "0x%X", TIOCPKT))")
             if ioctlRet < 0 {
                 usePacketMode = false
             } else {
                 usePacketMode = true
             }
             
-            Thread.detachNewThreadSelector(#selector(readLoop), toTarget: self, with: nil)
+            // Set fd to non-blocking
+            let flags = fcntl(self.fileDescriptor, F_GETFL, 0)
+            _ = fcntl(self.fileDescriptor, F_SETFL, flags | O_NONBLOCK)
+            
+            // Setup DispatchSourceRead
+            let source = DispatchSource.makeReadSource(fileDescriptor: self.fileDescriptor, queue: queue)
+            source.setEventHandler { [weak self] in
+                self?.handleRead()
+            }
+            source.setCancelHandler { [weak self] in
+                guard let self = self else { return }
+                if self.fileDescriptor >= 0 {
+                    Darwin.close(self.fileDescriptor)
+                    self.fileDescriptor = -1
+                }
+            }
+            self.readSource = source
+            source.resume()
+            
             self.connected = true
             return true
         } else {
             perror("forkpty failed")
             return false
+        }
+    }
+    
+    private func handleRead() {
+        guard fileDescriptor >= 0 else { return }
+        var buf = [UInt8](repeating: 0, count: 4096)
+        let readRes = Darwin.read(fileDescriptor, &buf, buf.count)
+        
+        if readRes > 0 {
+            let data: Data
+            if usePacketMode {
+                if readRes > 1 {
+                    data = Data(buf[1..<readRes])
+                } else {
+                    return
+                }
+            } else {
+                data = Data(buf[0..<readRes])
+            }
+            DispatchQueue.main.async { [weak self] in
+                self?.receiveData(data)
+            }
+        } else if readRes < 0 {
+            let err = errno
+            if err == EAGAIN || err == EWOULDBLOCK {
+                return
+            }
+            NSLog("YLSSH: read error: \(err), closing")
+            DispatchQueue.main.async { [weak self] in
+                self?.close()
+            }
+        } else {
+            NSLog("YLSSH: read returned 0 (EOF), closing")
+            DispatchQueue.main.async { [weak self] in
+                self?.close()
+            }
         }
     }
     
@@ -184,118 +249,59 @@ public class YLSSH: YLConnection {
     
     @objc(sendBytes:length:)
     public override func sendBytes(_ msg: UnsafePointer<UInt8>, length: Int) {
-        guard fileDescriptor >= 0, fileDescriptor < 1024 else { return }
+        guard fileDescriptor >= 0, length > 0 else { return }
         lastTouchDateValue = Date()
         
-        var remaining = length
-        var ptr = msg
+        let data = Data(bytes: msg, count: length)
+        queue.async { [weak self] in
+            self?.writeAsync(data)
+        }
+    }
+    
+    private func writeAsync(_ data: Data) {
+        guard fileDescriptor >= 0 else { return }
+        var remaining = data.count
+        var offset = 0
         
-        while remaining > 0 {
-            var writeFileDescriptorSet = fd_set()
-            var errorFileDescriptorSet = fd_set()
+        data.withUnsafeBytes { rawBuffer in
+            guard let baseAddress = rawBuffer.baseAddress?.assumingMemoryBound(to: UInt8.self) else { return }
             
-            let fd = fileDescriptor
-            __darwin_fd_set(fd, &writeFileDescriptorSet)
-            __darwin_fd_set(fd, &errorFileDescriptorSet)
-            
-            var timeout = timeval(tv_sec: 0, tv_usec: 100000)
-            
-            let result = select(fd + 1, nil, &writeFileDescriptorSet, &errorFileDescriptorSet, &timeout)
-            
-            if result == 0 {
-                NSLog("timeout!")
-                break
-            } else if result < 0 {
-                close()
-                break
+            while remaining > 0 {
+                let chunkPtr = baseAddress + offset
+                let size = Darwin.write(fileDescriptor, chunkPtr, remaining)
+                
+                if size > 0 {
+                    offset += size
+                    remaining -= size
+                } else if size < 0 {
+                    let err = errno
+                    if err == EAGAIN || err == EWOULDBLOCK {
+                        usleep(10000) // 10ms
+                        continue
+                    } else {
+                        NSLog("YLSSH: write error: \(err), closing")
+                        DispatchQueue.main.async { [weak self] in
+                            self?.close()
+                        }
+                        break
+                    }
+                } else {
+                    NSLog("YLSSH: write returned 0, closing")
+                    DispatchQueue.main.async { [weak self] in
+                        self?.close()
+                    }
+                    break
+                }
             }
-            
-            let chunkSize = min(remaining, 4096)
-            let size = Darwin.write(fileDescriptor, ptr, chunkSize)
-            if size <= 0 {
-                close()
-                break
-            }
-            
-            ptr += size
-            remaining -= size
         }
     }
     
     @objc(sendData:)
     public override func sendData(_ msg: Data) {
-        msg.withUnsafeBytes { rawBuffer in
-            if let baseAddress = rawBuffer.baseAddress?.assumingMemoryBound(to: UInt8.self) {
-                self.sendBytes(baseAddress, length: msg.count)
-            }
-        }
-    }
-    
-    @objc private func readLoop() {
-        NSLog("YLSSH: readLoop started")
-        autoreleasepool {
-            var exitLoop = false
-            var buf = [UInt8](repeating: 0, count: 4096)
-            var iterationCount = 0
-            
-            while !exitLoop {
-                iterationCount += 1
-                
-                let fd = fileDescriptor
-                guard fd >= 0 && fd < 1024 else { break }
-                
-                var readFileDescriptorSet = fd_set()
-                var errorFileDescriptorSet = fd_set()
-                
-                __darwin_fd_set(fd, &readFileDescriptorSet)
-                __darwin_fd_set(fd, &errorFileDescriptorSet)
-                
-                let result = select(fd + 1, &readFileDescriptorSet, nil, &errorFileDescriptorSet, nil)
-                
-                if result < 0 {
-                    NSLog("YLSSH: select error: \(errno)")
-                    break
-                }
-                
-                let isErrorSet = __darwin_fd_isset(fd, &errorFileDescriptorSet) != 0
-                let isReadSet = __darwin_fd_isset(fd, &readFileDescriptorSet) != 0
-                
-                if isErrorSet {
-                    var c: UInt8 = 0
-                    let readRes = Darwin.read(fd, &c, 1)
-                    if readRes <= 0 {
-                        exitLoop = true
-                    }
-                } else if isReadSet {
-                    let readRes = Darwin.read(fd, &buf, buf.count)
-                    if readRes > 0 {
-                        if self.usePacketMode {
-                            if readRes > 1 {
-                                let data = Data(buf[1..<readRes])
-                                DispatchQueue.main.async {
-                                    self.receiveData(data)
-                                }
-                            }
-                        } else {
-                            let data = Data(buf[0..<readRes])
-                            DispatchQueue.main.async {
-                                self.receiveData(data)
-                            }
-                        }
-                    }
-                    if readRes <= 0 {
-                        NSLog("YLSSH: read returned 0 or error, exiting loop")
-                        exitLoop = true
-                    }
-                }
-                
-                if iterationCount % 5000 == 0 {
-                    iterationCount = 1
-                }
-            }
-            
-            NSLog("YLSSH: readLoop exiting, closing connection")
-            self.performSelector(onMainThread: #selector(close), with: nil, waitUntilDone: false)
+        guard fileDescriptor >= 0, !msg.isEmpty else { return }
+        lastTouchDateValue = Date()
+        queue.async { [weak self] in
+            self?.writeAsync(msg)
         }
     }
 }
