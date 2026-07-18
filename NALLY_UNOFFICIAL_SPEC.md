@@ -84,6 +84,7 @@ graph TD
 | **Phase 7: 生命週期與工具列完全 SwiftUI 化** | 淘汰 `MainMenu.nib` 與 `NallyToolbarDelegate`，改以純 SwiftUI `App` / `Window` 接管主視窗生命週期與宣告式 `.toolbar`。 | [NallyApp.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/NallyApp.swift), [NallyAppDelegate.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/NallyAppDelegate.swift), [MainContentView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/MainContentView.swift), [YLController.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLController.swift) |
 | **Phase 8: 資料流與狀態管理現代化** | 淘汰 `NSMutableArray` 與 KVO，改用原生 Swift 陣列 `[YLSite]`、Combine 宣告式訂閱與 `Codable` JSON 序列化儲存。 | [YLSite.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLSite.swift), [YLController.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLController.swift), [CommonType.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/CommonType.swift) |
 | **Phase 9: SSH 通訊 Concurrency 化** | 淘汰 `Thread.detachNewThread` 與 `select()`，改用 GCD `DispatchSourceRead` 及非阻塞式 I/O，並清理子行程防範殭屍行程。 | [YLSSH.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLSSH.swift) |
+| **Phase 10: PSMTabBarControl 舊型分頁淘汰與 SwiftUI 分頁化** | 淘汰 PSMTabBarControl 舊型分頁與 TabBarRepresentable，以純 SwiftUI NallyTabBarView 與 Combine 實現分頁列與連線狀態同步，並修復 Cmd + 1~9 快速鍵。 | [NallyApp.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/NallyApp.swift), [YLController.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLController.swift), [YLApplication.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLApplication.swift) |
 
 ---
 
@@ -113,6 +114,7 @@ xcodebuild -scheme Nally -configuration Release SYMROOT=build build
 - [x] **應用程式生命週期與工具列完全 SwiftUI 化**：淘汰 `MainMenu.nib` 載入邏輯與過時的 AppKit 工具列代理，改由純 SwiftUI 宣告主視窗與工具列項目，徹底實現現代 Swift 技術棧。
 - [x] **資料流與狀態管理現代化**：淘汰 `NSMutableArray` 與 KVO 監聽，改用原生 Swift 陣列 `[YLSite]`、Combine 宣告式訂閱與 `Codable` JSON 序列化儲存。
 - [x] **SSH 通訊 Concurrency 化**：淘汰 `Thread.detachNewThread` 與 `select()`，改用 GCD `DispatchSourceRead` 及非阻塞式 I/O，防範執行緒洩漏與殭屍行程。
+- [x] **PSMTabBarControl 舊型分頁淘汰與 SwiftUI 分頁化**：淘汰舊有 Objective-C 分頁框架，以純 SwiftUI 與 Combine 重新實現，並修復 `Cmd + 1~9` 快捷鍵切換。
 
 ---
 
