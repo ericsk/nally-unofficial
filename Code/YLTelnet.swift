@@ -7,13 +7,14 @@
 //
 
 import Cocoa
+import Network
 
 @objc(YLTelnet)
-public class YLTelnet: YLConnection, StreamDelegate {
-    private var host: Host?
+public class YLTelnet: YLConnection {
+    private var connection: NWConnection?
+    private let queue = DispatchQueue(label: "org.yllan.nally.telnet")
     private var port: Int = 0
-    private var inputStream: InputStream?
-    private var outputStream: OutputStream?
+    private var hostName: String = ""
     
     private var echoing: Bool = false
     private var editing: Bool = false
@@ -65,77 +66,18 @@ public class YLTelnet: YLConnection, StreamDelegate {
     @objc public override func close() {
         NSLog("YLTelnet: close connection called")
         isProcessing = false
-        if let inputStream = inputStream {
-            inputStream.close()
-            inputStream.remove(from: .main, forMode: .default)
+        if let conn = connection {
+            conn.stateUpdateHandler = nil
+            conn.cancel()
         }
-        inputStream = nil
-        if let outputStream = outputStream {
-            outputStream.close()
-            outputStream.remove(from: .main, forMode: .default)
-        }
-        outputStream = nil
+        connection = nil
         connected = false
         terminal?.closeConnection()
     }
     
     @objc public override func reconnect() {
-        if let host = host {
-            close()
-            let dict: NSDictionary = ["host": host, "port": port]
-            connectWithDictionary(dict)
-        }
-    }
-    
-    @objc private func lookUpDomainName(_ dict: NSDictionary) {
-        autoreleasepool {
-            guard let addr = dict["addr"] as? String,
-                  let port = dict["port"] as? Int else { return }
-            
-            NSLog("YLTelnet: lookUpDomainName: resolving \(addr)")
-            let host = Host(name: addr)
-            if host.address != nil {
-                NSLog("YLTelnet: lookUpDomainName: resolved \(addr) to \(host.address ?? "nil")")
-                let resultDict: NSDictionary = ["host": host, "port": port, "addr": addr]
-                self.performSelector(onMainThread: #selector(connectWithDictionary(_:)), with: resultDict, waitUntilDone: false)
-            } else {
-                NSLog("YLTelnet: lookUpDomainName: failed to resolve \(addr)")
-                DispatchQueue.main.async {
-                    self.isProcessing = false
-                }
-            }
-        }
-    }
-    
-    @objc private func connectWithDictionary(_ dict: NSDictionary) {
-        guard let host = dict["host"] as? Host,
-              let port = dict["port"] as? Int,
-              let addr = dict["addr"] as? String else { return }
-        
-        self.host = host
-        self.terminal?.clearAll()
-        
-        var inStream: InputStream?
-        var outStream: OutputStream?
-        
-        // Pass original hostname string 'addr' to let OS handle Happy Eyeballs DNS resolution
-        NSLog("YLTelnet: connectWithDictionary: getStreamsToHost with name: \(addr) port: \(port)")
-        Stream.getStreamsToHost(withName: addr, port: port, inputStream: &inStream, outputStream: &outStream)
-        
-        self.inputStream = inStream
-        self.outputStream = outStream
-        
-        if let inputStream = self.inputStream, let outputStream = self.outputStream {
-            inputStream.delegate = self
-            outputStream.delegate = self
-            inputStream.schedule(in: .main, forMode: .default)
-            outputStream.schedule(in: .main, forMode: .default)
-            inputStream.open()
-            outputStream.open()
-            NSLog("YLTelnet: connectWithDictionary: streams opened")
-        } else {
-            NSLog("YLTelnet: connectWithDictionary: failed to get streams")
-        }
+        close()
+        _ = connect(toAddress: hostName, port: UInt32(port))
     }
     
     @objc(connectToAddress:)
@@ -163,53 +105,77 @@ public class YLTelnet: YLConnection, StreamDelegate {
             connectionAddress = "\(addr):\(port)"
         }
         self.port = Int(port)
+        self.hostName = addr
         
-        let dict: NSDictionary = ["addr": addr, "port": Int(port)]
-        self.performSelector(inBackground: #selector(lookUpDomainName(_:)), with: dict)
+        self.terminal?.clearAll()
+        
+        let nwHost = NWEndpoint.Host(addr)
+        let nwPort = NWEndpoint.Port(integerLiteral: UInt16(port))
+        
+        let conn = NWConnection(host: nwHost, port: nwPort, using: .tcp)
+        self.connection = conn
+        
+        conn.stateUpdateHandler = { [weak self] state in
+            guard let self = self else { return }
+            switch state {
+            case .ready:
+                NSLog("YLTelnet: NWConnection connected (ready)")
+                DispatchQueue.main.async {
+                    self.connected = true
+                    self.isProcessing = false
+                    self.terminal?.startConnection()
+                }
+                self.receiveLoop()
+            case .failed(let error):
+                NSLog("YLTelnet: NWConnection failed: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    self.close()
+                }
+            case .cancelled:
+                NSLog("YLTelnet: NWConnection cancelled")
+                DispatchQueue.main.async {
+                    self.close()
+                }
+            case .waiting(let error):
+                NSLog("YLTelnet: NWConnection waiting: \(error.localizedDescription)")
+            default:
+                break
+            }
+        }
+        
+        conn.start(queue: queue)
         return true
     }
     
-    @objc(stream:handleEvent:)
-    public func stream(_ aStream: Stream, handle eventCode: Stream.Event) {
-        let streamName = aStream === inputStream ? "InputStream" : "OutputStream"
-        switch eventCode {
-        case .openCompleted:
-            NSLog("YLTelnet: stream \(streamName) openCompleted")
-            connected = true
-            isProcessing = false
-            terminal?.startConnection()
-            
-        case .hasBytesAvailable:
-            if let inputStream = aStream as? InputStream {
-                var buf = [UInt8](repeating: 0, count: 4096)
-                while inputStream.hasBytesAvailable {
-                    let len = inputStream.read(&buf, maxLength: 4096)
-                    if len > 0 {
-                        buf.withUnsafeMutableBufferPointer { bufferPtr in
-                            if let baseAddress = bufferPtr.baseAddress {
-                                self.receiveBytes(baseAddress, length: len)
-                            }
+    private func receiveLoop() {
+        guard let conn = connection else { return }
+        conn.receive(minimumIncompleteLength: 1, maximumLength: 4096) { [weak self] (data, context, isComplete, error) in
+            guard let self = self else { return }
+            if let data = data, !data.isEmpty {
+                let count = data.count
+                var mutableBytes = Array(data)
+                DispatchQueue.main.async { [weak self] in
+                    guard let self = self, self.connection != nil else { return }
+                    mutableBytes.withUnsafeMutableBufferPointer { bufferPtr in
+                        if let mutableBase = bufferPtr.baseAddress {
+                            self.receiveBytes(mutableBase, length: count)
                         }
                     }
                 }
             }
-            
-        case .hasSpaceAvailable:
-            break
-            
-        case .errorOccurred:
-            let err = aStream.streamError?.localizedDescription ?? "unknown error"
-            NSLog("YLTelnet: stream \(streamName) errorOccurred: \(err)")
-            isProcessing = false
-            close()
-            
-        case .endEncountered:
-            NSLog("YLTelnet: stream \(streamName) endEncountered")
-            isProcessing = false
-            close()
-            
-        default:
-            break
+            if isComplete {
+                NSLog("YLTelnet: NWConnection end encountered")
+                DispatchQueue.main.async { [weak self] in
+                    self?.close()
+                }
+            } else if let error = error {
+                NSLog("YLTelnet: NWConnection receive error: \(error.localizedDescription)")
+                DispatchQueue.main.async { [weak self] in
+                    self?.close()
+                }
+            } else {
+                self.receiveLoop()
+            }
         }
     }
     
@@ -336,32 +302,24 @@ public class YLTelnet: YLConnection, StreamDelegate {
     
     @objc(sendBytes:length:)
     public override func sendBytes(_ msg: UnsafePointer<UInt8>, length: Int) {
-        guard length > 0, let outputStream = outputStream else { return }
+        guard length > 0, let connection = connection else { return }
         lastTouchDateValue = Date()
-        
-        let status = outputStream.streamStatus
-        if status == .notOpen || status == .error || status == .closed || status == .atEnd {
-            return
-        }
-        
-        let result = outputStream.write(msg, maxLength: length)
-        if result == length { return }
-        if result <= 0 {
-            let data = Data(bytes: msg, count: length) as NSData
-            self.perform(#selector(sendData(_:)), with: data, afterDelay: 0.001)
-        } else {
-            let data = Data(bytes: msg + result, count: length - result) as NSData
-            self.perform(#selector(sendData(_:)), with: data, afterDelay: 0.001)
-        }
+        let data = Data(bytes: msg, count: length)
+        connection.send(content: data, completion: .contentProcessed { error in
+            if let error = error {
+                NSLog("YLTelnet: NWConnection send error: \(error.localizedDescription)")
+            }
+        })
     }
     
     @objc(sendData:)
     public override func sendData(_ msg: Data) {
-        guard outputStream != nil else { return }
-        msg.withUnsafeBytes { rawBuffer in
-            if let baseAddress = rawBuffer.baseAddress?.assumingMemoryBound(to: UInt8.self) {
-                self.sendBytes(baseAddress, length: msg.count)
+        guard let connection = connection else { return }
+        lastTouchDateValue = Date()
+        connection.send(content: msg, completion: .contentProcessed { error in
+            if let error = error {
+                NSLog("YLTelnet: NWConnection send error: \(error.localizedDescription)")
             }
-        }
+        })
     }
 }
