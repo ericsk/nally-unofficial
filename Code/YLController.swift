@@ -54,7 +54,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
     }
     
     // MARK: - Initializer & Lifecycle
-    @objc override public func awakeFromNib() {
+    @objc public func setupProgrammatically() {
         // Register URL event handler
         NSAppleEventManager.shared().setEventHandler(
             self,
@@ -86,37 +86,45 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
         
         _pluginLoader = YLPluginLoader()
         
-        _mainWindow?._setContentHasShadow(false)
-        _mainWindow?.isOpaque = false
-        if #available(macOS 11.0, *) {
-            _mainWindow?.toolbarStyle = .expanded
-        }
-        
-        _mainWindow?.setFrameAutosaveName("nallyMainWindowFrame")
-        
-        // Recalculate window frame size to fit cell configuration and toolbar/tab bar on startup
-        if let window = _mainWindow {
-            let shift = window.frame.height - (window.contentView?.frame.height ?? 0) + 22
-            var r = window.frame
-            let topLeftCorner = r.origin.y + r.size.height
-            r.size.width = globalConfig.cellWidth * CGFloat(globalConfig.column)
-            r.size.height = globalConfig.cellHeight * CGFloat(globalConfig.row) + shift
-            r.origin.y = topLeftCorner - r.size.height
-            window.setFrame(r, display: true, animate: false)
-            _telnetView?.configure()
-            
-            if let tab = _tab {
-                var tabRect = tab.frame
-                tabRect.size.width = r.size.width
-                tab.frame = tabRect
-            }
-        }
-        
         if UserDefaults.standard.bool(forKey: "RestoreConnection") {
             loadLastConnections()
         }
         
         Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateBlinkTicker(_:)), userInfo: nil, repeats: true)
+    }
+    
+    @objc override public func awakeFromNib() {
+        setupProgrammatically()
+        if let window = _mainWindow {
+            setupWindow(window)
+        }
+    }
+    
+    @objc(setupWindow:)
+    public func setupWindow(_ window: NSWindow) {
+        self._mainWindow = window
+        window._setContentHasShadow(false)
+        window.isOpaque = false
+        if #available(macOS 11.0, *) {
+            window.toolbarStyle = .expanded
+        }
+        window.setFrameAutosaveName("nallyMainWindowFrame")
+        
+        let globalConfig = YLLGlobalConfig.sharedInstance()
+        let shift = window.frame.height - (window.contentView?.frame.height ?? 0) + 22
+        var r = window.frame
+        let topLeftCorner = r.origin.y + r.size.height
+        r.size.width = globalConfig.cellWidth * CGFloat(globalConfig.column)
+        r.size.height = globalConfig.cellHeight * CGFloat(globalConfig.row) + shift
+        r.origin.y = topLeftCorner - r.size.height
+        window.setFrame(r, display: true, animate: false)
+        _telnetView?.configure()
+        
+        if let tab = _tab {
+            var tabRect = tab.frame
+            tabRect.size.width = r.size.width
+            tab.frame = tabRect
+        }
     }
     
     @objc public func setupAfterSwiftUI() {
@@ -383,13 +391,10 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
         _addressBar?.becomeFirstResponder()
     }
     
-    @IBAction public func connect(_ sender: Any?) {
-        guard let textField = sender as? NSTextField else { return }
-        textField.abortEditing()
-        _telnetView?.window?.makeFirstResponder(_telnetView)
+    @objc(connectToAddressString:)
+    public func connect(toAddressString addressString: String) -> String {
         var ssh = false
-        
-        var name = textField.stringValue
+        var name = addressString
         if name.lowercased().hasPrefix("ssh://") {
             ssh = true
         }
@@ -444,7 +449,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
                     connectSite = firstSite.copy() as! YLSite
                 }
             } else {
-                connectSite.address = textField.stringValue
+                connectSite.address = addressString
                 connectSite.name = name
                 connectSite.encoding = YLLGlobalConfig.sharedInstance().defaultEncoding
                 connectSite.ansiColorKey = YLLGlobalConfig.sharedInstance().defaultANSIColorKey
@@ -452,7 +457,15 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate, PSMTab
             }
         }
         newConnection(with: connectSite)
-        textField.stringValue = connectSite.address
+        return connectSite.address
+    }
+    
+    @IBAction public func connect(_ sender: Any?) {
+        guard let textField = sender as? NSTextField else { return }
+        textField.abortEditing()
+        _telnetView?.window?.makeFirstResponder(_telnetView)
+        let finalAddress = connect(toAddressString: textField.stringValue)
+        textField.stringValue = finalAddress
     }
     
     @IBAction public func openLocation(_ sender: Any?) {
