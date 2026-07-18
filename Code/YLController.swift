@@ -27,6 +27,8 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     
     public var sitesList: [YLSite] = []
     private var cancellables = Set<AnyCancellable>()
+    private var lastConnectionTime = Date.distantPast
+    private var lastConnectionAddress = ""
     @objc public dynamic var _pluginLoader: YLPluginLoader?
     
     // MARK: - KVC Compliance Accessors for Sites
@@ -221,6 +223,14 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     // MARK: - Connection Management
     @objc(newConnectionWithSite:)
     public func newConnection(with site: YLSite) {
+        let now = Date()
+        if site.address == lastConnectionAddress && now.timeIntervalSince(lastConnectionTime) < 0.5 {
+            NSLog("[Nally] Ignored duplicate connection request to site: \(site.name)")
+            return
+        }
+        lastConnectionTime = now
+        lastConnectionAddress = site.address
+        
         autoreleasepool {
             let terminal = YLTerminal()
             let connection = YLConnection.connection(withAddress: site.address)

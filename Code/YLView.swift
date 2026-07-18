@@ -103,6 +103,9 @@ public class YLView: NSTabView, NSTextInputClient {
     
     private func setup() {
         self.wantsLayer = true
+        while numberOfTabViewItems > 0 {
+            removeTabViewItem(tabViewItem(at: 0))
+        }
         configure()
         _selectionLength = 0
         _selectionLocation = 0
@@ -235,6 +238,8 @@ public class YLView: NSTabView, NSTextInputClient {
         }
         
         context.scaleBy(x: scale, y: scale)
+        context.translateBy(x: 0, y: CGFloat(height))
+        context.scaleBy(x: 1.0, y: -1.0)
         
         let config = YLLGlobalConfig.sharedInstance()
         let bgColor = config.colorBG ?? NSColor.black
@@ -1021,15 +1026,14 @@ public class YLView: NSTabView, NSTextInputClient {
     @objc(extendBottomFrom:to:)
     public func extendBottom(from start: Int32, to end: Int32) {
         let config = YLLGlobalConfig.sharedInstance()
-        let gRow = Int(config.row)
         let gColumn = Int(config.column)
         
         guard let context = _bitmapContext, let data = context.data else { return }
         let scale = self.window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2.0
         let bytesPerRow = context.bytesPerRow
         
-        let srcYPoints = CGFloat(gRow - Int(end) - 1) * _fontHeight
-        let destYPoints = CGFloat(gRow - Int(end)) * _fontHeight
+        let srcYPoints = CGFloat(start + 1) * _fontHeight
+        let destYPoints = CGFloat(start) * _fontHeight
         let copyHeightPoints = CGFloat(end - start) * _fontHeight
         
         let srcY = Int(srcYPoints * scale)
@@ -1046,11 +1050,11 @@ public class YLView: NSTabView, NSTextInputClient {
         }
         
         let previousContext = NSGraphicsContext.current
-        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
+        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: true)
         NSGraphicsContext.current = graphicsContext
         
         config.colorAtIndex(config.bgColorIndex, hilite: false).set()
-        let cleanY = CGFloat(gRow - Int(end) - 1) * _fontHeight
+        let cleanY = CGFloat(end) * _fontHeight
         NSMakeRect(0.0, cleanY, CGFloat(gColumn) * _fontWidth, _fontHeight).fill()
         
         NSGraphicsContext.current = previousContext
@@ -1062,15 +1066,14 @@ public class YLView: NSTabView, NSTextInputClient {
     @objc(extendTopFrom:to:)
     public func extendTop(from start: Int32, to end: Int32) {
         let config = YLLGlobalConfig.sharedInstance()
-        let gRow = Int(config.row)
         let gColumn = Int(config.column)
         
         guard let context = _bitmapContext, let data = context.data else { return }
         let scale = self.window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2.0
         let bytesPerRow = context.bytesPerRow
         
-        let srcYPoints = CGFloat(gRow - Int(end)) * _fontHeight
-        let destYPoints = CGFloat(gRow - Int(end) - 1) * _fontHeight
+        let srcYPoints = CGFloat(start) * _fontHeight
+        let destYPoints = CGFloat(start + 1) * _fontHeight
         let copyHeightPoints = CGFloat(end - start) * _fontHeight
         
         let srcY = Int(srcYPoints * scale)
@@ -1087,11 +1090,11 @@ public class YLView: NSTabView, NSTextInputClient {
         }
         
         let previousContext = NSGraphicsContext.current
-        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
+        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: true)
         NSGraphicsContext.current = graphicsContext
         
         config.colorAtIndex(config.bgColorIndex, hilite: false).set()
-        let cleanY = CGFloat(gRow - Int(start) - 1) * _fontHeight
+        let cleanY = CGFloat(start) * _fontHeight
         NSMakeRect(0.0, cleanY, CGFloat(gColumn) * _fontWidth, _fontHeight).fill()
         
         NSGraphicsContext.current = previousContext
@@ -1109,7 +1112,7 @@ public class YLView: NSTabView, NSTextInputClient {
         
         guard let ds = frontMostTerminal() else {
             let previousContext = NSGraphicsContext.current
-            let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
+            let graphicsContext = NSGraphicsContext(cgContext: context, flipped: true)
             NSGraphicsContext.current = graphicsContext
             
             NSColor.clear.set()
@@ -1123,7 +1126,7 @@ public class YLView: NSTabView, NSTextInputClient {
         }
         
         let previousContext = NSGraphicsContext.current
-        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
+        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: true)
         NSGraphicsContext.current = graphicsContext
         
         if let activeCtx = NSGraphicsContext.current?.cgContext {
@@ -1229,7 +1232,6 @@ public class YLView: NSTabView, NSTextInputClient {
     
     @objc public func selectedPlainString() -> String? {
         if _selectionLength == 0 { return nil }
-        let config = YLLGlobalConfig.sharedInstance()
         
         var location: Int
         var length: Int
