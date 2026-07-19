@@ -162,9 +162,7 @@ struct NallyTabBarView: View {
                             
                             // Close button
                             Button(action: {
-                                if let telnetView = appState.controller.telnetView() as? NSTabView {
-                                    _ = appState.controller.tabView(telnetView, shouldClose: tab.tabItem)
-                                }
+                                appState.controller.closeTabViewItem(tab.tabItem)
                             }) {
                                 Image(systemName: "xmark")
                                     .font(.system(size: 8, weight: .semibold))

@@ -595,6 +595,11 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         if tv.numberOfTabViewItems == 0 { return }
         
         guard let tabItem = tv.selectedTabViewItem else { return }
+        closeTabViewItem(tabItem)
+    }
+    
+    @objc public func closeTabViewItem(_ tabItem: NSTabViewItem) {
+        guard let tv = _telnetView else { return }
         if tabView(tv, shouldClose: tabItem) {
             tabView(tv, willClose: tabItem)
             (tabItem.identifier as? YLConnection)?.terminal?.hasMessage = false
