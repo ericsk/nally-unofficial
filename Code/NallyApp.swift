@@ -10,6 +10,16 @@ import SwiftUI
 import Cocoa
 import Combine
 
+public struct TabInfo: Hashable, Identifiable {
+    public var id: ObjectIdentifier {
+        ObjectIdentifier(tabItem)
+    }
+    public let label: String
+    public let icon: NSImage?
+    public let isSelected: Bool
+    public let tabItem: NSTabViewItem
+}
+
 @Observable
 public class AppState: NSObject {
     public static let shared = AppState()
@@ -24,7 +34,7 @@ public class AppState: NSObject {
     public var termHeight: CGFloat = 576
     
     // SwiftUI Tab Bar state
-    public var tabs: [NSTabViewItem] = []
+    public var tabs: [TabInfo] = []
     public var selectedTab: NSTabViewItem?
     private var connectionCancellables = Set<AnyCancellable>()
     
@@ -72,25 +82,34 @@ public class AppState: NSObject {
     }
     
     public func syncTabs(from tabView: NSTabView) {
-        self.tabs = tabView.tabViewItems
-        self.selectedTab = tabView.selectedTabViewItem
-        if let conn = selectedTab?.identifier as? YLConnection {
+        let items = tabView.tabViewItems
+        let selected = tabView.selectedTabViewItem
+        
+        self.tabs = items.map { item in
+            let conn = item.identifier as? YLConnection
+            return TabInfo(
+                label: item.label,
+                icon: conn?.icon,
+                isSelected: item == selected,
+                tabItem: item
+            )
+        }
+        self.selectedTab = selected
+        
+        if let conn = selected?.identifier as? YLConnection {
             self.addressText = conn.connectionAddress ?? ""
         }
         
-        NSLog("[Nally] syncTabs called. Tab count: \(tabs.count), selectedTab: \(selectedTab?.label ?? "nil")")
-        for (i, t) in tabs.enumerated() {
-            NSLog("[Nally] Tab \(i): label='\(t.label)', identifier='\(String(describing: t.identifier))'")
-        }
+        NSLog("[Nally] syncTabs called. Tab count: \(tabs.count), selectedTab: \(selected?.label ?? "nil")")
         
         // Observe connection state changes (like icon) to refresh the SwiftUI tab bar
         connectionCancellables.removeAll()
-        for item in tabs {
+        for item in items {
             if let conn = item.identifier as? YLConnection {
                 conn.publisher(for: \.icon)
-                    .sink { [weak self] _ in
-                        guard let self = self else { return }
-                        self.tabs = tabView.tabViewItems
+                    .sink { [weak self, weak tabView] _ in
+                        guard let self = self, let tv = tabView else { return }
+                        self.syncTabs(from: tv)
                     }
                     .store(in: &connectionCancellables)
             }
@@ -124,18 +143,17 @@ struct NallyTabBarView: View {
         HStack(spacing: 0) {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 2) {
-                    ForEach(appState.tabs, id: \.self) { item in
-                        let isSelected = appState.selectedTab == item
-                        let conn = item.identifier as? YLConnection
+                    ForEach(appState.tabs) { tab in
+                        let isSelected = tab.isSelected
                         
                         HStack(spacing: 4) {
-                            if let icon = conn?.icon {
+                            if let icon = tab.icon {
                                 Image(nsImage: icon)
                                     .resizable()
                                     .frame(width: 13, height: 13)
                             }
                             
-                            Text(item.label)
+                            Text(tab.label)
                                 .font(.system(size: 11))
                                 .foregroundColor(isSelected ? .white : .primary.opacity(0.8))
                                 .lineLimit(1)
@@ -143,7 +161,7 @@ struct NallyTabBarView: View {
                             // Close button
                             Button(action: {
                                 if let telnetView = appState.controller.telnetView() as? NSTabView {
-                                    _ = appState.controller.tabView(telnetView, shouldClose: item)
+                                    _ = appState.controller.tabView(telnetView, shouldClose: tab.tabItem)
                                 }
                             }) {
                                 Image(systemName: "xmark")
@@ -159,7 +177,7 @@ struct NallyTabBarView: View {
                         .contentShape(Rectangle())
                         .onTapGesture {
                             if let telnetView = appState.controller.telnetView() as? NSTabView {
-                                telnetView.selectTabViewItem(item)
+                                telnetView.selectTabViewItem(tab.tabItem)
                             }
                         }
                     }
