@@ -88,6 +88,17 @@ struct NallyCommands: Commands {
                 }
             }
             .keyboardShortcut("{", modifiers: .command)
+            
+            Divider()
+            
+            ForEach(1...9, id: \.self) { index in
+                Button("Select Tab \(index)") {
+                    if let controller = NallyAppDelegate.shared.controller {
+                        controller.selectTabNumber(Int32(index))
+                    }
+                }
+                .keyboardShortcut(KeyEquivalent(Character(String(index))), modifiers: .command)
+            }
         }
     }
 }
