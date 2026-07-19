@@ -107,6 +107,7 @@ public class AppState: NSObject {
         for item in items {
             if let conn = item.identifier as? YLConnection {
                 conn.publisher(for: \.icon)
+                    .dropFirst()
                     .receive(on: DispatchQueue.main)
                     .sink { [weak self, weak tabView] _ in
                         guard let self = self, let tv = tabView else { return }
