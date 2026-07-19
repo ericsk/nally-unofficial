@@ -289,6 +289,13 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
             let ddb = site.detectDoubleByte
             _detectDoubleByteButton?.state = ddb ? .on : .off
             _detectDoubleByteMenuItem?.state = ddb ? .on : .off
+            
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                if let tv = self._telnetView, let window = self._mainWindow {
+                    window.makeFirstResponder(tv)
+                }
+            }
         }
     }
     
