@@ -30,8 +30,8 @@ struct PreferencesView: View {
                     Label("Colors", systemImage: "paintpalette")
                 }
         }
-        .frame(width: 580, height: 460)
-        .padding()
+        .frame(width: 620, height: 480)
+        .padding(8)
     }
 }
 
@@ -44,14 +44,14 @@ struct GeneralPreferencesView: View {
     
     var body: some View {
         Form {
-            Section("Window & Sessions") {
+            Section(header: Label("Window & Sessions", systemImage: "macwindow")) {
                 Toggle("Confirm when closing windows", isOn: $confirmOnClose)
                 Toggle("Restore last connections on startup", isOn: $restoreConnection)
             }
             
-            Section("Terminal Behavior") {
-                Toggle("Prefer image previewer", isOn: $config.shouldPreferImagePreviewer)
-                Toggle("Repeat bounce animation", isOn: $config.repeatBounce)
+            Section(header: Label("Terminal Behavior", systemImage: "display")) {
+                Toggle("Prefer internal image previewer", isOn: $config.shouldPreferImagePreviewer)
+                Toggle("Repeat dock icon bounce animation", isOn: $config.repeatBounce)
             }
         }
         .formStyle(.grouped)
@@ -63,10 +63,10 @@ struct ConnectionPreferencesView: View {
     
     var body: some View {
         Form {
-            Section("Protocol Defaults") {
-                Picker("Encoding:", selection: $config.defaultEncoding) {
-                    Text("Big5").tag(YLEncoding.YLBig5Encoding)
-                    Text("GBK").tag(YLEncoding.YLGBKEncoding)
+            Section(header: Label("Protocol Defaults", systemImage: "network")) {
+                Picker("Default Encoding:", selection: $config.defaultEncoding) {
+                    Text("Big5 (Traditional Chinese)").tag(YLEncoding.YLBig5Encoding)
+                    Text("GBK (Simplified Chinese)").tag(YLEncoding.YLGBKEncoding)
                 }
                 
                 Picker("ANSI Color Key:", selection: $config.defaultANSIColorKey) {
@@ -74,10 +74,10 @@ struct ConnectionPreferencesView: View {
                     Text("Esc + Esc").tag(YLANSIColorKey.YLEscEscEscANSIColorKey)
                 }
                 
-                Toggle("Double Byte Detection", isOn: $config.detectDoubleByte)
+                Toggle("Enable Double-Byte Character Detection", isOn: $config.detectDoubleByte)
             }
             
-            Section("Default Client Handler") {
+            Section(header: Label("Default URL Scheme Handlers", systemImage: "arrow.triangle.branch")) {
                 AppPicker(scheme: "telnet")
                 AppPicker(scheme: "ssh")
             }
@@ -91,50 +91,49 @@ struct FontPreferencesView: View {
     
     var body: some View {
         Form {
-            Section("Chinese Font") {
+            Section(header: Label("Chinese Font Settings", systemImage: "character")) {
                 FontSettingsRow(
                     fontName: $config.chineseFontName,
                     fontSize: $config.chineseFontSize,
                     paddingLeft: $config.chineseFontPaddingLeft,
-                    paddingBottom: $config.chineseFontPaddingBottom
+                    paddingBottom: $config.chineseFontPaddingBottom,
+                    sampleText: "華康中文字體 123"
                 )
             }
             
-            Section("English Font") {
+            Section(header: Label("English Font Settings", systemImage: "textformat")) {
                 FontSettingsRow(
                     fontName: $config.englishFontName,
                     fontSize: $config.englishFontSize,
                     paddingLeft: $config.englishFontPaddingLeft,
-                    paddingBottom: $config.englishFontPaddingBottom
+                    paddingBottom: $config.englishFontPaddingBottom,
+                    sampleText: "Monaco 123 ABC"
                 )
             }
             
-            Section("Grid Layout & Font Rendering") {
-                HStack {
-                    Slider(value: $config.cellWidth, in: 6...30, step: 0.5) {
+            Section(header: Label("Grid Layout & Font Rendering", systemImage: "square.grid.2x2")) {
+                VStack(spacing: 8) {
+                    HStack {
                         Text("Cell Width:")
-                    } minimumValueLabel: {
-                        Text("6")
-                    } maximumValueLabel: {
-                        Text("30")
+                            .frame(width: 100, alignment: .leading)
+                        Slider(value: $config.cellWidth, in: 6...30, step: 0.5)
+                        Text(String(format: "%.1f px", config.cellWidth))
+                            .font(.system(.body, design: .monospaced))
+                            .frame(width: 55, alignment: .trailing)
                     }
-                    Text(String(format: "%.1f", config.cellWidth))
-                        .frame(width: 40)
-                }
-                
-                HStack {
-                    Slider(value: $config.cellHeight, in: 12...60, step: 0.5) {
+                    
+                    HStack {
                         Text("Cell Height:")
-                    } minimumValueLabel: {
-                        Text("12")
-                    } maximumValueLabel: {
-                        Text("60")
+                            .frame(width: 100, alignment: .leading)
+                        Slider(value: $config.cellHeight, in: 12...60, step: 0.5)
+                        Text(String(format: "%.1f px", config.cellHeight))
+                            .font(.system(.body, design: .monospaced))
+                            .frame(width: 55, alignment: .trailing)
                     }
-                    Text(String(format: "%.1f", config.cellHeight))
-                        .frame(width: 40)
                 }
+                .padding(.vertical, 2)
                 
-                Toggle("Enable font smoothing", isOn: $config.shouldSmoothFonts)
+                Toggle("Enable Font Anti-Aliasing & Smoothing", isOn: $config.shouldSmoothFonts)
             }
         }
         .formStyle(.grouped)
@@ -145,18 +144,16 @@ struct ColorPreferencesView: View {
     @Bindable var config: YLLGlobalConfig
     
     var body: some View {
-        VStack(spacing: 0) {
-            Form {
-                Section("Terminal Colors") {
-                    ColorPickerGrid(config: config)
-                }
-                
-                Section("Background") {
-                    ColorPickerRow(label: "Terminal Background:", nsColor: $config.colorBG)
-                }
+        Form {
+            Section(header: Label("ANSI Color Palette", systemImage: "paintpalette.fill")) {
+                ColorPickerGrid(config: config)
             }
-            .formStyle(.grouped)
+            
+            Section(header: Label("Canvas Background", systemImage: "square.fill")) {
+                ColorPickerRow(label: "Terminal Background:", nsColor: $config.colorBG)
+            }
         }
+        .formStyle(.grouped)
     }
 }
 
@@ -216,43 +213,58 @@ struct FontSettingsRow: View {
     @Binding var fontSize: CGFloat
     @Binding var paddingLeft: CGFloat
     @Binding var paddingBottom: CGFloat
+    let sampleText: String
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("\(fontName) - \(Int(fontSize))pt")
-                    .font(.subheadline)
-                    .frame(minWidth: 200, alignment: .leading)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("\(fontName) - \(Int(fontSize))pt")
+                        .font(.system(size: 13, weight: .semibold))
+                    
+                    Text(sampleText)
+                        .font(.custom(fontName, size: max(10, fontSize)))
+                        .lineLimit(1)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.black.opacity(0.85))
+                        .foregroundColor(.green)
+                        .cornerRadius(4)
+                }
                 
-                Button("Select...") {
+                Spacer()
+                
+                Button("Choose Font...") {
                     openFontPanel()
                 }
+                .buttonStyle(.bordered)
             }
             
-            HStack {
-                Slider(value: $paddingLeft, in: -10...10, step: 0.5) {
-                    Text("Left Padding:")
-                } minimumValueLabel: {
-                    Text("-10")
-                } maximumValueLabel: {
-                    Text("10")
+            VStack(spacing: 6) {
+                HStack {
+                    Text("Left Offset:")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .frame(width: 90, alignment: .leading)
+                    Slider(value: $paddingLeft, in: -10...10, step: 0.5)
+                    Text(String(format: "%.1f", paddingLeft))
+                        .font(.system(.caption, design: .monospaced))
+                        .frame(width: 40, alignment: .trailing)
                 }
-                Text(String(format: "%.1f", paddingLeft))
-                    .frame(width: 40)
-            }
-            
-            HStack {
-                Slider(value: $paddingBottom, in: -10...10, step: 0.5) {
-                    Text("Bottom Padding:")
-                } minimumValueLabel: {
-                    Text("-10")
-                } maximumValueLabel: {
-                    Text("10")
+                
+                HStack {
+                    Text("Bottom Offset:")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .frame(width: 90, alignment: .leading)
+                    Slider(value: $paddingBottom, in: -10...10, step: 0.5)
+                    Text(String(format: "%.1f", paddingBottom))
+                        .font(.system(.caption, design: .monospaced))
+                        .frame(width: 40, alignment: .trailing)
                 }
-                Text(String(format: "%.1f", paddingBottom))
-                    .frame(width: 40)
             }
         }
+        .padding(.vertical, 4)
     }
     
     private func openFontPanel() {
@@ -285,7 +297,15 @@ struct ColorPickerRow: View {
                 nsColor = NSColor(newColor)
             }
         )) {
-            Text(label)
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(nsColor != nil ? Color(nsColor!) : Color.black)
+                    .frame(width: 10, height: 10)
+                    .overlay(Circle().stroke(Color.secondary.opacity(0.5), lineWidth: 1))
+                
+                Text(label)
+                    .font(.system(size: 12))
+            }
         }
     }
 }
@@ -299,35 +319,36 @@ struct ColorPickerGrid: View {
     ]
     
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 12) {
+        LazyVGrid(columns: columns, spacing: 10) {
             Group {
                 ColorPickerRow(label: "Black", nsColor: $config.colorBlack)
-                ColorPickerRow(label: "Black Hilite", nsColor: $config.colorBlackHilite)
+                ColorPickerRow(label: "Black (Bright)", nsColor: $config.colorBlackHilite)
                 
                 ColorPickerRow(label: "Red", nsColor: $config.colorRed)
-                ColorPickerRow(label: "Red Hilite", nsColor: $config.colorRedHilite)
+                ColorPickerRow(label: "Red (Bright)", nsColor: $config.colorRedHilite)
                 
                 ColorPickerRow(label: "Green", nsColor: $config.colorGreen)
-                ColorPickerRow(label: "Green Hilite", nsColor: $config.colorGreenHilite)
+                ColorPickerRow(label: "Green (Bright)", nsColor: $config.colorGreenHilite)
                 
                 ColorPickerRow(label: "Yellow", nsColor: $config.colorYellow)
-                ColorPickerRow(label: "Yellow Hilite", nsColor: $config.colorYellowHilite)
+                ColorPickerRow(label: "Yellow (Bright)", nsColor: $config.colorYellowHilite)
             }
             
             Group {
                 ColorPickerRow(label: "Blue", nsColor: $config.colorBlue)
-                ColorPickerRow(label: "Blue Hilite", nsColor: $config.colorBlueHilite)
+                ColorPickerRow(label: "Blue (Bright)", nsColor: $config.colorBlueHilite)
                 
                 ColorPickerRow(label: "Magenta", nsColor: $config.colorMagenta)
-                ColorPickerRow(label: "Magenta Hilite", nsColor: $config.colorMagentaHilite)
+                ColorPickerRow(label: "Magenta (Bright)", nsColor: $config.colorMagentaHilite)
                 
                 ColorPickerRow(label: "Cyan", nsColor: $config.colorCyan)
-                ColorPickerRow(label: "Cyan Hilite", nsColor: $config.colorCyanHilite)
+                ColorPickerRow(label: "Cyan (Bright)", nsColor: $config.colorCyanHilite)
                 
                 ColorPickerRow(label: "White", nsColor: $config.colorWhite)
-                ColorPickerRow(label: "White Hilite", nsColor: $config.colorWhiteHilite)
+                ColorPickerRow(label: "White (Bright)", nsColor: $config.colorWhiteHilite)
             }
         }
+        .padding(.vertical, 4)
     }
 }
 

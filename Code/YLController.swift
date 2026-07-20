@@ -38,6 +38,12 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     
     // MARK: - Initializer & Lifecycle
     @objc public func setupProgrammatically() {
+        // Register defaults
+        UserDefaults.standard.register(defaults: [
+            "ConfirmOnClose": true,
+            "RestoreConnection": false
+        ])
+        
         // Register URL event handler
         NSAppleEventManager.shared().setEventHandler(
             self,
@@ -132,10 +138,13 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     
     @objc(setupWindow:)
     public func setupWindow(_ window: NSWindow) {
+        self._mainWindow = window
+        if window.delegate !== self {
+            window.delegate = self
+        }
         if isWindowSetupDone { return }
         isWindowSetupDone = true
         
-        self._mainWindow = window
         window._setContentHasShadow(false)
         window.isOpaque = false
         if #available(macOS 11.0, *) {
@@ -571,13 +580,42 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     
     @objc public func closeTabViewItem(_ tabItem: NSTabViewItem) {
         guard let tv = _telnetView else { return }
-        if tabView(tv, shouldClose: tabItem) {
-            tabView(tv, willClose: tabItem)
-            (tabItem.identifier as? YLConnection)?.terminal?.hasMessage = false
-            (tabItem.identifier as? YLConnection)?.close()
-            tv.removeTabViewItem(tabItem)
-            tabView(tv, didClose: tabItem)
+        guard let connection = tabItem.identifier as? YLConnection else {
+            performCloseTabViewItem(tabItem)
+            return
         }
+        
+        let confirm = (UserDefaults.standard.object(forKey: "ConfirmOnClose") as? Bool) ?? true
+        if connection.connected && confirm {
+            let alert = NSAlert()
+            alert.messageText = NSLocalizedString("Are you sure you want to close this tab?", comment: "Sheet Title")
+            alert.informativeText = NSLocalizedString("The connection is still alive. If you close this tab, the connection will be lost. Do you want to close this tab anyway?", comment: "Sheet Message")
+            alert.addButton(withTitle: NSLocalizedString("Close", comment: "Default Button"))
+            alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Cancel Button"))
+            
+            if let window = _mainWindow {
+                alert.beginSheetModal(for: window) { [weak self] response in
+                    if response == .alertFirstButtonReturn {
+                        self?.performCloseTabViewItem(tabItem)
+                    }
+                }
+            } else {
+                performCloseTabViewItem(tabItem)
+            }
+        } else {
+            performCloseTabViewItem(tabItem)
+        }
+    }
+    
+    private func performCloseTabViewItem(_ tabItem: NSTabViewItem) {
+        guard let tv = _telnetView else { return }
+        tabView(tv, willClose: tabItem)
+        if let connection = tabItem.identifier as? YLConnection {
+            connection.terminal?.hasMessage = false
+            connection.close()
+        }
+        tv.removeTabViewItem(tabItem)
+        tabView(tv, didClose: tabItem)
     }
     
     @IBAction public func editSites(_ sender: Any?) {
@@ -675,7 +713,8 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
             saveLastConnections()
         }
         
-        if !UserDefaults.standard.bool(forKey: "ConfirmOnClose") {
+        let confirm = (UserDefaults.standard.object(forKey: "ConfirmOnClose") as? Bool) ?? true
+        if !confirm {
             return .terminateNow
         }
         
@@ -713,8 +752,51 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     
     // MARK: - Window Delegate
     @objc public func windowShouldClose(_ window: NSWindow) -> Bool {
+        let confirm = (UserDefaults.standard.object(forKey: "ConfirmOnClose") as? Bool) ?? true
+        let connectedCount = connectedTabCount()
+        
+        if confirm && connectedCount > 0 {
+            let alert = NSAlert()
+            alert.messageText = NSLocalizedString("Are you sure you want to close the window?", comment: "Sheet Title")
+            alert.informativeText = String(format: NSLocalizedString("There are %d active connections. Closing the window will disconnect them.", comment: "Sheet Message"), connectedCount)
+            alert.addButton(withTitle: NSLocalizedString("Close Window", comment: "Default Button"))
+            alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Cancel Button"))
+            
+            alert.beginSheetModal(for: window) { [weak self] response in
+                if response == .alertFirstButtonReturn {
+                    self?.closeAllTabsAndOrderOut()
+                }
+            }
+            return false
+        } else {
+            closeAllTabsAndOrderOut()
+            return true
+        }
+    }
+    
+    private func connectedTabCount() -> Int {
+        guard let tv = _telnetView else { return 0 }
+        var count = 0
+        for i in 0..<tv.numberOfTabViewItems {
+            if let conn = tv.tabViewItem(at: i).identifier as? YLConnection, conn.connected {
+                count += 1
+            }
+        }
+        return count
+    }
+    
+    private func closeAllTabsAndOrderOut() {
+        guard let tv = _telnetView else {
+            _mainWindow?.orderOut(self)
+            return
+        }
+        for item in tv.tabViewItems {
+            if let conn = item.identifier as? YLConnection {
+                conn.terminal?.hasMessage = false
+                conn.close()
+            }
+        }
         _mainWindow?.orderOut(self)
-        return false
     }
     
     @objc public func windowDidBecomeKey(_ notification: Notification) {
@@ -740,25 +822,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     
     // MARK: - Tab Delegate
     @objc public func tabView(_ tabView: NSTabView, shouldClose tabViewItem: NSTabViewItem) -> Bool {
-        guard let connection = tabViewItem.identifier as? YLConnection else { return true }
-        if !connection.connected { return true }
-        if !UserDefaults.standard.bool(forKey: "ConfirmOnClose") { return true }
-        
-        let alert = NSAlert()
-        alert.messageText = NSLocalizedString("Are you sure you want to close this tab?", comment: "Sheet Title")
-        alert.informativeText = NSLocalizedString("The connection is still alive. If you close this tab, the connection will be lost. Do you want to close this tab anyway?", comment: "Sheet Message")
-        alert.addButton(withTitle: NSLocalizedString("Close", comment: "Default Button"))
-        alert.addButton(withTitle: NSLocalizedString("Cancel", comment: "Cancel Button"))
-        
-        if let window = _mainWindow {
-            alert.beginSheetModal(for: window) { [weak self] response in
-                if response == .alertFirstButtonReturn {
-                    connection.terminal?.hasMessage = false
-                    self?._telnetView?.removeTabViewItem(tabViewItem)
-                }
-            }
-        }
-        return false
+        return true
     }
     
     @objc public func tabView(_ tabView: NSTabView, willClose tabViewItem: NSTabViewItem) {

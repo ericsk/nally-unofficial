@@ -307,8 +307,10 @@ struct WindowAccessor: NSViewRepresentable {
     }
     
     func updateNSView(_ nsView: NSView, context: Context) {
-        if let window = nsView.window {
-            callback(window)
+        DispatchQueue.main.async {
+            if let window = nsView.window {
+                callback(window)
+            }
         }
     }
 }
