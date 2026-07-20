@@ -8,8 +8,11 @@
 
 import Cocoa
 import Combine
+import Observation
 
+@Observable
 @objc(YLController)
+@objcMembers
 public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     @IBOutlet @objc public dynamic weak var _mainWindow: NSWindow?
     @IBOutlet @objc public dynamic var _telnetView: YLView?
@@ -31,34 +34,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     private var lastConnectionAddress = ""
     @objc public dynamic var _pluginLoader: YLPluginLoader?
     
-    // MARK: - KVC Compliance Accessors for Sites
-    @objc public func sites() -> NSArray {
-        return sitesList as NSArray
-    }
-    
-    @objc public func countOfSites() -> Int {
-        return sitesList.count
-    }
-    
-    @objc public func objectInSitesAtIndex(_ index: Int) -> Any {
-        return sitesList[index]
-    }
-    
-    @objc public func insertObject(_ obj: Any, inSitesAtIndex index: Int) {
-        if let site = obj as? YLSite {
-            sitesList.insert(site, at: index)
-        }
-    }
-    
-    @objc public func removeObjectFromSitesAtIndex(_ index: Int) {
-        sitesList.remove(at: index)
-    }
-    
-    @objc public func replaceObjectInSitesAtIndex(_ index: Int, withObject obj: Any) {
-        if let site = obj as? YLSite {
-            sitesList[index] = site
-        }
-    }
+
     
     // MARK: - Initializer & Lifecycle
     @objc public func setupProgrammatically() {
@@ -72,13 +48,13 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         
         let globalConfig = YLLGlobalConfig.sharedInstance()
         
-        globalConfig.publisher(for: \._showHiddenText)
+        globalConfig.publisher(for: \.showHiddenText)
             .sink { [weak self] show in
                 self?._showHiddenTextMenuItem?.state = show ? .on : .off
             }
             .store(in: &cancellables)
             
-        globalConfig.publisher(for: \._messageCount)
+        globalConfig.publisher(for: \.messageCount)
             .sink { count in
                 let dockTile = NSApp.dockTile
                 if count == 0 {
@@ -90,15 +66,15 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
             }
             .store(in: &cancellables)
             
-        globalConfig.publisher(for: \._shouldSmoothFonts)
+        globalConfig.publisher(for: \.shouldSmoothFonts)
             .sink { [weak self] _ in
                 self?.refreshTerminalState()
             }
             .store(in: &cancellables)
             
         Publishers.Merge(
-            globalConfig.publisher(for: \._cellWidth).map { _ in () },
-            globalConfig.publisher(for: \._cellHeight).map { _ in () }
+            globalConfig.publisher(for: \.cellWidth).map { _ in () },
+            globalConfig.publisher(for: \.cellHeight).map { _ in () }
         )
         .sink { [weak self] _ in
             self?.updateWindowAndTerminalLayout()
@@ -106,14 +82,14 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         .store(in: &cancellables)
             
         let fontAndColorPublishers: [AnyPublisher<Void, Never>] = [
-            globalConfig.publisher(for: \._chineseFontName).map { _ in () }.eraseToAnyPublisher(),
-            globalConfig.publisher(for: \._chineseFontSize).map { _ in () }.eraseToAnyPublisher(),
-            globalConfig.publisher(for: \._englishFontName).map { _ in () }.eraseToAnyPublisher(),
-            globalConfig.publisher(for: \._englishFontSize).map { _ in () }.eraseToAnyPublisher(),
-            globalConfig.publisher(for: \._chineseFontPaddingLeft).map { _ in () }.eraseToAnyPublisher(),
-            globalConfig.publisher(for: \._chineseFontPaddingBottom).map { _ in () }.eraseToAnyPublisher(),
-            globalConfig.publisher(for: \._englishFontPaddingLeft).map { _ in () }.eraseToAnyPublisher(),
-            globalConfig.publisher(for: \._englishFontPaddingBottom).map { _ in () }.eraseToAnyPublisher()
+            globalConfig.publisher(for: \.chineseFontName).map { _ in () }.eraseToAnyPublisher(),
+            globalConfig.publisher(for: \.chineseFontSize).map { _ in () }.eraseToAnyPublisher(),
+            globalConfig.publisher(for: \.englishFontName).map { _ in () }.eraseToAnyPublisher(),
+            globalConfig.publisher(for: \.englishFontSize).map { _ in () }.eraseToAnyPublisher(),
+            globalConfig.publisher(for: \.chineseFontPaddingLeft).map { _ in () }.eraseToAnyPublisher(),
+            globalConfig.publisher(for: \.chineseFontPaddingBottom).map { _ in () }.eraseToAnyPublisher(),
+            globalConfig.publisher(for: \.englishFontPaddingLeft).map { _ in () }.eraseToAnyPublisher(),
+            globalConfig.publisher(for: \.englishFontPaddingBottom).map { _ in () }.eraseToAnyPublisher()
         ]
         
         Publishers.MergeMany(fontAndColorPublishers)
@@ -358,7 +334,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
                     }
                 }
                 let site = YLSite.site(withDictionary: mutableDict as! [String : Any])
-                insertObject(site, inSitesAtIndex: countOfSites())
+                sitesList.append(site)
             }
             saveSites()
         }

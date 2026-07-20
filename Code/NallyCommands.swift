@@ -154,8 +154,8 @@ struct DynamicSitesMenu: View {
     
     var body: some View {
         Group {
-            if let controller = NallyAppDelegate.shared.controller,
-               let sites = controller.sites() as? [YLSite] {
+            if let controller = NallyAppDelegate.shared.controller {
+                let sites = controller.sitesList
                 ForEach(sites, id: \.self) { site in
                     Button(site.name) {
                         controller.newConnection(with: site)

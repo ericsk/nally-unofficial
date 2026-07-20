@@ -5,10 +5,10 @@ import SwiftUI
 @objcMembers
 public class SitesWindowController: NSWindowController, NSWindowDelegate {
     public static var shared: SitesWindowController?
-    private let manager: SitesManager
+    private let controller: YLController
     
     private init(controller: YLController) {
-        self.manager = SitesManager(controller: controller)
+        self.controller = controller
         
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 600, height: 420),
@@ -22,7 +22,7 @@ public class SitesWindowController: NSWindowController, NSWindowDelegate {
         window.delegate = self
         
         let sitesView = SitesView(
-            manager: manager,
+            controller: controller,
             onConnect: { [weak self] site in
                 controller.newConnection(with: site)
                 self?.dismiss()
@@ -39,7 +39,7 @@ public class SitesWindowController: NSWindowController, NSWindowDelegate {
     }
     
     public func windowWillClose(_ notification: Notification) {
-        manager.save()
+        controller.saveSites()
     }
     
     @objc(showOver:controller:)

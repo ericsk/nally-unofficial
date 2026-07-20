@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SitesView: View {
-    @Bindable var manager: SitesManager
+    @Bindable var controller: YLController
     @State private var selectedSite: YLSite?
     
     var onConnect: (YLSite) -> Void
@@ -13,7 +13,7 @@ struct SitesView: View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             VStack(spacing: 0) {
                 List(selection: $selectedSite) {
-                    ForEach(manager.sites, id: \.self) { site in
+                    ForEach(controller.sitesList, id: \.self) { site in
                         Text(site.name)
                             .tag(site)
                     }
@@ -59,15 +59,18 @@ struct SitesView: View {
     }
     
     private func addSite() {
-        manager.addSite()
-        if let last = manager.sites.last {
-            selectedSite = last
-        }
+        let newSite = YLSite()
+        newSite.name = "New Site"
+        newSite.address = "bbs.example.com"
+        controller.sitesList.append(newSite)
+        controller.saveSites()
+        selectedSite = newSite
     }
     
     private func deleteSelectedSite() {
-        if let site = selectedSite, let index = manager.sites.firstIndex(of: site) {
-            manager.removeSite(at: index)
+        if let site = selectedSite, let index = controller.sitesList.firstIndex(of: site) {
+            controller.sitesList.remove(at: index)
+            controller.saveSites()
             selectedSite = nil
         }
     }

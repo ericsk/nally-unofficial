@@ -102,12 +102,15 @@ public class AppState: NSObject {
         
         NSLog("[Nally] syncTabs called. Tab count: \(tabs.count), selectedTab: \(selected?.label ?? "nil")")
         
-        // Observe connection state changes (like icon) to refresh the SwiftUI tab bar
+        // Observe connection state changes (like icon and connected status) to refresh the SwiftUI tab bar
         connectionCancellables.removeAll()
         for item in items {
             if let conn = item.identifier as? YLConnection {
-                conn.publisher(for: \.icon)
-                    .dropFirst()
+                let iconPublisher = conn.publisher(for: \.icon).map { _ in () }
+                let connectedPublisher = conn.publisher(for: \.connected).map { _ in () }
+                
+                Publishers.Merge(iconPublisher, connectedPublisher)
+                    .dropFirst(2)
                     .receive(on: DispatchQueue.main)
                     .sink { [weak self, weak tabView] _ in
                         guard let self = self, let tv = tabView else { return }
