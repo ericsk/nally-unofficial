@@ -18,6 +18,20 @@ public struct TabInfo: Hashable, Identifiable {
     public let icon: NSImage?
     public let isSelected: Bool
     public let tabItem: NSTabViewItem
+    
+    public static func == (lhs: TabInfo, rhs: TabInfo) -> Bool {
+        return lhs.tabItem == rhs.tabItem &&
+               lhs.label == rhs.label &&
+               lhs.icon == rhs.icon &&
+               lhs.isSelected == rhs.isSelected
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(tabItem)
+        hasher.combine(label)
+        hasher.combine(icon)
+        hasher.combine(isSelected)
+    }
 }
 
 @Observable
@@ -64,6 +78,14 @@ public class AppState: NSObject {
         telnetView.delegate = ctrl
         
         updateDimensions()
+        
+        NotificationCenter.default.publisher(for: YLConnection.stateDidChangeNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self = self, let tv = self.controller.telnetView() as? NSTabView else { return }
+                self.syncTabs(from: tv)
+            }
+            .store(in: &connectionCancellables)
     }
     
     public func updateDimensions() {
@@ -101,24 +123,7 @@ public class AppState: NSObject {
         }
         
         NSLog("[Nally] syncTabs called. Tab count: \(tabs.count), selectedTab: \(selected?.label ?? "nil")")
-        
-        // Observe connection state changes (like icon and connected status) to refresh the SwiftUI tab bar
-        connectionCancellables.removeAll()
-        for item in items {
-            if let conn = item.identifier as? YLConnection {
-                let iconPublisher = conn.publisher(for: \.icon).map { _ in () }
-                let connectedPublisher = conn.publisher(for: \.connected).map { _ in () }
-                
-                Publishers.Merge(iconPublisher, connectedPublisher)
-                    .dropFirst(2)
-                    .receive(on: DispatchQueue.main)
-                    .sink { [weak self, weak tabView] _ in
-                        guard let self = self, let tv = tabView else { return }
-                        self.syncTabs(from: tv)
-                    }
-                    .store(in: &connectionCancellables)
-            }
-        }
+
     }
 }
 

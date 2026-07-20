@@ -59,23 +59,27 @@ public class YLConnection: NSObject, YLConnectionProtocol {
         self.icon = NSImage(named: "offline.pdf")
     }
     
-    private var _connected: Bool = false
-    @objc public dynamic var connected: Bool {
-        get { return _connected }
-        set {
-            _connected = newValue
-            if _connected {
+    public static let stateDidChangeNotification = Notification.Name("YLConnectionStateDidChangeNotification")
+
+    @objc public dynamic var connected: Bool = false {
+        didSet {
+            if connected {
                 icon = NSImage(named: "connect.pdf")
             } else {
                 terminal?.hasMessage = false
                 icon = NSImage(named: "offline.pdf")
             }
+            NotificationCenter.default.post(name: YLConnection.stateDidChangeNotification, object: self)
         }
     }
     
     @objc public dynamic var connectionName: String?
     @objc public dynamic var connectionAddress: String?
-    @objc public dynamic var icon: NSImage?
+    @objc public dynamic var icon: NSImage? {
+        didSet {
+            NotificationCenter.default.post(name: YLConnection.stateDidChangeNotification, object: self)
+        }
+    }
     @objc public dynamic var isProcessing: Bool = false
     @objc public var site: YLSite?
     
