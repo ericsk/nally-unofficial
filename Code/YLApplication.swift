@@ -32,7 +32,7 @@ private let gRightString = String(UnicodeScalar(NSRightArrowFunctionKey)!)
 
 @objc(YLApplication)
 public class YLApplication: NSApplication {
-    @IBOutlet @objc public dynamic weak var _controller: YLController?
+    @objc public dynamic weak var _controller: YLController?
 
     public override init() {
         super.init()

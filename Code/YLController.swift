@@ -14,19 +14,19 @@ import Observation
 @objc(YLController)
 @objcMembers
 public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
-    @IBOutlet @objc public dynamic weak var _mainWindow: NSWindow?
-    @IBOutlet @objc public dynamic var _telnetView: YLView?
-    @IBOutlet @objc public dynamic weak var _addressBar: NSTextField?
-    @IBOutlet @objc public dynamic weak var _detectDoubleByteButton: NSButton?
+    @objc public dynamic weak var _mainWindow: NSWindow?
+    @objc public dynamic var _telnetView: YLView?
+    @objc public dynamic weak var _addressBar: NSTextField?
+    @objc public dynamic weak var _detectDoubleByteButton: NSButton?
     
-    @IBOutlet @objc public dynamic weak var _detectDoubleByteMenuItem: NSMenuItem?
-    @IBOutlet @objc public dynamic weak var _closeWindowMenuItem: NSMenuItem?
-    @IBOutlet @objc public dynamic weak var _closeTabMenuItem: NSMenuItem?
+    @objc public dynamic weak var _detectDoubleByteMenuItem: NSMenuItem?
+    @objc public dynamic weak var _closeWindowMenuItem: NSMenuItem?
+    @objc public dynamic weak var _closeTabMenuItem: NSMenuItem?
     
-    @IBOutlet @objc public dynamic weak var _sitesMenu: NSMenuItem?
-    @IBOutlet @objc public dynamic weak var _showHiddenTextMenuItem: NSMenuItem?
-    @IBOutlet @objc public dynamic weak var _encodingMenuItem: NSMenuItem?
-    @IBOutlet @objc public dynamic weak var _exifController: YLExifController?
+    @objc public dynamic weak var _sitesMenu: NSMenuItem?
+    @objc public dynamic weak var _showHiddenTextMenuItem: NSMenuItem?
+    @objc public dynamic weak var _encodingMenuItem: NSMenuItem?
+    @objc public dynamic weak var _exifController: YLExifController?
     
     public var sitesList: [YLSite] = []
     private var cancellables = Set<AnyCancellable>()
@@ -114,12 +114,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateBlinkTicker(_:)), userInfo: nil, repeats: true)
     }
     
-    @objc override public func awakeFromNib() {
-        setupProgrammatically()
-        if let window = _mainWindow {
-            setupWindow(window)
-        }
-    }
+    
     
     private var isWindowSetupDone = false
     
