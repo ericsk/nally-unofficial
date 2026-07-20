@@ -3,6 +3,13 @@ import SwiftUI
 struct NallyCommands: Commands {
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
+            Button("New Connection...") {
+                if let controller = NallyAppDelegate.shared.controller {
+                    controller.editSites(nil)
+                }
+            }
+            .keyboardShortcut("n", modifiers: .command)
+            
             Button("New Tab") {
                 if let controller = NallyAppDelegate.shared.controller {
                     controller.newTab(nil)
@@ -11,14 +18,13 @@ struct NallyCommands: Commands {
             .keyboardShortcut("t", modifiers: .command)
             
             Button("Open Location...") {
-                NSLog("[Nally] Open Location... menu item clicked")
                 if let controller = NallyAppDelegate.shared.controller {
                     controller.openLocation(nil)
-                } else {
-                    NSLog("[Nally] FAILED to get controller in menu action!")
                 }
             }
             .keyboardShortcut("l", modifiers: .command)
+            
+            Divider()
             
             Button("Close Tab") {
                 if let controller = NallyAppDelegate.shared.controller {
@@ -26,6 +32,32 @@ struct NallyCommands: Commands {
                 }
             }
             .keyboardShortcut("w", modifiers: .command)
+        }
+        
+        CommandMenu("Connection") {
+            Button("Reconnect") {
+                if let controller = NallyAppDelegate.shared.controller,
+                   let telnetView = controller.telnetView() as? YLView,
+                   let conn = telnetView.frontMostConnection() {
+                    conn.reconnect()
+                }
+            }
+            .keyboardShortcut("r", modifiers: .command)
+            
+            Button("Disconnect") {
+                if let controller = NallyAppDelegate.shared.controller {
+                    controller.closeTab(nil)
+                }
+            }
+            .keyboardShortcut("d", modifiers: .command)
+            
+            Divider()
+            
+            Button("Auto Login") {
+                if let controller = NallyAppDelegate.shared.controller {
+                    controller.autoLogin(nil)
+                }
+            }
         }
         
         CommandGroup(after: .pasteboard) {
