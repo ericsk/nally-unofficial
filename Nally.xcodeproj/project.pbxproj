@@ -33,7 +33,7 @@
 		E5A600F899A24A63B0AE81C0 /* TerminalViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE1511238C74DF7885CF963 /* TerminalViewRepresentable.swift */; };
 		E32052940E5B45E095566BDA /* YLMarkedTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A609D0540DF044A0AF45A8F0 /* YLMarkedTextView.swift */; };
 		721248E781FC4EE79CF48A58 /* YLExifController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED64F2661F241159554F130 /* YLExifController.swift */; };
-		5690CA5C46CE454E8E12248B /* NallyToolbarDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FEB60EFE5F4AC69374F3C4 /* NallyToolbarDelegate.swift */; };
+
 		E2665651C95547EDB97441CA /* NallyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74C4D5473A24D27B9222EB3 /* NallyApp.swift */; };
 		E6239651091B4E9C86AA895A /* NallyAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */; };
 		105B234BF52D4039A30D3682 /* NallyCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80104742B2954F909E42FC73 /* NallyCommands.swift */; };
@@ -59,8 +59,7 @@
 		85AF012B12912AD000728C12 /* nally.public.pem in Resources */ = {isa = PBXBuildFile; fileRef = 85AF012A12912AD000728C12 /* nally.public.pem */; };
 
 
-		85B0177212913CF3004F06E4 /* PSMTabBarControl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 85B0177112913CF3004F06E4 /* PSMTabBarControl.framework */; };
-		85B017D81291441F004F06E4 /* PSMTabBarControl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 85B0177112913CF3004F06E4 /* PSMTabBarControl.framework */; };
+
 
 		85F7F2090B06EE36000C4CDF /* YLLGlobalConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.swift */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
@@ -75,7 +74,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				85B017D81291441F004F06E4 /* PSMTabBarControl.framework in CopyFiles */,
+
 
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -108,7 +107,7 @@
 		9EE1511238C74DF7885CF963 /* TerminalViewRepresentable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalViewRepresentable.swift; sourceTree = "<group>"; };
 		A609D0540DF044A0AF45A8F0 /* YLMarkedTextView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLMarkedTextView.swift; sourceTree = "<group>"; };
 		DED64F2661F241159554F130 /* YLExifController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLExifController.swift; sourceTree = "<group>"; };
-		70FEB60EFE5F4AC69374F3C4 /* NallyToolbarDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyToolbarDelegate.swift; sourceTree = "<group>"; };
+
 		A74C4D5473A24D27B9222EB3 /* NallyApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyApp.swift; sourceTree = "<group>"; };
 		49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyAppDelegate.swift; sourceTree = "<group>"; };
 		80104742B2954F909E42FC73 /* NallyCommands.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyCommands.swift; sourceTree = "<group>"; };
@@ -145,7 +144,7 @@
 		85AF012612912A8C00728C12 /* Nally_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Nally_Prefix.pch; path = Code/Nally_Prefix.pch; sourceTree = "<group>"; };
 		85AF012A12912AD000728C12 /* nally.public.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = nally.public.pem; path = Deploy/nally.public.pem; sourceTree = SOURCE_ROOT; };
 
-		85B0177112913CF3004F06E4 /* PSMTabBarControl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PSMTabBarControl.framework; path = Dependencies/PSMTabBarControl.framework; sourceTree = "<group>"; };
+
 		85B247E60CEA1B840090046C /* DragonBall.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = DragonBall.icns; sourceTree = "<group>"; };
 
 		85EA93240D0791240098C94B /* zh_TW */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = zh_TW; path = zh_TW.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -173,7 +172,7 @@
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				850711AB0CA7A347005F4734 /* ApplicationServices.framework in Frameworks */,
 
-				85B0177212913CF3004F06E4 /* PSMTabBarControl.framework in Frameworks */,
+
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -203,7 +202,7 @@
 				9EE1511238C74DF7885CF963 /* TerminalViewRepresentable.swift */,
 				A609D0540DF044A0AF45A8F0 /* YLMarkedTextView.swift */,
 				DED64F2661F241159554F130 /* YLExifController.swift */,
-				70FEB60EFE5F4AC69374F3C4 /* NallyToolbarDelegate.swift */,
+
 				A74C4D5473A24D27B9222EB3 /* NallyApp.swift */,
 				49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */,
 				80104742B2954F909E42FC73 /* NallyCommands.swift */,
@@ -234,7 +233,7 @@
 		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				85B0177112913CF3004F06E4 /* PSMTabBarControl.framework */,
+
 
 
 				29B97324FDCFA39411CA2CEA /* AppKit.framework */,
@@ -521,7 +520,7 @@
 				E5A600F899A24A63B0AE81C0 /* TerminalViewRepresentable.swift in Sources */,
 				E32052940E5B45E095566BDA /* YLMarkedTextView.swift in Sources */,
 				721248E781FC4EE79CF48A58 /* YLExifController.swift in Sources */,
-				5690CA5C46CE454E8E12248B /* NallyToolbarDelegate.swift in Sources */,
+
 				E2665651C95547EDB97441CA /* NallyApp.swift in Sources */,
 				E6239651091B4E9C86AA895A /* NallyAppDelegate.swift in Sources */,
 				105B234BF52D4039A30D3682 /* NallyCommands.swift in Sources */,

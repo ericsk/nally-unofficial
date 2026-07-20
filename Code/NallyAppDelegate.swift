@@ -1,7 +1,6 @@
 import Cocoa
 import SwiftUI
 
-private var toolbarDelegateKey: UInt8 = 0
 
 @objc(NallyAppDelegate)
 public class NallyAppDelegate: NSObject, NSApplicationDelegate {
