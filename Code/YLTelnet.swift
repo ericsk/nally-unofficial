@@ -13,6 +13,8 @@ import Network
 public class YLTelnet: YLConnection {
     private var connection: NWConnection?
     private let queue = DispatchQueue(label: "org.yllan.nally.telnet")
+    private var readTask: Task<Void, Never>?
+    
     private var port: Int = 0
     private var hostName: String = ""
     
@@ -66,6 +68,9 @@ public class YLTelnet: YLConnection {
     @objc public override func close() {
         NSLog("YLTelnet: close connection called")
         isProcessing = false
+        readTask?.cancel()
+        readTask = nil
+        
         if let conn = connection {
             conn.stateUpdateHandler = nil
             conn.cancel()
@@ -125,7 +130,7 @@ public class YLTelnet: YLConnection {
                     self.isProcessing = false
                     self.terminal?.startConnection()
                 }
-                self.receiveLoop()
+                self.startReceiveStream()
             case .failed(let error):
                 NSLog("YLTelnet: NWConnection failed: \(error.localizedDescription)")
                 DispatchQueue.main.async {
@@ -147,15 +152,36 @@ public class YLTelnet: YLConnection {
         return true
     }
     
-    private func receiveLoop() {
+    private func startReceiveStream() {
         guard let conn = connection else { return }
-        conn.receive(minimumIncompleteLength: 1, maximumLength: 4096) { [weak self] (data, context, isComplete, error) in
-            guard let self = self else { return }
-            if let data = data, !data.isEmpty {
-                let count = data.count
-                var mutableBytes = Array(data)
-                DispatchQueue.main.async { [weak self] in
-                    guard let self = self, self.connection != nil else { return }
+        
+        let dataStream = AsyncStream<Data> { continuation in
+            func receiveNext() {
+                conn.receive(minimumIncompleteLength: 1, maximumLength: 4096) { data, _, isComplete, error in
+                    if let data = data, !data.isEmpty {
+                        continuation.yield(data)
+                    }
+                    if isComplete || error != nil {
+                        continuation.finish()
+                    } else {
+                        receiveNext()
+                    }
+                }
+            }
+            receiveNext()
+            
+            continuation.onTermination = { _ in
+                conn.cancel()
+            }
+        }
+        
+        readTask = Task { [weak self] in
+            for await chunk in dataStream {
+                guard let self = self, !Task.isCancelled else { break }
+                let count = chunk.count
+                var mutableBytes = Array(chunk)
+                await MainActor.run {
+                    guard self.connection != nil else { return }
                     mutableBytes.withUnsafeMutableBufferPointer { bufferPtr in
                         if let mutableBase = bufferPtr.baseAddress {
                             self.receiveBytes(mutableBase, length: count)
@@ -163,26 +189,15 @@ public class YLTelnet: YLConnection {
                     }
                 }
             }
-            if isComplete {
-                NSLog("YLTelnet: NWConnection end encountered")
-                DispatchQueue.main.async { [weak self] in
-                    self?.close()
-                }
-            } else if let error = error {
-                NSLog("YLTelnet: NWConnection receive error: \(error.localizedDescription)")
-                DispatchQueue.main.async { [weak self] in
-                    self?.close()
-                }
-            } else {
-                self.receiveLoop()
+            await MainActor.run { [weak self] in
+                self?.close()
             }
         }
     }
     
     private func sendCommand(_ command: UInt8, option: UInt8) {
         let b: [UInt8] = [IAC, command, option]
-        let data = Data(b) as NSData
-        self.perform(#selector(sendData(_:)), with: data, afterDelay: 0.001)
+        sendData(Data(b))
     }
     
     @objc(receiveBytes:length:)
@@ -247,7 +262,7 @@ public class YLTelnet: YLConnection {
                 } else if c == TELOPT_NAWS {
                     let b: [UInt8] = [IAC, SB, TELOPT_NAWS, 0, 80, 0, 24, IAC, SE]
                     sendCommand(WILL, option: TELOPT_NAWS)
-                    self.perform(#selector(sendData(_:)), with: Data(b) as NSData, afterDelay: 0.001)
+                    sendData(Data(b))
                 } else if c == TELOPT_BINARY {
                     sendCommand(WILL, option: c)
                 } else {
@@ -282,7 +297,7 @@ public class YLTelnet: YLConnection {
                         let buf = buffer.bytes.assumingMemoryBound(to: UInt8.self)
                         if sbOption == TELOPT_TTYPE && buffer.length == 1 && buf[0] == TELQUAL_SEND {
                             let b: [UInt8] = [IAC, SB, TELOPT_TTYPE, TELQUAL_IS, UInt8(ascii: "v"), UInt8(ascii: "t"), UInt8(ascii: "1"), UInt8(ascii: "0"), UInt8(ascii: "0"), IAC, SE]
-                            self.perform(#selector(sendData(_:)), with: Data(b) as NSData, afterDelay: 0.001)
+                            sendData(Data(b))
                         }
                     }
                     state = .topLevel
