@@ -1,24 +1,13 @@
-//
-//  YLSSH.swift
-//  Nally
-//
-//  Created by Lan Yung-Luen on 12/7/07.
-//  Copyright 2007-2026 yllan.org. All rights reserved.
-//
-
 import Cocoa
 import Combine
 
 @objc(YLSSH)
 public class YLSSH: YLConnection {
-    private var pid: pid_t = 0
-    private var fileDescriptor: Int32 = -1
+    private var process: Process?
+    private var masterFd: Int32 = -1
     private var loginAsBBS: Bool = false
     private var usePacketMode: Bool = true
-    
-    // Modern Dispatch Queue and Source
-    private let queue = DispatchQueue(label: "org.yllan.nally.ssh")
-    private var readSource: DispatchSourceRead?
+    private var ioTask: Task<Void, Never>?
     
     deinit {
         close()
@@ -27,22 +16,23 @@ public class YLSSH: YLConnection {
     @objc public override func close() {
         NSLog("YLSSH: close called")
         
-        if let source = readSource {
-            source.cancel()
-            readSource = nil
+        if let task = ioTask {
+            task.cancel()
+            ioTask = nil
         }
         
-        if pid > 0 {
-            kill(pid, SIGKILL)
-            var status: Int32 = 0
-            waitpid(pid, &status, WNOHANG)
-            pid = 0
+        if let proc = process {
+            if proc.isRunning {
+                proc.terminate()
+            }
+            process = nil
         }
         
-        if fileDescriptor >= 0 {
-            Darwin.close(fileDescriptor)
-            fileDescriptor = -1
+        if masterFd >= 0 {
+            Darwin.close(masterFd)
+            masterFd = -1
         }
+        
         connected = false
     }
     
@@ -86,9 +76,42 @@ public class YLSSH: YLConnection {
         NSLog("YLSSH: connectToAddress: \(addr) port: \(port)")
         terminal?.clearAll()
         
-        var slaveName = [CChar](repeating: 0, count: Int(PATH_MAX))
+        // 1. Open master PTY
+        let fd = posix_openpt(O_RDWR | O_NOCTTY)
+        guard fd >= 0 else {
+            NSLog("YLSSH: posix_openpt failed")
+            return false
+        }
+        
+        guard grantpt(fd) == 0 else {
+            NSLog("YLSSH: grantpt failed")
+            Darwin.close(fd)
+            return false
+        }
+        
+        guard unlockpt(fd) == 0 else {
+            NSLog("YLSSH: unlockpt failed")
+            Darwin.close(fd)
+            return false
+        }
+        
+        guard let slavePathC = ptsname(fd) else {
+            NSLog("YLSSH: ptsname failed")
+            Darwin.close(fd)
+            return false
+        }
+        
+        let slavePath = String(cString: slavePathC)
+        let slaveFd = Darwin.open(slavePath, O_RDWR | O_NOCTTY)
+        guard slaveFd >= 0 else {
+            NSLog("YLSSH: failed to open slave PTY at \(slavePath)")
+            Darwin.close(fd)
+            return false
+        }
+        
+        // 2. Set slave PTY terminal settings
         var term = termios()
-        var size = winsize()
+        tcgetattr(slaveFd, &term)
         
         term.c_iflag = tcflag_t(ICRNL | IXON | IXANY | IMAXBEL | BRKINT)
         term.c_oflag = tcflag_t(OPOST | ONLCR)
@@ -99,7 +122,6 @@ public class YLSSH: YLConnection {
             return Int32(c.value) - Int32(Unicode.Scalar("A").value) + 1
         }
         
-        // Setup term.c_cc controls
         withUnsafeMutableBytes(of: &term.c_cc) { bytes in
             guard let cc = bytes.baseAddress?.assumingMemoryBound(to: cc_t.self) else { return }
             cc[Int(VEOF)] = cc_t(ctrlKey("D"))
@@ -124,114 +146,120 @@ public class YLSSH: YLConnection {
         
         term.c_ispeed = speed_t(B38400)
         term.c_ospeed = speed_t(B38400)
+        tcsetattr(slaveFd, TCSANOW, &term)
         
+        var size = winsize()
         let config = YLLGlobalConfig.sharedInstance()
         size.ws_col = UInt16(config.column)
         size.ws_row = UInt16(config.row)
         size.ws_xpixel = 0
         size.ws_ypixel = 0
+        ioctl(slaveFd, TIOCSWINSZ, &size)
         
-        var fd: Int32 = -1
-        NSLog("YLSSH: calling forkpty")
-        let forkPid = forkpty(&fd, &slaveName, &term, &size)
-        
-        if forkPid == 0 { // Child
-            let portStr = String(port)
-            if loginAsBBS {
-                let args = ["ssh", "-e", "none", "-x", "-p", portStr, addr]
-                let cArgs = args.map { strdup($0) } + [nil]
-                cArgs.withUnsafeBufferPointer { bufferPtr in
-                    execvp("/usr/bin/ssh", bufferPtr.baseAddress!)
-                }
-                perror("fork error")
-                exit(1)
-            } else {
-                let args = ["ssh", "-e", "none", "-p", portStr, addr]
-                let env = ["TERM=vt102"]
-                let cArgs = args.map { strdup($0) } + [nil]
-                let cEnv = env.map { strdup($0) } + [nil]
-                cArgs.withUnsafeBufferPointer { argsPtr in
-                    cEnv.withUnsafeBufferPointer { envPtr in
-                        execve("/usr/bin/ssh", argsPtr.baseAddress!, envPtr.baseAddress!)
-                    }
-                }
-                perror("fork error")
-                exit(1)
-            }
-        } else if forkPid > 0 { // Parent
-            self.pid = forkPid
-            self.fileDescriptor = fd
-            NSLog("YLSSH: forkpty succeeded, pid: \(pid), fd: \(fileDescriptor)")
-            
-            var one: Int32 = 1
-            let ioctlRet = ioctl(self.fileDescriptor, UInt(TIOCPKT), &one)
-            if ioctlRet < 0 {
-                usePacketMode = false
-            } else {
-                usePacketMode = true
-            }
-            
-            // Set fd to non-blocking
-            let flags = fcntl(self.fileDescriptor, F_GETFL, 0)
-            _ = fcntl(self.fileDescriptor, F_SETFL, flags | O_NONBLOCK)
-            
-            // Setup DispatchSourceRead
-            let source = DispatchSource.makeReadSource(fileDescriptor: self.fileDescriptor, queue: queue)
-            source.setEventHandler { [weak self] in
-                self?.handleRead()
-            }
-            source.setCancelHandler { [weak self] in
-                guard let self = self else { return }
-                if self.fileDescriptor >= 0 {
-                    Darwin.close(self.fileDescriptor)
-                    self.fileDescriptor = -1
-                }
-            }
-            self.readSource = source
-            source.resume()
-            
-            self.connected = true
-            return true
+        // 3. Enable Packet Mode
+        var one: Int32 = 1
+        let ioctlRet = ioctl(fd, UInt(TIOCPKT), &one)
+        if ioctlRet < 0 {
+            usePacketMode = false
         } else {
-            perror("forkpty failed")
+            usePacketMode = true
+        }
+        
+        // 4. Spawn ssh Process
+        let slaveHandle = FileHandle(fileDescriptor: slaveFd, closeOnDealloc: true)
+        let proc = Process()
+        proc.executableURL = URL(fileURLWithPath: "/usr/bin/ssh")
+        
+        let portStr = String(port)
+        if loginAsBBS {
+            proc.arguments = ["-e", "none", "-x", "-p", portStr, addr]
+        } else {
+            proc.arguments = ["-e", "none", "-p", portStr, addr]
+        }
+        
+        var env = ProcessInfo.processInfo.environment
+        env["TERM"] = "vt102"
+        proc.environment = env
+        
+        proc.standardInput = slaveHandle
+        proc.standardOutput = slaveHandle
+        proc.standardError = slaveHandle
+        
+        do {
+            try proc.run()
+        } catch {
+            NSLog("YLSSH: failed to run ssh: \(error.localizedDescription)")
+            Darwin.close(fd)
             return false
         }
-    }
-    
-    private func handleRead() {
-        guard fileDescriptor >= 0 else { return }
-        var buf = [UInt8](repeating: 0, count: 4096)
-        let readRes = Darwin.read(fileDescriptor, &buf, buf.count)
         
-        if readRes > 0 {
-            let data: Data
-            if usePacketMode {
-                if readRes > 1 {
-                    data = Data(buf[1..<readRes])
+        // Close slaveFd in parent
+        Darwin.close(slaveFd)
+        
+        self.masterFd = fd
+        self.process = proc
+        
+        // Set masterFd to non-blocking
+        let flags = fcntl(fd, F_GETFL, 0)
+        _ = fcntl(fd, F_SETFL, flags | O_NONBLOCK)
+        
+        // 5. Read loop using Swift Concurrency and AsyncStream
+        let packetMode = usePacketMode
+        let dataStream = AsyncStream<Data> { continuation in
+            let readQueue = DispatchQueue(label: "org.yllan.nally.ssh.read")
+            let readSource = DispatchSource.makeReadSource(fileDescriptor: fd, queue: readQueue)
+            readSource.setEventHandler {
+                var buf = [UInt8](repeating: 0, count: 4096)
+                let readRes = Darwin.read(fd, &buf, buf.count)
+                if readRes > 0 {
+                    let data: Data
+                    if packetMode {
+                        if readRes > 1 {
+                            if buf[0] == 0 { // TIOCPKT_DATA
+                                data = Data(buf[1..<readRes])
+                                continuation.yield(data)
+                            }
+                        }
+                    } else {
+                        data = Data(buf[0..<readRes])
+                        continuation.yield(data)
+                    }
+                } else if readRes == 0 {
+                    readSource.cancel()
                 } else {
-                    return
+                    let err = errno
+                    if err != EAGAIN && err != EWOULDBLOCK {
+                        readSource.cancel()
+                    }
                 }
-            } else {
-                data = Data(buf[0..<readRes])
             }
-            DispatchQueue.main.async { [weak self] in
-                self?.receiveData(data)
+            
+            readSource.setCancelHandler {
+                continuation.finish()
             }
-        } else if readRes < 0 {
-            let err = errno
-            if err == EAGAIN || err == EWOULDBLOCK {
-                return
+            
+            readSource.resume()
+            
+            continuation.onTermination = { @Sendable _ in
+                readSource.cancel()
             }
-            NSLog("YLSSH: read error: \(err), closing")
-            DispatchQueue.main.async { [weak self] in
-                self?.close()
+        }
+        
+        ioTask = Task { [weak self] in
+            for await data in dataStream {
+                guard let self = self else { break }
+                await MainActor.run {
+                    self.receiveData(data)
+                }
             }
-        } else {
-            NSLog("YLSSH: read returned 0 (EOF), closing")
-            DispatchQueue.main.async { [weak self] in
+            // Reading completed (EOF or cancelled)
+            await MainActor.run {
                 self?.close()
             }
         }
+        
+        self.connected = true
+        return true
     }
     
     @objc private func receiveData(_ data: Data) {
@@ -249,59 +277,59 @@ public class YLSSH: YLConnection {
     
     @objc(sendBytes:length:)
     public override func sendBytes(_ msg: UnsafePointer<UInt8>, length: Int) {
-        guard fileDescriptor >= 0, length > 0 else { return }
+        guard masterFd >= 0, length > 0 else { return }
         lastTouchDateValue = Date()
         
         let data = Data(bytes: msg, count: length)
-        queue.async { [weak self] in
-            self?.writeAsync(data)
+        Task {
+            await writeAsync(data)
         }
     }
     
-    private func writeAsync(_ data: Data) {
-        guard fileDescriptor >= 0 else { return }
+    private func writeAsync(_ data: Data) async {
+        guard masterFd >= 0 else { return }
         var remaining = data.count
         var offset = 0
         
-        data.withUnsafeBytes { rawBuffer in
-            guard let baseAddress = rawBuffer.baseAddress?.assumingMemoryBound(to: UInt8.self) else { return }
-            
-            while remaining > 0 {
+        while remaining > 0 && masterFd >= 0 {
+            let written = data.withUnsafeBytes { rawBuffer -> Int in
+                guard let baseAddress = rawBuffer.baseAddress?.assumingMemoryBound(to: UInt8.self) else { return -1 }
                 let chunkPtr = baseAddress + offset
-                let size = Darwin.write(fileDescriptor, chunkPtr, remaining)
-                
-                if size > 0 {
-                    offset += size
-                    remaining -= size
-                } else if size < 0 {
-                    let err = errno
-                    if err == EAGAIN || err == EWOULDBLOCK {
-                        usleep(10000) // 10ms
-                        continue
-                    } else {
-                        NSLog("YLSSH: write error: \(err), closing")
-                        DispatchQueue.main.async { [weak self] in
-                            self?.close()
-                        }
-                        break
-                    }
+                return Darwin.write(masterFd, chunkPtr, remaining)
+            }
+            
+            if written > 0 {
+                offset += written
+                remaining -= written
+            } else if written < 0 {
+                let err = errno
+                if err == EAGAIN || err == EWOULDBLOCK {
+                    // Yield thread control
+                    await Task.yield()
+                    continue
                 } else {
-                    NSLog("YLSSH: write returned 0, closing")
-                    DispatchQueue.main.async { [weak self] in
-                        self?.close()
+                    NSLog("YLSSH: write error: \(err), closing")
+                    Task { @MainActor in
+                        self.close()
                     }
                     break
                 }
+            } else {
+                NSLog("YLSSH: write returned 0, closing")
+                Task { @MainActor in
+                    self.close()
+                }
+                break
             }
         }
     }
     
     @objc(sendData:)
     public override func sendData(_ msg: Data) {
-        guard fileDescriptor >= 0, !msg.isEmpty else { return }
+        guard masterFd >= 0, !msg.isEmpty else { return }
         lastTouchDateValue = Date()
-        queue.async { [weak self] in
-            self?.writeAsync(msg)
+        Task {
+            await writeAsync(msg)
         }
     }
 }
