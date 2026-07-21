@@ -910,22 +910,22 @@ public class YLView: NSTabView, NSTextInputClient {
     
     public override func draw(_ rect: NSRect) {
         autoreleasepool {
+            guard let context = NSGraphicsContext.current?.cgContext else { return }
             let config = YLLGlobalConfig.sharedInstance()
             let gRow = Int(config.row)
             let gColumn = Int(config.column)
             
             if connected() {
                 if let img = _backedImageCG {
-                    let nsImage = NSImage(cgImage: img, size: bounds.size)
-                    nsImage.draw(in: bounds)
+                    context.draw(img, in: bounds)
                 }
                 
-                drawBlink()
+                drawBlink(in: context)
                 
                 // Draw the url underline
                 if let ds = frontMostTerminal() {
-                    NSColor.orange.set()
-                    NSBezierPath.defaultLineWidth = 1.0
+                    context.setStrokeColor(NSColor.orange.cgColor)
+                    context.setLineWidth(1.0)
                     for r in 0..<gRow {
                         guard let currRow = ds.cells(ofRow: Int32(r)) else { continue }
                         var c = 0
@@ -935,39 +935,40 @@ public class YLView: NSTabView, NSTextInputClient {
                                 c += 1
                             }
                             if c != start {
-                                NSBezierPath.strokeLine(
-                                    from: NSMakePoint(CGFloat(start) * _fontWidth, CGFloat(gRow - r - 1) * _fontHeight + 0.5),
-                                    to: NSMakePoint(CGFloat(c) * _fontWidth, CGFloat(gRow - r - 1) * _fontHeight + 0.5)
-                                )
+                                context.beginPath()
+                                context.move(to: CGPoint(x: CGFloat(start) * _fontWidth, y: CGFloat(gRow - r - 1) * _fontHeight + 0.5))
+                                context.addLine(to: CGPoint(x: CGFloat(c) * _fontWidth, y: CGFloat(gRow - r - 1) * _fontHeight + 0.5))
+                                context.strokePath()
                             }
                             c += 1
                         }
                     }
                     
                     // Draw the cursor
-                    NSColor.white.set()
-                    NSBezierPath.defaultLineWidth = 2.0
-                    NSBezierPath.strokeLine(
-                        from: NSMakePoint(CGFloat(ds.cursorColumn) * _fontWidth, CGFloat(gRow - 1 - Int(ds.cursorRow)) * _fontHeight + 1),
-                        to: NSMakePoint(CGFloat(ds.cursorColumn + 1) * _fontWidth, CGFloat(gRow - 1 - Int(ds.cursorRow)) * _fontHeight + 1)
-                    )
-                    NSBezierPath.defaultLineWidth = 1.0
+                    context.setStrokeColor(NSColor.white.cgColor)
+                    context.setLineWidth(2.0)
+                    context.beginPath()
+                    context.move(to: CGPoint(x: CGFloat(ds.cursorColumn) * _fontWidth, y: CGFloat(gRow - 1 - Int(ds.cursorRow)) * _fontHeight + 1))
+                    context.addLine(to: CGPoint(x: CGFloat(ds.cursorColumn + 1) * _fontWidth, y: CGFloat(gRow - 1 - Int(ds.cursorRow)) * _fontHeight + 1))
+                    context.strokePath()
+                    
                     _x = ds.cursorColumn
                     _y = ds.cursorRow
                 }
                 
                 // Draw the selection
                 if _selectionLength != 0 {
-                    drawSelection()
+                    drawSelection(in: context)
                 }
             } else {
-                (config.colorBG ?? NSColor.black).set()
-                bounds.fill()
+                let bgColor = config.colorBG ?? NSColor.black
+                context.setFillColor(bgColor.cgColor)
+                context.fill(bounds)
             }
         }
     }
     
-    @objc public func drawBlink() {
+    public func drawBlink(in context: CGContext) {
         let config = YLLGlobalConfig.sharedInstance()
         guard config.blinkTicker else { return }
         guard let ds = frontMostTerminal() else { return }
@@ -983,14 +984,16 @@ public class YLView: NSTabView, NSTextInputClient {
                     let bgColorIndex = attr.reverse ? attr.fgColor : attr.bgColor
                     let bold = attr.reverse ? attr.bold : false
                     
-                    config.colorAtIndex(Int32(bgColorIndex), hilite: bold).set()
-                    NSMakeRect(CGFloat(c) * _fontWidth, CGFloat(gRow - r - 1) * _fontHeight, _fontWidth, _fontHeight).fill()
+                    let color = config.colorAtIndex(Int32(bgColorIndex), hilite: bold)
+                    context.setFillColor(color.cgColor)
+                    let rect = CGRect(x: CGFloat(c) * _fontWidth, y: CGFloat(gRow - r - 1) * _fontHeight, width: _fontWidth, height: _fontHeight)
+                    context.fill(rect)
                 }
             }
         }
     }
     
-    @objc public func drawSelection() {
+    public func drawSelection(in context: CGContext) {
         let config = YLLGlobalConfig.sharedInstance()
         let gRow = Int(config.row)
         let gColumn = Int(config.column)
@@ -1006,14 +1009,18 @@ public class YLView: NSTabView, NSTextInputClient {
         }
         var x = location % gColumn
         var y = location / gColumn
-        NSColor(calibratedRed: 0.6, green: 0.9, blue: 0.6, alpha: 0.4).set()
+        
+        let selectionColor = NSColor(calibratedRed: 0.6, green: 0.9, blue: 0.6, alpha: 0.4)
+        context.setFillColor(selectionColor.cgColor)
         
         while length > 0 {
             if x + length <= gColumn {
-                NSMakeRect(CGFloat(x) * _fontWidth, CGFloat(gRow - y - 1) * _fontHeight, _fontWidth * CGFloat(length), _fontHeight).fill()
+                let rect = CGRect(x: CGFloat(x) * _fontWidth, y: CGFloat(gRow - y - 1) * _fontHeight, width: _fontWidth * CGFloat(length), height: _fontHeight)
+                context.fill(rect)
                 length = 0
             } else {
-                NSMakeRect(CGFloat(x) * _fontWidth, CGFloat(gRow - y - 1) * _fontHeight, _fontWidth * CGFloat(gColumn - x), _fontHeight).fill()
+                let rect = CGRect(x: CGFloat(x) * _fontWidth, y: CGFloat(gRow - y - 1) * _fontHeight, width: _fontWidth * CGFloat(gColumn - x), height: _fontHeight)
+                context.fill(rect)
                 length -= (gColumn - x)
             }
             x = 0
@@ -1048,15 +1055,10 @@ public class YLView: NSTabView, NSTextInputClient {
             memmove(data.advanced(by: destOffset), data.advanced(by: srcOffset), count)
         }
         
-        let previousContext = NSGraphicsContext.current
-        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
-        NSGraphicsContext.current = graphicsContext
-        
-        config.colorAtIndex(config.bgColorIndex, hilite: false).set()
+        let color = config.colorAtIndex(config.bgColorIndex, hilite: false)
+        context.setFillColor(color.cgColor)
         let cleanY = CGFloat(gRow - Int(end) - 1) * _fontHeight
-        NSMakeRect(0.0, cleanY, CGFloat(gColumn) * _fontWidth, _fontHeight).fill()
-        
-        NSGraphicsContext.current = previousContext
+        context.fill(CGRect(x: 0.0, y: cleanY, width: CGFloat(gColumn) * _fontWidth, height: _fontHeight))
         
         self._backedImageCG = context.makeImage()
         self.needsDisplay = true
@@ -1089,15 +1091,10 @@ public class YLView: NSTabView, NSTextInputClient {
             memmove(data.advanced(by: destOffset), data.advanced(by: srcOffset), count)
         }
         
-        let previousContext = NSGraphicsContext.current
-        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
-        NSGraphicsContext.current = graphicsContext
-        
-        config.colorAtIndex(config.bgColorIndex, hilite: false).set()
+        let color = config.colorAtIndex(config.bgColorIndex, hilite: false)
+        context.setFillColor(color.cgColor)
         let cleanY = CGFloat(gRow - Int(start) - 1) * _fontHeight
-        NSMakeRect(0.0, cleanY, CGFloat(gColumn) * _fontWidth, _fontHeight).fill()
-        
-        NSGraphicsContext.current = previousContext
+        context.fill(CGRect(x: 0.0, y: cleanY, width: CGFloat(gColumn) * _fontWidth, height: _fontHeight))
         
         self._backedImageCG = context.makeImage()
         self.needsDisplay = true
@@ -1111,59 +1108,45 @@ public class YLView: NSTabView, NSTextInputClient {
         guard let context = _bitmapContext else { return }
         
         guard let ds = frontMostTerminal() else {
-            let previousContext = NSGraphicsContext.current
-            let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
-            NSGraphicsContext.current = graphicsContext
-            
-            NSColor.clear.set()
+            context.setFillColor(NSColor.clear.cgColor)
             let rect = CGRect(x: 0, y: 0, width: CGFloat(gColumn) * _fontWidth, height: CGFloat(gRow) * _fontHeight)
-            rect.fill()
-            
-            NSGraphicsContext.current = previousContext
+            context.fill(rect)
             self._backedImageCG = context.makeImage()
             self.needsDisplay = true
             return
         }
         
-        let previousContext = NSGraphicsContext.current
-        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
-        NSGraphicsContext.current = graphicsContext
-        
-        if let activeCtx = NSGraphicsContext.current?.cgContext {
-            /* Draw Background */
-            var y = 0
-            while y < gRow {
-                var x = 0
-                while x < gColumn {
-                    if ds.isDirty(atRow: Int32(y), column: Int32(x)) {
-                        let startx = x
-                        while x < gColumn && ds.isDirty(atRow: Int32(y), column: Int32(x)) {
-                            x += 1
-                        }
-                        updateBackground(forRow: Int32(y), from: Int32(startx), to: Int32(x))
+        /* Draw Background */
+        var y = 0
+        while y < gRow {
+            var x = 0
+            while x < gColumn {
+                if ds.isDirty(atRow: Int32(y), column: Int32(x)) {
+                    let startx = x
+                    while x < gColumn && ds.isDirty(atRow: Int32(y), column: Int32(x)) {
+                        x += 1
                     }
-                    x += 1
+                    updateBackground(forRow: Int32(y), from: Int32(startx), to: Int32(x), context: context)
                 }
-                y += 1
+                x += 1
             }
-            
-            activeCtx.saveGState()
-            activeCtx.setShouldSmoothFonts(config.shouldSmoothFonts)
-            
-            /* Draw String row by row */
-            for r in 0..<gRow {
-                drawString(forRow: Int32(r), context: activeCtx)
-            }
-            activeCtx.restoreGState()
-            
-            for r in 0..<gRow {
-                for c in 0..<gColumn {
-                    ds.setDirty(false, atRow: Int32(r), column: Int32(c))
-                }
-            }
+            y += 1
         }
         
-        NSGraphicsContext.current = previousContext
+        context.saveGState()
+        context.setShouldSmoothFonts(config.shouldSmoothFonts)
+        
+        /* Draw String row by row */
+        for r in 0..<gRow {
+            drawString(forRow: Int32(r), context: context)
+        }
+        context.restoreGState()
+        
+        for r in 0..<gRow {
+            for c in 0..<gColumn {
+                ds.setDirty(false, atRow: Int32(r), column: Int32(c))
+            }
+        }
         
         self._backedImageCG = context.makeImage()
         self.needsDisplay = true

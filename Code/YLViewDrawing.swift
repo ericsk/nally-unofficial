@@ -12,55 +12,55 @@ extension YLView {
         return false
     }
     
-    private func getTrianglePath(index: Int) -> NSBezierPath {
+    private func getTrianglePath(index: Int) -> CGPath {
         let pts = [
-            NSPoint(x: fontWidth, y: 0.0),
-            NSPoint(x: 0.0, y: 0.0),
-            NSPoint(x: 0.0, y: fontHeight),
-            NSPoint(x: fontWidth, y: fontHeight),
-            NSPoint(x: fontWidth * 2, y: fontHeight),
-            NSPoint(x: fontWidth * 2, y: 0.0),
+            CGPoint(x: fontWidth, y: 0.0),
+            CGPoint(x: 0.0, y: 0.0),
+            CGPoint(x: 0.0, y: fontHeight),
+            CGPoint(x: fontWidth, y: fontHeight),
+            CGPoint(x: fontWidth * 2, y: fontHeight),
+            CGPoint(x: fontWidth * 2, y: 0.0),
         ]
         let triangleIndex = [ [1, 4, 5], [1, 2, 5], [1, 2, 4], [2, 4, 5] ]
-        let path = NSBezierPath()
+        let path = CGMutablePath()
         path.move(to: pts[triangleIndex[index][0]])
-        path.line(to: pts[triangleIndex[index][1]])
-        path.line(to: pts[triangleIndex[index][2]])
-        path.close()
+        path.addLine(to: pts[triangleIndex[index][1]])
+        path.addLine(to: pts[triangleIndex[index][2]])
+        path.closeSubpath()
         return path
     }
     
-    private func getTrianglePathsDoubleColor(index: Int) -> (NSBezierPath, NSBezierPath) {
+    private func getTrianglePathsDoubleColor(index: Int) -> (CGPath, CGPath) {
         let pts = [
-            NSPoint(x: fontWidth, y: 0.0),
-            NSPoint(x: 0.0, y: 0.0),
-            NSPoint(x: 0.0, y: fontHeight),
-            NSPoint(x: fontWidth, y: fontHeight),
-            NSPoint(x: fontWidth * 2, y: fontHeight),
-            NSPoint(x: fontWidth * 2, y: 0.0),
+            CGPoint(x: fontWidth, y: 0.0),
+            CGPoint(x: 0.0, y: 0.0),
+            CGPoint(x: 0.0, y: fontHeight),
+            CGPoint(x: fontWidth, y: fontHeight),
+            CGPoint(x: fontWidth * 2, y: fontHeight),
+            CGPoint(x: fontWidth * 2, y: 0.0),
         ]
         let triangleIndex1 = [ [0, 1, -1], [0, 1, 2], [1, 2, 3], [2, 3, -1] ]
         let triangleIndex2 = [ [4, 5, 0], [5, 0, -1], [3, 4, -1], [3, 4, 5] ]
         
-        let path1 = NSBezierPath()
-        path1.move(to: NSPoint(x: fontWidth, y: fontHeight / 2.0))
+        let path1 = CGMutablePath()
+        path1.move(to: CGPoint(x: fontWidth, y: fontHeight / 2.0))
         for i in 0..<3 {
             let idx = triangleIndex1[index][i]
             if idx >= 0 {
-                path1.line(to: pts[idx])
+                path1.addLine(to: pts[idx])
             }
         }
-        path1.close()
+        path1.closeSubpath()
         
-        let path2 = NSBezierPath()
-        path2.move(to: NSPoint(x: fontWidth, y: fontHeight / 2.0))
+        let path2 = CGMutablePath()
+        path2.move(to: CGPoint(x: fontWidth, y: fontHeight / 2.0))
         for i in 0..<3 {
             let idx = triangleIndex2[index][i]
             if idx >= 0 {
-                path2.line(to: pts[idx])
+                path2.addLine(to: pts[idx])
             }
         }
-        path2.close()
+        path2.closeSubpath()
         
         return (path1, path2)
     }
@@ -129,7 +129,7 @@ extension YLView {
                 let ch = (termEncoding == .YLBig5Encoding) ? lookupBig5(code) : lookupGBK(code)
                 
                 if isSpecialSymbol(ch) {
-                    self.drawSpecialSymbol(ch, forRow: r, column: Int32(x - 1), leftAttribute: currRow[x - 1].attr, rightAttribute: currRow[x].attr)
+                    self.drawSpecialSymbol(ch, forRow: r, column: Int32(x - 1), leftAttribute: currRow[x - 1].attr, rightAttribute: currRow[x].attr, context: myCGContext)
                 } else {
                     let attrLeft = currRow[x - 1].attr
                     let attrRight = currRow[x].attr
@@ -336,12 +336,12 @@ extension YLView {
                 }
                 
                 let color = config.colorAtIndex(Int32(beginColor), hilite: beginBold)
-                color.set()
-                let path = NSBezierPath()
-                path.lineWidth = 1.0
-                path.move(to: NSPoint(x: CGFloat(begin) * fontWidth, y: CGFloat(gRow - 1 - Int(r)) * fontHeight + 0.5))
-                path.line(to: NSPoint(x: CGFloat(underlineX) * fontWidth, y: CGFloat(gRow - 1 - Int(r)) * fontHeight + 0.5))
-                path.stroke()
+                myCGContext.setStrokeColor(color.cgColor)
+                myCGContext.setLineWidth(1.0)
+                myCGContext.beginPath()
+                myCGContext.move(to: CGPoint(x: CGFloat(begin) * fontWidth, y: CGFloat(gRow - 1 - Int(r)) * fontHeight + 0.5))
+                myCGContext.addLine(to: CGPoint(x: CGFloat(underlineX) * fontWidth, y: CGFloat(gRow - 1 - Int(r)) * fontHeight + 0.5))
+                myCGContext.strokePath()
                 
                 underlineX -= 1
             }
@@ -349,8 +349,8 @@ extension YLView {
         }
     }
     
-    @objc(updateBackgroundForRow:from:to:)
-    public func updateBackground(forRow r: Int32, from start: Int32, to end: Int32) {
+    @objc(updateBackgroundForRow:from:to:context:)
+    public func updateBackground(forRow r: Int32, from start: Int32, to end: Int32, context: CGContext) {
         guard let ds = self.frontMostTerminal() else { return }
         guard let currRow = ds.cells(ofRow: r) else { return }
         let config = YLLGlobalConfig.sharedInstance()
@@ -374,15 +374,15 @@ extension YLView {
             let currentBold = bgBoldOfAttribute(currAttr) != 0
             
             if currentBackgroundColor != lastBackgroundColor || currentBold != lastBold || c == end {
-                let rect = NSRect(
+                let rect = CGRect(
                     x: CGFloat(c - length) * fontWidth,
                     y: CGFloat(gRow - 1 - Int(r)) * fontHeight,
                     width: fontWidth * CGFloat(length),
                     height: fontHeight
                 )
                 let color = config.colorAtIndex(Int32(lastBackgroundColor), hilite: lastBold)
-                color.set()
-                rect.fill()
+                context.setFillColor(color.cgColor)
+                context.fill(rect)
                 
                 length = 1
                 lastAttr = currAttr
@@ -397,78 +397,79 @@ extension YLView {
         self.setNeedsDisplay(rowRect)
     }
     
-    public func drawSpecialSymbol(_ ch: unichar, forRow r: Int32, column c: Int32, leftAttribute attr1: attribute, rightAttribute attr2: attribute) {
+    public func drawSpecialSymbol(_ ch: unichar, forRow r: Int32, column c: Int32, leftAttribute attr1: attribute, rightAttribute attr2: attribute, context: CGContext) {
         let config = YLLGlobalConfig.sharedInstance()
         let gRow = Int(config.row)
         let colorIndex1 = fgColorIndexOfAttribute(attr1)
         let colorIndex2 = fgColorIndexOfAttribute(attr2)
         
-        let origin = NSPoint(x: CGFloat(c) * fontWidth, y: CGFloat(gRow - 1 - Int(r)) * fontHeight)
+        let origin = CGPoint(x: CGFloat(c) * fontWidth, y: CGFloat(gRow - 1 - Int(r)) * fontHeight)
         
-        let xform = NSAffineTransform()
-        xform.translateX(by: origin.x, yBy: origin.y)
-        xform.concat()
+        context.saveGState()
+        context.translateBy(x: origin.x, y: origin.y)
         
         if colorIndex1 == colorIndex2 && fgBoldOfAttribute(attr1) == fgBoldOfAttribute(attr2) {
             let color = config.colorAtIndex(Int32(colorIndex1), hilite: fgBoldOfAttribute(attr1) != 0)
-            color.set()
+            context.setFillColor(color.cgColor)
             
             if ch == 0x25FC { // ◼ BLACK SQUARE
-                let gSymbolBlackSquareRect = NSRect(x: 1.0, y: 1.0, width: fontWidth * 2 - 2, height: fontHeight - 2)
-                gSymbolBlackSquareRect.fill()
+                let rect = CGRect(x: 1.0, y: 1.0, width: fontWidth * 2 - 2, height: fontHeight - 2)
+                context.fill(rect)
             } else if ch >= 0x2581 && ch <= 0x2588 { // BLOCK ▁▂▃▄▅▆▇█
                 let idx = Int(ch - 0x2581)
-                let rect = NSRect(x: 0.0, y: 0.0, width: fontWidth * 2, height: fontHeight * CGFloat(idx + 1) / 8.0)
-                rect.fill()
+                let rect = CGRect(x: 0.0, y: 0.0, width: fontWidth * 2, height: fontHeight * CGFloat(idx + 1) / 8.0)
+                context.fill(rect)
             } else if ch >= 0x2589 && ch <= 0x258F { // BLOCK ▉▊▋▌▍▎▏
                 let idx = Int(ch - 0x2589)
-                let rect = NSRect(x: 0.0, y: 0.0, width: fontWidth * CGFloat(7 - idx) / 4.0, height: fontHeight)
-                rect.fill()
+                let rect = CGRect(x: 0.0, y: 0.0, width: fontWidth * CGFloat(7 - idx) / 4.0, height: fontHeight)
+                context.fill(rect)
             } else if ch >= 0x25E2 && ch <= 0x25E5 { // TRIANGLE ◢◣◤◥
                 let idx = Int(ch - 0x25E2)
                 let path = getTrianglePath(index: idx)
-                path.fill()
+                context.addPath(path)
+                context.fillPath()
             }
         } else { // double color
             let color1 = config.colorAtIndex(Int32(colorIndex1), hilite: fgBoldOfAttribute(attr1) != 0)
             let color2 = config.colorAtIndex(Int32(colorIndex2), hilite: fgBoldOfAttribute(attr2) != 0)
             
             if ch == 0x25FC { // ◼ BLACK SQUARE
-                let rect1 = NSRect(x: 1.0, y: 1.0, width: fontWidth - 1, height: fontHeight - 2)
-                let rect2 = NSRect(x: fontWidth, y: 1.0, width: fontWidth - 1, height: fontHeight - 2)
-                color1.set()
-                rect1.fill()
-                color2.set()
-                rect2.fill()
+                let rect1 = CGRect(x: 1.0, y: 1.0, width: fontWidth - 1, height: fontHeight - 2)
+                let rect2 = CGRect(x: fontWidth, y: 1.0, width: fontWidth - 1, height: fontHeight - 2)
+                context.setFillColor(color1.cgColor)
+                context.fill(rect1)
+                context.setFillColor(color2.cgColor)
+                context.fill(rect2)
             } else if ch >= 0x2581 && ch <= 0x2588 { // BLOCK ▁▂▃▄▅▆▇█
                 let idx = Int(ch - 0x2581)
-                let rect1 = NSRect(x: 0.0, y: 0.0, width: fontWidth, height: fontHeight * CGFloat(idx + 1) / 8.0)
-                let rect2 = NSRect(x: fontWidth, y: 0.0, width: fontWidth, height: fontHeight * CGFloat(idx + 1) / 8.0)
-                color1.set()
-                rect1.fill()
-                color2.set()
-                rect2.fill()
+                let rect1 = CGRect(x: 0.0, y: 0.0, width: fontWidth, height: fontHeight * CGFloat(idx + 1) / 8.0)
+                let rect2 = CGRect(x: fontWidth, y: 0.0, width: fontWidth, height: fontHeight * CGFloat(idx + 1) / 8.0)
+                context.setFillColor(color1.cgColor)
+                context.fill(rect1)
+                context.setFillColor(color2.cgColor)
+                context.fill(rect2)
             } else if ch >= 0x2589 && ch <= 0x258F { // BLOCK ▉▊▋▌▍▎▏
                 let idx = Int(ch - 0x2589)
-                let rect1 = NSRect(x: 0.0, y: 0.0, width: (7 - idx >= 4) ? fontWidth : (fontWidth * CGFloat(7 - idx) / 4.0), height: fontHeight)
-                let rect2 = NSRect(x: fontWidth, y: 0.0, width: (7 - idx <= 4) ? 0.0 : (fontWidth * CGFloat(3 - idx) / 4.0), height: fontHeight)
-                color1.set()
-                rect1.fill()
+                let rect1 = CGRect(x: 0.0, y: 0.0, width: (7 - idx >= 4) ? fontWidth : (fontWidth * CGFloat(7 - idx) / 4.0), height: fontHeight)
+                let rect2 = CGRect(x: fontWidth, y: 0.0, width: (7 - idx <= 4) ? 0.0 : (fontWidth * CGFloat(3 - idx) / 4.0), height: fontHeight)
+                context.setFillColor(color1.cgColor)
+                context.fill(rect1)
                 if rect2.width > 0 {
-                    color2.set()
-                    rect2.fill()
+                    context.setFillColor(color2.cgColor)
+                    context.fill(rect2)
                 }
             } else if ch >= 0x25E2 && ch <= 0x25E5 { // TRIANGLE ◢◣◤◥
                 let idx = Int(ch - 0x25E2)
                 let (path1, path2) = getTrianglePathsDoubleColor(index: idx)
-                color1.set()
-                path1.fill()
-                color2.set()
-                path2.fill()
+                context.setFillColor(color1.cgColor)
+                context.addPath(path1)
+                context.fillPath()
+                context.setFillColor(color2.cgColor)
+                context.addPath(path2)
+                context.fillPath()
             }
         }
         
-        xform.invert()
-        xform.concat()
+        context.restoreGState()
     }
 }
