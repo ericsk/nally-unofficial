@@ -21,8 +21,19 @@ public class YLView: NSTabView, NSTextInputClient {
     
     public var _textField: YLMarkedTextView?
     
-    public var _selectionLocation: Int32 = 0
-    public var _selectionLength: Int32 = 0
+    private let cursorLayer = CALayer()
+    private let selectionLayer = CAShapeLayer()
+    
+    public var _selectionLocation: Int32 = 0 {
+        didSet {
+            updateSelectionLayer()
+        }
+    }
+    public var _selectionLength: Int32 = 0 {
+        didSet {
+            updateSelectionLayer()
+        }
+    }
     
     public var _shouldOpenUrlInBackground: Bool = false
     public var _shouldUseImagePreviewer: Bool = true
@@ -103,6 +114,8 @@ public class YLView: NSTabView, NSTextInputClient {
     
     private func setup() {
         self.wantsLayer = true
+        self.layerContentsRedrawPolicy = .duringViewResize
+        setupLayers()
         while numberOfTabViewItems > 0 {
             removeTabViewItem(tabViewItem(at: 0))
         }
@@ -214,6 +227,11 @@ public class YLView: NSTabView, NSTextInputClient {
         _selectedRange = NSRange(location: NSNotFound, length: 0)
         _markedRange = NSRange(location: NSNotFound, length: 0)
         _textField?.isHidden = true
+        
+        setupLayers()
+        selectionLayer.frame = bounds
+        updateCursorLayer()
+        updateSelectionLayer()
     }
     
     private func recreateBitmapContext(width: Int, height: Int) {
@@ -886,17 +904,7 @@ public class YLView: NSTabView, NSTextInputClient {
     @objc public func tick() {
         autoreleasepool {
             updateBackedImage()
-            guard let ds = frontMostTerminal() else { return }
-            
-            let config = YLLGlobalConfig.sharedInstance()
-            let gRow = Int(config.row)
-            
-            if _x != ds.cursorColumn || _y != ds.cursorRow {
-                setNeedsDisplay(NSMakeRect(CGFloat(_x) * _fontWidth, CGFloat(gRow - 1 - Int(_y)) * _fontHeight, _fontWidth, _fontHeight))
-                setNeedsDisplay(NSMakeRect(CGFloat(ds.cursorColumn) * _fontWidth, CGFloat(gRow - 1 - Int(ds.cursorRow)) * _fontHeight, _fontWidth, _fontHeight))
-                _x = ds.cursorColumn
-                _y = ds.cursorRow
-            }
+            updateCursorLayer()
         }
     }
     
@@ -944,21 +952,8 @@ public class YLView: NSTabView, NSTextInputClient {
                         }
                     }
                     
-                    // Draw the cursor
-                    context.setStrokeColor(NSColor.white.cgColor)
-                    context.setLineWidth(2.0)
-                    context.beginPath()
-                    context.move(to: CGPoint(x: CGFloat(ds.cursorColumn) * _fontWidth, y: CGFloat(gRow - 1 - Int(ds.cursorRow)) * _fontHeight + 1))
-                    context.addLine(to: CGPoint(x: CGFloat(ds.cursorColumn + 1) * _fontWidth, y: CGFloat(gRow - 1 - Int(ds.cursorRow)) * _fontHeight + 1))
-                    context.strokePath()
-                    
                     _x = ds.cursorColumn
                     _y = ds.cursorRow
-                }
-                
-                // Draw the selection
-                if _selectionLength != 0 {
-                    drawSelection(in: context)
                 }
             } else {
                 let bgColor = config.colorBG ?? NSColor.black
@@ -992,41 +987,7 @@ public class YLView: NSTabView, NSTextInputClient {
             }
         }
     }
-    
-    public func drawSelection(in context: CGContext) {
-        let config = YLLGlobalConfig.sharedInstance()
-        let gRow = Int(config.row)
-        let gColumn = Int(config.column)
-        
-        var location: Int
-        var length: Int
-        if _selectionLength >= 0 {
-            location = Int(_selectionLocation)
-            length = Int(_selectionLength)
-        } else {
-            location = Int(_selectionLocation + _selectionLength)
-            length = 0 - Int(_selectionLength)
-        }
-        var x = location % gColumn
-        var y = location / gColumn
-        
-        let selectionColor = NSColor(calibratedRed: 0.6, green: 0.9, blue: 0.6, alpha: 0.4)
-        context.setFillColor(selectionColor.cgColor)
-        
-        while length > 0 {
-            if x + length <= gColumn {
-                let rect = CGRect(x: CGFloat(x) * _fontWidth, y: CGFloat(gRow - y - 1) * _fontHeight, width: _fontWidth * CGFloat(length), height: _fontHeight)
-                context.fill(rect)
-                length = 0
-            } else {
-                let rect = CGRect(x: CGFloat(x) * _fontWidth, y: CGFloat(gRow - y - 1) * _fontHeight, width: _fontWidth * CGFloat(gColumn - x), height: _fontHeight)
-                context.fill(rect)
-                length -= (gColumn - x)
-            }
-            x = 0
-            y += 1
-        }
-    }
+
     
     @objc(extendBottomFrom:to:)
     public func extendBottom(from start: Int32, to end: Int32) {
@@ -1113,6 +1074,8 @@ public class YLView: NSTabView, NSTextInputClient {
             context.fill(rect)
             self._backedImageCG = context.makeImage()
             self.needsDisplay = true
+            self.updateCursorLayer()
+            self.updateSelectionLayer()
             return
         }
         
@@ -1150,6 +1113,8 @@ public class YLView: NSTabView, NSTextInputClient {
         
         self._backedImageCG = context.makeImage()
         self.needsDisplay = true
+        self.updateCursorLayer()
+        self.updateSelectionLayer()
     }
     
     // MARK: - Overrides
@@ -1460,6 +1425,122 @@ public class YLView: NSTabView, NSTextInputClient {
     
     public func baselineDeltaForCharacter(at index: Int) -> CGFloat {
         return 0
+    }
+    
+    // MARK: - Layer Optimization
+    private func setupLayers() {
+        guard let mainLayer = self.layer else { return }
+        
+        mainLayer.sublayers?.forEach {
+            if $0 === cursorLayer || $0 === selectionLayer {
+                $0.removeFromSuperlayer()
+            }
+        }
+        
+        // Disable actions (implicit animations) on these layers by default
+        selectionLayer.actions = ["onOrderIn": NSNull(), "onOrderOut": NSNull(), "sublayers": NSNull(), "contents": NSNull(), "bounds": NSNull(), "position": NSNull(), "path": NSNull()]
+        cursorLayer.actions = ["onOrderIn": NSNull(), "onOrderOut": NSNull(), "sublayers": NSNull(), "contents": NSNull(), "bounds": NSNull(), "position": NSNull()]
+        
+        // Selection layer
+        selectionLayer.fillColor = NSColor(calibratedRed: 0.6, green: 0.9, blue: 0.6, alpha: 0.4).cgColor
+        selectionLayer.strokeColor = nil
+        selectionLayer.frame = mainLayer.bounds
+        selectionLayer.isHidden = true
+        mainLayer.addSublayer(selectionLayer)
+        
+        // Cursor layer
+        cursorLayer.backgroundColor = NSColor.white.cgColor
+        cursorLayer.frame = .zero
+        cursorLayer.isHidden = true
+        mainLayer.addSublayer(cursorLayer)
+    }
+    
+    public func updateCursorLayer() {
+        if Thread.isMainThread {
+            self.performUpdateCursorLayer()
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.performUpdateCursorLayer()
+            }
+        }
+    }
+    
+    private func performUpdateCursorLayer() {
+        guard let ds = frontMostTerminal() else {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            cursorLayer.isHidden = true
+            CATransaction.commit()
+            return
+        }
+        let config = YLLGlobalConfig.sharedInstance()
+        let gRow = Int(config.row)
+        
+        let cursorX = CGFloat(ds.cursorColumn) * _fontWidth
+        let cursorY = CGFloat(gRow - 1 - Int(ds.cursorRow)) * _fontHeight + 1
+        
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        cursorLayer.frame = CGRect(x: cursorX, y: cursorY, width: _fontWidth, height: 2.0)
+        cursorLayer.isHidden = false
+        _x = ds.cursorColumn
+        _y = ds.cursorRow
+        CATransaction.commit()
+    }
+    
+    public func updateSelectionLayer() {
+        if Thread.isMainThread {
+            self.performUpdateSelectionLayer()
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.performUpdateSelectionLayer()
+            }
+        }
+    }
+    
+    private func performUpdateSelectionLayer() {
+        guard frontMostTerminal() != nil, _selectionLength != 0 else {
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            selectionLayer.path = nil
+            selectionLayer.isHidden = true
+            CATransaction.commit()
+            return
+        }
+        let config = YLLGlobalConfig.sharedInstance()
+        let gRow = Int(config.row)
+        let gColumn = Int(config.column)
+        
+        var location = Int(_selectionLocation)
+        var length = Int(_selectionLength)
+        
+        if length < 0 {
+            location += length
+            length = -length
+        }
+        var x = location % gColumn
+        var y = location / gColumn
+        
+        let path = CGMutablePath()
+        while length > 0 {
+            if x + length <= gColumn {
+                let rect = CGRect(x: CGFloat(x) * _fontWidth, y: CGFloat(gRow - y - 1) * _fontHeight, width: _fontWidth * CGFloat(length), height: _fontHeight)
+                path.addRect(rect)
+                length = 0
+            } else {
+                let rect = CGRect(x: CGFloat(x) * _fontWidth, y: CGFloat(gRow - y - 1) * _fontHeight, width: _fontWidth * CGFloat(gColumn - x), height: _fontHeight)
+                path.addRect(rect)
+                length -= (gColumn - x)
+            }
+            x = 0
+            y += 1
+        }
+        
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        selectionLayer.path = path
+        selectionLayer.isHidden = false
+        CATransaction.commit()
     }
 }
 
