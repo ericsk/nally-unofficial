@@ -89,6 +89,7 @@ graph TD
 | **BBS 繪圖與渲染引擎現代化 (CoreGraphics)** | 移除對 AppKit 隱式繪圖上下文狀態（如 `NSColor.set()` 與 `NSBezierPath`）的依賴，全面重構為純 `CGContext` 與 `CGPath` 原生繪圖調用。修復並調諧了 `isFlipped = true` 的 Flipped 視圖繪圖變換，達到 GPU 加速且執行緒安全的 CG 渲染。 | [YLViewDrawing.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLViewDrawing.swift), [YLView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLView.swift) |
 | **GPU Layer-Backed 與動畫圖層優化 (CALayer)** | 在 `YLView` 啟用 `wantsLayer = true` 與自訂 `layerContentsRedrawPolicy`，並為游標與選取區建立獨立的 `CALayer` 與 `CAShapeLayer` 硬體加速圖層。消除打字與選取反白時的 CPU 重繪，大幅降低 INP 延遲。 | [YLView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLView.swift) |
 | **記憶體安全與 Terminal Core 平坦化 ＋ KVC 移除** | 重構 `YLTerminal` 終端機畫布至 Swift 二維陣列 `[[cell]]`，移除手動記憶體分配 `allocate`/`deallocate`；清除 `gSingleAdvance` 指標，並全面以型別安全屬性與 API 取代 KVC `setValue(forKey:)` 與 `performSelector`。 | [YLTerminal.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLTerminal.swift), [NallyApp.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/NallyApp.swift), [TerminalViewRepresentable.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/TerminalViewRepresentable.swift) |
+| **Swift 6 嚴格並行檢查與 `@MainActor` 整合** | 為 UI 管理器標註 `@MainActor`，將短網址請求重構為 async/await，全域啟用 `SWIFT_STRICT_CONCURRENCY = complete`。 | [YLContextualMenuManager.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLContextualMenuManager.swift), [YLImagePreviewer.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLImagePreviewer.swift) |
 
 ---
 
@@ -127,6 +128,7 @@ xcodebuild -scheme Nally -configuration Release SYMROOT=build build
 - [x] **BBS 繪圖與渲染引擎現代化**：全面改寫 `YLViewDrawing` 與 `YLView` 繪圖邏輯，採用純 `CGContext` 與 `CGPath` 原生 CoreGraphics API，提升繪圖效能與執行緒安全性。
 - [x] **GPU Layer-Backed 與動畫圖層優化**：為游標與選取反白區重構為獨立的子圖層 (`CALayer`/`CAShapeLayer`) 合成渲染，消除打字與選取時的 CPU 重繪，優化互動流暢度。
 - [x] **記憶體安全與 100% 強型別依賴注入**：終端機 Core 改用 Swift 原生二維陣列 `[[cell]]`，徹底淘汰原始 C 指標 (`UnsafeMutablePointer`)，並全面移除 KVC `setValue(forKey:)` 與 Selector 隱式呼叫。
+- [x] **Swift 6 嚴格並行檢查與 `@MainActor` 整合**：全域啟用 `SWIFT_STRICT_CONCURRENCY = complete`，為 UI 管理類別標註 `@MainActor` 並將異步請求全面 Concurrency 化。
 
 ---
 
