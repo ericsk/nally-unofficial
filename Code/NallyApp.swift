@@ -131,10 +131,12 @@ public class AppState: NSObject {
 struct NallyApp: App {
     @NSApplicationDelegateAdaptor(NallyAppDelegate.self) var appDelegate
     @State private var appState = AppState.shared
+    @AppStorage("AppTheme") var appThemeRaw: String = AppTheme.system.rawValue
     
     var body: some Scene {
         Window("Nally", id: "main") {
             MainSwiftUIWindowView(appState: appState)
+                .preferredColorScheme(AppTheme(rawValue: appThemeRaw)?.colorScheme)
         }
         .commands {
             NallyCommands()

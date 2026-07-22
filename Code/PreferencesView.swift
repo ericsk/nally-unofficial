@@ -7,6 +7,7 @@ struct PreferencesView: View {
     // Bind to AppStorage for standard Cocoa UserDefaults keys
     @AppStorage("ConfirmOnClose") var confirmOnClose: Bool = true
     @AppStorage("RestoreConnection") var restoreConnection: Bool = false
+    @AppStorage("AppTheme") var appThemeRaw: String = AppTheme.system.rawValue
     
     var body: some View {
         TabView {
@@ -30,6 +31,7 @@ struct PreferencesView: View {
                     Label("Colors", systemImage: "paintpalette")
                 }
         }
+        .preferredColorScheme(AppTheme(rawValue: appThemeRaw)?.colorScheme)
         .frame(width: 620, height: 480)
         .padding(8)
     }
@@ -41,9 +43,22 @@ struct GeneralPreferencesView: View {
     @Bindable var config: YLLGlobalConfig
     @Binding var confirmOnClose: Bool
     @Binding var restoreConnection: Bool
+    @AppStorage("AppTheme") var appThemeRaw: String = AppTheme.system.rawValue
     
     var body: some View {
         Form {
+            Section(header: Label("Appearance", systemImage: "paintbrush")) {
+                Picker("Theme Mode:", selection: $appThemeRaw) {
+                    ForEach(AppTheme.allCases) { theme in
+                        Text(theme.localizedName).tag(theme.rawValue)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .onChange(of: appThemeRaw) { _, newValue in
+                    AppTheme.applyTheme(rawValue: newValue)
+                }
+            }
+            
             Section(header: Label("Window & Sessions", systemImage: "macwindow")) {
                 Toggle("Confirm when closing windows", isOn: $confirmOnClose)
                 Toggle("Restore last connections on startup", isOn: $restoreConnection)

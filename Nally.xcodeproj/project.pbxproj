@@ -46,6 +46,7 @@
 		850711AB0CA7A347005F4734 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 850711AA0CA7A347005F4734 /* ApplicationServices.framework */; };
 		85137B330D02192800833909 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 85137B320D02192800833909 /* Credits.rtf */; };
 		8570AD5F0A3923A900838442 /* YLView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8570AD5E0A3923A900838442 /* YLView.swift */; };
+		AA1122334455667788990022 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1122334455667788990011 /* AppTheme.swift */; };
 		8579CA2A0CF21D3D005A8353 /* YLSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8579CA290CF21D3D005A8353 /* YLSite.swift */; };
 		857EAE2A0CF1D62900777C15 /* connect.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 857EAE290CF1D62900777C15 /* connect.pdf */; };
 		857EAE4F0CF1D89300777C15 /* offline.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 857EAE4E0CF1D89300777C15 /* offline.pdf */; };
@@ -131,6 +132,7 @@
 		8540FE4712AB8BA3000FE1D6 /* TextSuiteTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TextSuiteTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8540FE4812AB8BA3000FE1D6 /* TextSuiteTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "TextSuiteTests-Info.plist"; sourceTree = "<group>"; };
 		8570AD5E0A3923A900838442 /* YLView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLView.swift; sourceTree = "<group>"; };
+		AA1122334455667788990011 /* AppTheme.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppTheme.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		8579CA280CF21D3D005A8353 /* YLSite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLSite.h; sourceTree = "<group>"; };
 		8579CA290CF21D3D005A8353 /* YLSite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLSite.swift; sourceTree = "<group>"; };
 		857EAE290CF1D62900777C15 /* connect.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = connect.pdf; sourceTree = "<group>"; };
@@ -335,6 +337,7 @@
 			isa = PBXGroup;
 			children = (
 				8570AD5E0A3923A900838442 /* YLView.swift */,
+				AA1122334455667788990011 /* AppTheme.swift */,
 				07B73DA10E581E2C00CC97D3 /* YLEncodingTable.swift */,
 				07B73D9F0E581E2C00CC97D3 /* YLKeychain.swift */,
 			);
@@ -529,6 +532,7 @@
 				9F2EBBE877A24C96811D3B8C /* SitesView.swift in Sources */,
 				B4EA8B034E014F96BF4549BB /* SitesWindowController.swift in Sources */,
 				8570AD5F0A3923A900838442 /* YLView.swift in Sources */,
+				AA1122334455667788990022 /* AppTheme.swift in Sources */,
 				07B73DA20E581E2C00CC97D3 /* YLEncodingTable.swift in Sources */,
 				07B73DA00E581E2C00CC97D3 /* YLKeychain.swift in Sources */,
 				85F7F2090B06EE36000C4CDF /* YLLGlobalConfig.swift in Sources */,

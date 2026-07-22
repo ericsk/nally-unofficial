@@ -14,6 +14,9 @@ public class NallyAppDelegate: NSObject, NSApplicationDelegate {
     @objc public var controller: YLController?
     
     public func applicationDidFinishLaunching(_ notification: Notification) {
+        let savedTheme = UserDefaults.standard.string(forKey: "AppTheme") ?? AppTheme.system.rawValue
+        AppTheme.applyTheme(rawValue: savedTheme)
+        
         let mainController = AppState.shared.controller
         self.controller = mainController
         if let ylApp = NSApp as? YLApplication {
