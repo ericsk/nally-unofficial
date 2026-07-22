@@ -2,6 +2,7 @@ import Cocoa
 import SwiftUI
 import ImageIO
 
+@MainActor
 @objc(YLImagePreviewer)
 public class YLImagePreviewer: NSObject, ObservableObject, URLSessionDownloadDelegate {
     private var downloadTask: URLSessionDownloadTask?

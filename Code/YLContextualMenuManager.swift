@@ -1,5 +1,6 @@
 import Cocoa
 
+@MainActor
 @objc(YLContextualMenuManager)
 public class YLContextualMenuManager: NSObject {
     @objc public static let sharedInstance = YLContextualMenuManager()
@@ -135,16 +136,13 @@ public class YLContextualMenuManager: NSObject {
     }
     
     @objc public func openURL(_ sender: Any?) {
-        var urls: [URL] = []
         for u in urlsToOpen {
             let appended = protocolPrefixAppendedUrlString(u)
             if let escaped = appended.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
                let url = URL(string: escaped) {
-                urls.append(url)
+                NSWorkspace.shared.open(url)
             }
         }
-        
-        NSWorkspace.shared.open(urls, withAppBundleIdentifier: nil, options: [], additionalEventParamDescriptor: nil, launchIdentifiers: nil)
         urlsToOpen.removeAll()
     }
     
@@ -172,22 +170,19 @@ public class YLContextualMenuManager: NSObject {
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        let semaphore = DispatchSemaphore(value: 0)
-        var responseData: Data?
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-                responseData = data
-            }
-            semaphore.signal()
-        }
-        task.resume()
-        _ = semaphore.wait(timeout: .now() + 5.0)
-        
-        if let data = responseData, let result = String(data: data, encoding: .utf8) {
-            if let delegate = NSApp.delegate as? NallyAppDelegate,
-               let controller = delegate.controller,
-               let telnetView = controller.telnetView() as? YLView {
-                telnetView.insertText(result, replacementRange: NSRange(location: NSNotFound, length: 0))
+        Task {
+            do {
+                let (data, response) = try await URLSession.shared.data(for: request)
+                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200,
+                   let result = String(data: data, encoding: .utf8) {
+                    if let delegate = NSApp.delegate as? NallyAppDelegate,
+                       let controller = delegate.controller,
+                       let telnetView = controller.telnetView() as? YLView {
+                        telnetView.insertText(result, replacementRange: NSRange(location: NSNotFound, length: 0))
+                    }
+                }
+            } catch {
+                NSLog("tinyurl error: \(error)")
             }
         }
     }

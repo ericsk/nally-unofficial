@@ -657,6 +657,7 @@
 				WRAPPER_EXTENSION = app;
 				DEFINES_MODULE = YES;
 				ENABLE_TESTABILITY = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -685,6 +686,7 @@
 				WRAPPER_EXTENSION = app;
 				DEFINES_MODULE = YES;
 				ENABLE_TESTABILITY = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -701,6 +703,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				PRODUCT_NAME = Nally;
 				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -717,6 +720,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				PRODUCT_NAME = Nally;
 				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
