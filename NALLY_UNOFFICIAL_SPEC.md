@@ -91,6 +91,7 @@ graph TD
 | **記憶體安全與 Terminal Core 平坦化 ＋ KVC 移除** | 重構 `YLTerminal` 終端機畫布至 Swift 二維陣列 `[[cell]]`，移除手動記憶體分配 `allocate`/`deallocate`；清除 `gSingleAdvance` 指標，並全面以型別安全屬性與 API 取代 KVC `setValue(forKey:)` 與 `performSelector`。 | [YLTerminal.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLTerminal.swift), [NallyApp.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/NallyApp.swift), [TerminalViewRepresentable.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/TerminalViewRepresentable.swift) |
 | **Swift 6 嚴格並行檢查與 `@MainActor` 整合** | 為 UI 管理器標註 `@MainActor`，將短網址請求重構為 async/await，全域啟用 `SWIFT_STRICT_CONCURRENCY = complete`。 | [YLContextualMenuManager.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLContextualMenuManager.swift), [YLImagePreviewer.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLImagePreviewer.swift) |
 | **純 Terminal Canvas 視圖架構 (`NSTabView` 繼承解耦)** | 將 `YLView` 繼承由 AppKit `NSTabView` 重構為專屬 `NSView`，清除歷史邊框與 tabViewType Hack，封裝輕量化 `tabViewItems` 容器 API。 | [YLView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLView.swift), [NallyApp.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/NallyApp.swift) |
+| **App 佈景主題 (System/Light/Dark) 偏好設定** | 實作 `AppTheme` 列舉與 `applyTheme` 全域外觀切換介面，於 `PreferencesView` 提供即時免重啟切換並自動持久化記憶。 | [AppTheme.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/AppTheme.swift), [PreferencesView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/PreferencesView.swift) |
 
 ---
 
@@ -131,6 +132,7 @@ xcodebuild -scheme Nally -configuration Release SYMROOT=build build
 - [x] **記憶體安全與 100% 強型別依賴注入**：終端機 Core 改用 Swift 原生二維陣列 `[[cell]]`，徹底淘汰原始 C 指標 (`UnsafeMutablePointer`)，並全面移除 KVC `setValue(forKey:)` 與 Selector 隱式呼叫。
 - [x] **Swift 6 嚴格並行檢查與 `@MainActor` 整合**：全域啟用 `SWIFT_STRICT_CONCURRENCY = complete`，為 UI 管理類別標註 `@MainActor` 並將異步請求全面 Concurrency 化。
 - [x] **純 Terminal Canvas 視圖架構**：將 `YLView` 繼承由 AppKit `NSTabView` 重構為專屬 `NSView`，清除歷史 Cocoa 邊框與內建 Tab 繪製，封裝輕量化 `tabViewItems` 容器 API。
+- [x] **App 佈景主題 (System/Light/Dark) 偏好設定**：實作 `AppTheme` 列舉與 `applyTheme` 全域外觀切換介面，於 `PreferencesView` 提供即時免重啟切換並自動持久化記憶。
 
 ---
 
