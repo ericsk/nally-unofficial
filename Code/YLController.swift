@@ -821,18 +821,18 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     }
     
     // MARK: - Tab Delegate
-    @objc public func tabView(_ tabView: NSTabView, shouldClose tabViewItem: NSTabViewItem) -> Bool {
+    @objc public func tabView(_ tabView: YLView, shouldClose tabViewItem: NSTabViewItem) -> Bool {
         return true
     }
     
-    @objc public func tabView(_ tabView: NSTabView, willClose tabViewItem: NSTabViewItem) {
+    @objc public func tabView(_ tabView: YLView, willClose tabViewItem: NSTabViewItem) {
     }
     
-    @objc public func tabView(_ tabView: NSTabView, didClose tabViewItem: NSTabViewItem) {
+    @objc public func tabView(_ tabView: YLView, didClose tabViewItem: NSTabViewItem) {
         (tabViewItem.identifier as? YLConnection)?.close()
     }
     
-    @objc public func tabView(_ tabView: NSTabView, didSelect tabViewItem: NSTabViewItem?) {
+    @objc public func tabView(_ tabView: YLView, didSelect tabViewItem: NSTabViewItem?) {
         guard let conn = tabViewItem?.identifier as? YLConnection else { return }
         _telnetView?.updateBackedImage()
         _addressBar?.stringValue = conn.connectionAddress ?? ""
@@ -850,22 +850,22 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         AppState.shared.syncTabs(from: tabView)
     }
     
-    @objc public func tabView(_ tabView: NSTabView, shouldSelect tabViewItem: NSTabViewItem?) -> Bool {
+    @objc public func tabView(_ tabView: YLView, shouldSelect tabViewItem: NSTabViewItem?) -> Bool {
         return true
     }
     
-    @objc public func tabView(_ tabView: NSTabView, willSelect tabViewItem: NSTabViewItem?) {
+    @objc public func tabView(_ tabView: YLView, willSelect tabViewItem: NSTabViewItem?) {
         guard let conn = tabViewItem?.identifier as? YLConnection else { return }
         conn.terminal?.setAllDirty()
         _telnetView?.clearSelection()
     }
     
-    @objc public func tabViewDidChangeNumberOfTabViewItems(_ tabView: NSTabView) {
+    @objc public func tabViewDidChangeNumberOfTabViewItems(_ tabView: YLView) {
         refreshTabLabelNumber(tabView)
         AppState.shared.syncTabs(from: tabView)
     }
     
-    @objc public func refreshTabLabelNumber(_ tabView: NSTabView) {
+    @objc public func refreshTabLabelNumber(_ tabView: YLView) {
         let tabNumber = tabView.numberOfTabViewItems
         for i in 0..<tabNumber {
             let item = tabView.tabViewItem(at: i)

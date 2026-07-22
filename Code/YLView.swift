@@ -4,7 +4,11 @@ import CoreGraphics
 
 @objc(YLView)
 @objcMembers
-public class YLView: NSTabView, NSTextInputClient {
+public class YLView: NSView, NSTextInputClient {
+    // Custom lightweight Tab Item container (replacing NSTabView inheritance)
+    public var tabViewItems: [NSTabViewItem] = []
+    public var selectedTabViewItem: NSTabViewItem?
+    public weak var delegate: AnyObject?
     // Properties matching YLView.h
     public var _fontWidth: CGFloat = 12.0
     public var _fontHeight: CGFloat = 24.0
@@ -114,13 +118,105 @@ public class YLView: NSTabView, NSTextInputClient {
         self.wantsLayer = true
         self.layerContentsRedrawPolicy = .duringViewResize
         setupLayers()
-        while numberOfTabViewItems > 0 {
-            removeTabViewItem(tabViewItem(at: 0))
-        }
         configure()
         _selectionLength = 0
         _selectionLocation = 0
-        tabViewType = .noTabsNoBorder
+    }
+    
+    // MARK: - Tab Item Container Management
+    public var numberOfTabViewItems: Int {
+        return tabViewItems.count
+    }
+    
+    public func tabViewItem(at index: Int) -> NSTabViewItem {
+        return tabViewItems[index]
+    }
+    
+    public func indexOfTabViewItem(_ tabViewItem: NSTabViewItem) -> Int {
+        return tabViewItems.firstIndex(of: tabViewItem) ?? NSNotFound
+    }
+    
+    public func addTabViewItem(_ tabViewItem: NSTabViewItem) {
+        tabViewItems.append(tabViewItem)
+        if selectedTabViewItem == nil {
+            selectTabViewItem(tabViewItem)
+        }
+        notifyDelegateTabCountChanged()
+    }
+    
+    public func removeTabViewItem(_ tabViewItem: NSTabViewItem) {
+        guard let index = tabViewItems.firstIndex(of: tabViewItem) else { return }
+        notifyDelegateWillClose(tabViewItem)
+        tabViewItems.remove(at: index)
+        if selectedTabViewItem == tabViewItem {
+            let nextIndex = min(index, tabViewItems.count - 1)
+            selectedTabViewItem = nextIndex >= 0 ? tabViewItems[nextIndex] : nil
+        }
+        notifyDelegateDidClose(tabViewItem)
+        notifyDelegateTabCountChanged()
+    }
+    
+    public func selectTabViewItem(_ tabViewItem: NSTabViewItem?) {
+        guard let item = tabViewItem else {
+            selectedTabViewItem = nil
+            return
+        }
+        guard tabViewItems.contains(item) else { return }
+        if let del = delegate as? YLController {
+            if !del.tabView(self, shouldSelect: item) { return }
+            del.tabView(self, willSelect: item)
+            selectedTabViewItem = item
+            del.tabView(self, didSelect: item)
+        } else {
+            selectedTabViewItem = item
+        }
+    }
+    
+    public func selectTabViewItem(at index: Int) {
+        guard index >= 0 && index < tabViewItems.count else { return }
+        selectTabViewItem(tabViewItems[index])
+    }
+    
+    public func selectFirstTabViewItem(_ sender: Any?) {
+        guard !tabViewItems.isEmpty else { return }
+        selectTabViewItem(tabViewItems.first)
+    }
+    
+    public func selectLastTabViewItem(_ sender: Any?) {
+        guard !tabViewItems.isEmpty else { return }
+        selectTabViewItem(tabViewItems.last)
+    }
+    
+    public func selectNextTabViewItem(_ sender: Any?) {
+        guard let current = selectedTabViewItem,
+              let index = tabViewItems.firstIndex(of: current),
+              index + 1 < tabViewItems.count else { return }
+        selectTabViewItem(tabViewItems[index + 1])
+    }
+    
+    public func selectPreviousTabViewItem(_ sender: Any?) {
+        guard let current = selectedTabViewItem,
+              let index = tabViewItems.firstIndex(of: current),
+              index - 1 >= 0 else { return }
+        selectTabViewItem(tabViewItems[index - 1])
+    }
+    
+    private func notifyDelegateTabCountChanged() {
+        if let del = delegate as? YLController {
+            del.tabViewDidChangeNumberOfTabViewItems(self)
+        }
+    }
+    
+    private func notifyDelegateWillClose(_ item: NSTabViewItem) {
+        if let del = delegate as? YLController {
+            del.tabView(self, willClose: item)
+        }
+    }
+    
+    private func notifyDelegateDidClose(_ item: NSTabViewItem) {
+        if let del = delegate as? YLController {
+            del.tabView(self, didClose: item)
+        }
     }
     
     deinit {

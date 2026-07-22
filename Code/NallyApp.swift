@@ -82,7 +82,7 @@ public class AppState: NSObject {
         NotificationCenter.default.publisher(for: YLConnection.stateDidChangeNotification)
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
-                guard let self = self, let tv = self.controller.telnetView() as? NSTabView else { return }
+                guard let self = self, let tv = self.controller.telnetView() as? YLView else { return }
                 self.syncTabs(from: tv)
             }
             .store(in: &connectionCancellables)
@@ -103,9 +103,9 @@ public class AppState: NSObject {
         self.addressText = finalAddress
     }
     
-    public func syncTabs(from tabView: NSTabView) {
-        let items = tabView.tabViewItems
-        let selected = tabView.selectedTabViewItem
+    public func syncTabs(from telnetView: YLView) {
+        let items = telnetView.tabViewItems
+        let selected = telnetView.selectedTabViewItem
         
         self.tabs = items.map { item in
             let conn = item.identifier as? YLConnection
@@ -184,7 +184,7 @@ struct NallyTabBarView: View {
                         .background(isSelected ? Color.blue.opacity(0.8) : Color.primary.opacity(0.05))
                         .contentShape(Rectangle())
                         .onTapGesture {
-                            if let telnetView = appState.controller.telnetView() as? NSTabView {
+                            if let telnetView = appState.controller.telnetView() as? YLView {
                                 telnetView.selectTabViewItem(tab.tabItem)
                             }
                         }
