@@ -332,8 +332,8 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
                     if let accounts = YLKeychain.accounts(forService: address),
                        let account = accounts.last?["acct"] as? String {
                         if let password = YLKeychain.password(forService: address, account: account) {
-                            mutableDict.setValue(account, forKey: "account")
-                            mutableDict.setValue(password, forKey: "password")
+                            mutableDict["account"] = account
+                            mutableDict["password"] = password
                         }
                     }
                 }

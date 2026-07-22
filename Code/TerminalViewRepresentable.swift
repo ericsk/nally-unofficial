@@ -19,7 +19,7 @@ public struct TerminalViewRepresentable: NSViewRepresentable {
         
         // 1. Create and associate YLMarkedTextView programmatically
         let markedTextView = YLMarkedTextView(frame: .zero)
-        view.setValue(markedTextView, forKey: "_textField")
+        view._textField = markedTextView
         view.addSubview(markedTextView)
         
         // 2. Configure the YLView
@@ -27,7 +27,7 @@ public struct TerminalViewRepresentable: NSViewRepresentable {
         
         // 3. Associate with the controller if provided
         if let controller = controller {
-            controller.setValue(view, forKey: "_telnetView")
+            controller._telnetView = view
         }
         
         return view

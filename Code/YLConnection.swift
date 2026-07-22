@@ -15,7 +15,7 @@ public protocol YLConnectionProtocol: NSObjectProtocol {
     @objc(connectToSite:) func connect(to site: YLSite) -> Bool
     @objc(connectToAddress:) func connect(toAddress addr: String) -> Bool
     @objc(connectToAddress:port:) func connect(toAddress addr: String, port: UInt32) -> Bool
-    @objc(receiveBytes:length:) func receiveBytes(_ bytes: UnsafeMutablePointer<UInt8>, length: Int)
+    @objc(receiveBytes:length:) func receiveBytes(_ bytes: UnsafePointer<UInt8>, length: Int)
     @objc(sendBytes:length:) func sendBytes(_ msg: UnsafePointer<UInt8>, length: Int)
     @objc(sendData:) func sendData(_ msg: Data)
     
@@ -109,7 +109,7 @@ public class YLConnection: NSObject, YLConnectionProtocol {
     }
     
     @objc(receiveBytes:length:)
-    public func receiveBytes(_ bytes: UnsafeMutablePointer<UInt8>, length: Int) {}
+    public func receiveBytes(_ bytes: UnsafePointer<UInt8>, length: Int) {}
     
     @objc(sendBytes:length:)
     public func sendBytes(_ msg: UnsafePointer<UInt8>, length: Int) {}

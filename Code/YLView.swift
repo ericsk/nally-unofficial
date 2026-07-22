@@ -40,8 +40,6 @@ public class YLView: NSTabView, NSTextInputClient {
     
     // Globals converted to static class variables or instance variables:
     private static var gLeftImage: NSImage?
-    private static var gSingleAdvance: UnsafeMutablePointer<CGSize>?
-    private static var gDoubleAdvance: UnsafeMutablePointer<CGSize>?
     
     private static let ANSIColorPBoardType = NSPasteboard.PasteboardType("ANSIColorPBoardType")
     
@@ -210,18 +208,6 @@ public class YLView: NSTabView, NSTextInputClient {
         recreateBitmapContext(width: Int(frame.size.width), height: Int(frame.size.height))
         
         YLView.gLeftImage = NSImage(size: NSMakeSize(_fontWidth, _fontHeight))
-        
-        if YLView.gSingleAdvance == nil {
-            YLView.gSingleAdvance = UnsafeMutablePointer<CGSize>.allocate(capacity: gColumn)
-        }
-        if YLView.gDoubleAdvance == nil {
-            YLView.gDoubleAdvance = UnsafeMutablePointer<CGSize>.allocate(capacity: gColumn)
-        }
-        
-        for i in 0..<gColumn {
-            YLView.gSingleAdvance?[i] = CGSize(width: _fontWidth * 1.0, height: 0.0)
-            YLView.gDoubleAdvance?[i] = CGSize(width: _fontWidth * 2.0, height: 0.0)
-        }
         
         _markedText = nil
         _selectedRange = NSRange(location: NSNotFound, length: 0)

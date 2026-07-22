@@ -186,9 +186,8 @@ public class YLContextualMenuManager: NSObject {
         if let data = responseData, let result = String(data: data, encoding: .utf8) {
             if let delegate = NSApp.delegate as? NallyAppDelegate,
                let controller = delegate.controller,
-               let telnetView = controller.telnetView() as? NSTabView {
-                // Call insertText: directly on telnetView using performSelector to bypass type restrictions
-                telnetView.perform(NSSelectorFromString("insertText:"), with: result)
+               let telnetView = controller.telnetView() as? YLView {
+                telnetView.insertText(result, replacementRange: NSRange(location: NSNotFound, length: 0))
             }
         }
     }

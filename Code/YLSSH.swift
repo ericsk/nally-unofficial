@@ -39,12 +39,10 @@ public class YLSSH: YLConnection {
     @objc public override func reconnect() {
         close()
         if let address = connectionAddress {
-            self.perform(#selector(connectToAddressBridge(_:)), with: address, afterDelay: 0.01)
+            DispatchQueue.main.async { [weak self] in
+                _ = self?.connect(toAddress: address)
+            }
         }
-    }
-    
-    @objc private func connectToAddressBridge(_ addr: String) {
-        let _ = connect(toAddress: addr)
     }
     
     @objc(connectToAddress:)
@@ -271,7 +269,7 @@ public class YLSSH: YLConnection {
     }
     
     @objc(receiveBytes:length:)
-    public override func receiveBytes(_ bytes: UnsafeMutablePointer<UInt8>, length: Int) {
+    public override func receiveBytes(_ bytes: UnsafePointer<UInt8>, length: Int) {
         terminal?.feedBytes(bytes, length: Int32(length), connection: self)
     }
     

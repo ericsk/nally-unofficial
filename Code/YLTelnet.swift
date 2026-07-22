@@ -201,7 +201,7 @@ public class YLTelnet: YLConnection {
     }
     
     @objc(receiveBytes:length:)
-    public override func receiveBytes(_ bytes: UnsafeMutablePointer<UInt8>, length: Int) {
+    public override func receiveBytes(_ bytes: UnsafePointer<UInt8>, length: Int) {
         var terminalBuf = [UInt8]()
         
         for i in 0..<length {

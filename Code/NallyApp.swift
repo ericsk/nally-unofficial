@@ -56,7 +56,7 @@ public class AppState: NSObject {
         let exif = YLExifController()
         let ctrl = YLController()
         
-        ctrl.setValue(exif, forKey: "_exifController")
+        ctrl._exifController = exif
         
         self.exifController = exif
         self.controller = ctrl
@@ -69,10 +69,10 @@ public class AppState: NSObject {
         // 2. Precreate YLView & YLMarkedTextView
         let telnetView = YLView(frame: .zero)
         let markedTextView = YLMarkedTextView(frame: .zero)
-        telnetView.setValue(markedTextView, forKey: "_textField")
+        telnetView._textField = markedTextView
         telnetView.addSubview(markedTextView)
         telnetView.configure()
-        ctrl.setValue(telnetView, forKey: "_telnetView")
+        ctrl._telnetView = telnetView
         
         // Directly set YLController as delegate of the NSTabView
         telnetView.delegate = ctrl
