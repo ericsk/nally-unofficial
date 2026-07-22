@@ -47,6 +47,8 @@
 		85137B330D02192800833909 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 85137B320D02192800833909 /* Credits.rtf */; };
 		8570AD5F0A3923A900838442 /* YLView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8570AD5E0A3923A900838442 /* YLView.swift */; };
 		AA1122334455667788990022 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA1122334455667788990011 /* AppTheme.swift */; };
+		BB1122334455667788990022 /* TerminalGridTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB1122334455667788990011 /* TerminalGridTests.swift */; };
+		CC1122334455667788990022 /* AppThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1122334455667788990011 /* AppThemeTests.swift */; };
 		8579CA2A0CF21D3D005A8353 /* YLSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8579CA290CF21D3D005A8353 /* YLSite.swift */; };
 		857EAE2A0CF1D62900777C15 /* connect.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 857EAE290CF1D62900777C15 /* connect.pdf */; };
 		857EAE4F0CF1D89300777C15 /* offline.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 857EAE4E0CF1D89300777C15 /* offline.pdf */; };
@@ -81,6 +83,24 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXContainerItemProxy section */
+		DD1122334455667788990022 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8D1107260486CEB800E47090;
+			remoteInfo = Nally;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXTargetDependency section */
+		DD1122334455667788990011 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8D1107260486CEB800E47090 /* Nally */;
+			targetProxy = DD1122334455667788990022 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXFileReference section */
 		07B73DA10E581E2C00CC97D3 /* YLEncodingTable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLEncodingTable.swift; sourceTree = "<group>"; };
@@ -129,10 +149,12 @@
 		71585BD80EFE086B00E04E4E /* zh_CN */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = zh_CN; path = zh_CN.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		850711AA0CA7A347005F4734 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		85137B320D02192800833909 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
-		8540FE4712AB8BA3000FE1D6 /* TextSuiteTests.octest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TextSuiteTests.octest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8540FE4712AB8BA3000FE1D6 /* TextSuiteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TextSuiteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8540FE4812AB8BA3000FE1D6 /* TextSuiteTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "TextSuiteTests-Info.plist"; sourceTree = "<group>"; };
 		8570AD5E0A3923A900838442 /* YLView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLView.swift; sourceTree = "<group>"; };
 		AA1122334455667788990011 /* AppTheme.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppTheme.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		BB1122334455667788990011 /* TerminalGridTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TerminalGridTests.swift; path = TerminalGridTests.swift; sourceTree = "<group>"; };
+		CC1122334455667788990011 /* AppThemeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppThemeTests.swift; path = AppThemeTests.swift; sourceTree = "<group>"; };
 		8579CA280CF21D3D005A8353 /* YLSite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLSite.h; sourceTree = "<group>"; };
 		8579CA290CF21D3D005A8353 /* YLSite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLSite.swift; sourceTree = "<group>"; };
 		857EAE290CF1D62900777C15 /* connect.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = connect.pdf; sourceTree = "<group>"; };
@@ -248,7 +270,7 @@
 			isa = PBXGroup;
 			children = (
 				7119D1820EE7DC46003F98C8 /* Nally.app */,
-				8540FE4712AB8BA3000FE1D6 /* TextSuiteTests.octest */,
+				8540FE4712AB8BA3000FE1D6 /* TextSuiteTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -322,6 +344,8 @@
 			isa = PBXGroup;
 			children = (
 				07B73DA70E581E2C00CC97D3 /* TextSuiteTests.swift */,
+				BB1122334455667788990011 /* TerminalGridTests.swift */,
+				CC1122334455667788990011 /* AppThemeTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -382,11 +406,12 @@
 			buildRules = (
 			);
 			dependencies = (
+				DD1122334455667788990011 /* PBXTargetDependency */,
 			);
 			name = TextSuiteTests;
 			productName = TextSuiteTests;
-			productReference = 8540FE4712AB8BA3000FE1D6 /* TextSuiteTests.octest */;
-			productType = "com.apple.product-type.bundle";
+			productReference = 8540FE4712AB8BA3000FE1D6 /* TextSuiteTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
 		};
 		8D1107260486CEB800E47090 /* Nally */ = {
 			isa = PBXNativeTarget;
@@ -415,6 +440,11 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0440;
+				TargetAttributes = {
+					8540FE4612AB8BA3000FE1D6 = {
+						TestTargetID = 8D1107260486CEB800E47090;
+					};
+				};
 			};
 			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Nally" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -495,6 +525,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				07B73DA80E581E2C00CC97D3 /* TextSuiteTests.swift in Sources */,
+				BB1122334455667788990022 /* TerminalGridTests.swift in Sources */,
+				CC1122334455667788990022 /* AppThemeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -590,6 +622,8 @@
 					Cocoa,
 					"-framework",
 					XCTest,
+					"-framework",
+					Testing,
 				);
 				PRODUCT_NAME = TextSuiteTests;
 				SDKROOT = macosx;
@@ -624,6 +658,8 @@
 					Cocoa,
 					"-framework",
 					XCTest,
+					"-framework",
+					Testing,
 				);
 				PRODUCT_NAME = TextSuiteTests;
 				SDKROOT = macosx;

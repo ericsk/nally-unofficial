@@ -1,28 +1,37 @@
-import XCTest
+import Testing
+import Foundation
 @testable import Nally
 
-class TextSuiteTests: XCTestCase {
-    override func setUp() {
-        super.setUp()
+@Suite("Text Suite & Line Wrapping Tests")
+struct TextSuiteTests {
+    init() {
         YLEncodingTable.initTable()
     }
     
-    func testWrapLine() {
+    struct TestCase {
+        let input: String
+        let length: Int32
+        let expected: String
+        let comment: String
+    }
+    
+    @Test("Big5 Line Wrapping Rules", arguments: [
+        TestCase(input: "aaaaa", length: 5, expected: "aaaaa", comment: "No Wrap"),
+        TestCase(input: "aaaaaa", length: 5, expected: "aaaaa\na", comment: "Force Wrap"),
+        TestCase(input: "aaa aaa", length: 5, expected: "aaa \naaa", comment: "Simple Wrap"),
+        TestCase(input: "中文字", length: 5, expected: "中文\n字", comment: "Chinese Wrap"),
+        TestCase(input: "中文字", length: 4, expected: "中文\n字", comment: "Chinese Wrap"),
+        TestCase(input: "中a文字", length: 3, expected: "中a\n文\n字", comment: "Chinese Wrap"),
+        TestCase(input: "aa aa ,aa", length: 6, expected: "aa \naa ,aa", comment: "Prohibit Head"),
+        TestCase(input: "aa ,aa", length: 5, expected: "aa ,a\na", comment: "Prohibit Head Pull All Line"),
+        TestCase(input: "aaa(aa", length: 5, expected: "aaa\n(aa", comment: "Prohibit Tail"),
+        TestCase(input: "aaa)aa", length: 5, expected: "aaa)\naa", comment: "Prohibit Head"),
+        TestCase(input: "你好不好。", length: 8, expected: "你好不\n好。", comment: "Prohibit Head"),
+        TestCase(input: "中文", length: 1, expected: "中\n文", comment: "Force Add")
+    ])
+    func testWrapLine(testCase: TestCase) {
         let t = YLTextSuite()
-        
-        XCTAssertEqual(t.wrapText("aaaaa", withLength: 5, encoding: .YLBig5Encoding), "aaaaa", "No Wrap")
-        XCTAssertEqual(t.wrapText("aaaaaa", withLength: 5, encoding: .YLBig5Encoding), "aaaaa\na", "Force Wrap")
-        XCTAssertEqual(t.wrapText("aaa aaa", withLength: 5, encoding: .YLBig5Encoding), "aaa \naaa", "Simple Wrap")
-        XCTAssertEqual(t.wrapText("中文字", withLength: 5, encoding: .YLBig5Encoding), "中文\n字", "Chinese Wrap")
-        XCTAssertEqual(t.wrapText("中文字", withLength: 4, encoding: .YLBig5Encoding), "中文\n字", "Chinese Wrap")
-        XCTAssertEqual(t.wrapText("中a文字", withLength: 3, encoding: .YLBig5Encoding), "中a\n文\n字", "Chinese Wrap")
-        XCTAssertEqual(t.wrapText("aa aa ,aa", withLength: 6, encoding: .YLBig5Encoding), "aa \naa ,aa", "Prohibit Head")
-        XCTAssertEqual(t.wrapText("aa ,aa", withLength: 5, encoding: .YLBig5Encoding), "aa ,a\na", "Prohibit Head Pull All Line")
-        
-        XCTAssertEqual(t.wrapText("aaa(aa", withLength: 5, encoding: .YLBig5Encoding), "aaa\n(aa", "Prohibit Tail")
-        XCTAssertEqual(t.wrapText("aaa)aa", withLength: 5, encoding: .YLBig5Encoding), "aaa)\naa", "Prohibit Head")
-        
-        XCTAssertEqual(t.wrapText("你好不好。", withLength: 8, encoding: .YLBig5Encoding), "你好不\n好。", "Prohibit Head")
-        XCTAssertEqual(t.wrapText("中文", withLength: 1, encoding: .YLBig5Encoding), "中\n文", "Force Add")
+        let result = t.wrapText(testCase.input, withLength: testCase.length, encoding: .YLBig5Encoding)
+        #expect(result == testCase.expected, "Failed on: \(testCase.comment)")
     }
 }

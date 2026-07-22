@@ -12,7 +12,7 @@ install: all
 	rm -r /Applications/Nally.app; mv build/Release/Nally.app /Applications/
 
 test: all
-	build/Release/Nally.app/Contents/MacOS/Nally
+	xcodebuild test -project Nally.xcodeproj -scheme TextSuiteTests
 
 release: all
 	python Scripts/package.py build/Release/Nally.app http://nally.googlecode.com/files
