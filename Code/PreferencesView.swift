@@ -44,6 +44,7 @@ struct GeneralPreferencesView: View {
     @Binding var confirmOnClose: Bool
     @Binding var restoreConnection: Bool
     @AppStorage("AppTheme") var appThemeRaw: String = AppTheme.system.rawValue
+    @AppStorage("ShowMenuBarExtra") var showMenuBarExtra: Bool = true
     
     var body: some View {
         Form {
@@ -62,6 +63,7 @@ struct GeneralPreferencesView: View {
             Section(header: Label("Window & Sessions", systemImage: "macwindow")) {
                 Toggle("Confirm when closing windows", isOn: $confirmOnClose)
                 Toggle("Restore last connections on startup", isOn: $restoreConnection)
+                Toggle("Show menu bar status icon (MenuBarExtra)", isOn: $showMenuBarExtra)
             }
             
             Section(header: Label("Terminal Behavior", systemImage: "display")) {

@@ -134,6 +134,7 @@ struct NallyApp: App {
     @NSApplicationDelegateAdaptor(NallyAppDelegate.self) var appDelegate
     @State private var appState = AppState.shared
     @AppStorage("AppTheme") var appThemeRaw: String = AppTheme.system.rawValue
+    @AppStorage("ShowMenuBarExtra") var showMenuBarExtra: Bool = true
     
     var body: some Scene {
         Window("Nally", id: "main") {
@@ -145,8 +146,89 @@ struct NallyApp: App {
             NallyCommands()
         }
         
+        Window("Bookmarks", id: "sites") {
+            SitesView(
+                controller: appState.controller,
+                onConnect: { site in
+                    appState.controller.newConnection(with: site)
+                },
+                onClose: {}
+            )
+            .preferredColorScheme(AppTheme(rawValue: appThemeRaw)?.colorScheme)
+        }
+        .modelContainer(for: YLSite.self)
+        .windowResizability(.contentSize)
+        
         Settings {
             PreferencesView()
+                .preferredColorScheme(AppTheme(rawValue: appThemeRaw)?.colorScheme)
+        }
+        
+        MenuBarExtra("Nally", systemImage: "terminal.fill", isInserted: $showMenuBarExtra) {
+            MenuBarQuickConnectView(appState: appState)
+        }
+    }
+}
+
+struct MenuBarQuickConnectView: View {
+    var appState: AppState
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.openSettings) private var openSettings
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Nally Quick Connect")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundColor(.secondary)
+                .padding(.horizontal, 8)
+                .padding(.top, 4)
+            
+            Divider()
+            
+            ForEach(appState.controller.sitesList) { site in
+                Button(action: {
+                    NSApp.activate(ignoringOtherApps: true)
+                    appState.controller.newConnection(with: site)
+                }) {
+                    HStack {
+                        Image(systemName: site.address.lowercased().hasPrefix("ssh://") ? "lock.shield.fill" : "network")
+                        Text(site.name.isEmpty ? site.address : site.name)
+                    }
+                }
+            }
+            
+            Divider()
+            
+            Button(action: {
+                NSApp.activate(ignoringOtherApps: true)
+                if let window = appState.controller._mainWindow {
+                    window.makeKeyAndOrderFront(nil)
+                }
+            }) {
+                Label("Open Main Window", systemImage: "macwindow")
+            }
+            
+            Button(action: {
+                NSApp.activate(ignoringOtherApps: true)
+                openWindow(id: "sites")
+            }) {
+                Label("Bookmarks (Cmd+B)", systemImage: "bookmark")
+            }
+            
+            Button(action: {
+                NSApp.activate(ignoringOtherApps: true)
+                openSettings()
+            }) {
+                Label("Preferences... (Cmd+,)", systemImage: "gearshape")
+            }
+            
+            Divider()
+            
+            Button(action: {
+                NSApp.terminate(nil)
+            }) {
+                Label("Quit Nally", systemImage: "power")
+            }
         }
     }
 }
