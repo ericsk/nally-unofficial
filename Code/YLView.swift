@@ -1133,16 +1133,18 @@ public class YLView: NSTabView, NSTextInputClient {
             /* Draw Background */
             var y = 0
             while y < gRow {
-                var x = 0
-                while x < gColumn {
-                    if ds.isDirty(atRow: Int32(y), column: Int32(x)) {
-                        let startx = x
-                        while x < gColumn && ds.isDirty(atRow: Int32(y), column: Int32(x)) {
-                            x += 1
+                if ds.isRowDirty(Int32(y)) {
+                    var x = 0
+                    while x < gColumn {
+                        if ds.isDirty(atRow: Int32(y), column: Int32(x)) {
+                            let startx = x
+                            while x < gColumn && ds.isDirty(atRow: Int32(y), column: Int32(x)) {
+                                x += 1
+                            }
+                            updateBackground(forRow: Int32(y), from: Int32(startx), to: Int32(x))
                         }
-                        updateBackground(forRow: Int32(y), from: Int32(startx), to: Int32(x))
+                        x += 1
                     }
-                    x += 1
                 }
                 y += 1
             }
@@ -1150,15 +1152,20 @@ public class YLView: NSTabView, NSTextInputClient {
             activeCtx.saveGState()
             activeCtx.setShouldSmoothFonts(config.shouldSmoothFonts)
             
-            /* Draw String row by row */
+            /* Draw String row by row ONLY for dirty rows */
             for r in 0..<gRow {
-                drawString(forRow: Int32(r), context: activeCtx)
+                if ds.isRowDirty(Int32(r)) {
+                    drawString(forRow: Int32(r), context: activeCtx)
+                }
             }
             activeCtx.restoreGState()
             
             for r in 0..<gRow {
-                for c in 0..<gColumn {
-                    ds.setDirty(false, atRow: Int32(r), column: Int32(c))
+                if ds.isRowDirty(Int32(r)) {
+                    for c in 0..<gColumn {
+                        ds.setDirty(false, atRow: Int32(r), column: Int32(c))
+                    }
+                    ds.clearRowDirty(Int32(r))
                 }
             }
         }

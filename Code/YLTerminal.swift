@@ -28,6 +28,7 @@ public class YLTerminal: NSObject {
     
     private var grid: UnsafeMutablePointer<UnsafeMutablePointer<cell>>
     private var dirty: UnsafeMutablePointer<Bool>
+    private var dirtyRows: UnsafeMutablePointer<Bool>
     
     private enum ParserState {
         case normal
@@ -157,6 +158,8 @@ public class YLTerminal: NSObject {
         }
         self.dirty = UnsafeMutablePointer<Bool>.allocate(capacity: Int(self.row * self.column))
         self.dirty.initialize(repeating: false, count: Int(self.row * self.column))
+        self.dirtyRows = UnsafeMutablePointer<Bool>.allocate(capacity: Int(self.row))
+        self.dirtyRows.initialize(repeating: false, count: Int(self.row))
         
         super.init()
         self.clearAll()
@@ -168,6 +171,7 @@ public class YLTerminal: NSObject {
         }
         self.grid.deallocate()
         self.dirty.deallocate()
+        self.dirtyRows.deallocate()
     }
     
     private func isParameter(_ c: UInt8) -> Bool {
@@ -313,25 +317,47 @@ public class YLTerminal: NSObject {
         for i in 0..<end {
             dirty[i] = true
         }
+        for r in 0..<Int(row) {
+            dirtyRows[r] = true
+        }
     }
     
     @objc(setDirtyForRow:)
     public func setDirtyForRow(_ r: Int32) {
+        guard r >= 0 && r < row else { return }
         let start = Int(r * column)
-        let end = Int(column * row)
+        let end = Int((r + 1) * column)
         for i in start..<end {
             dirty[i] = true
         }
+        dirtyRows[Int(r)] = true
     }
     
     @objc(isDirtyAtRow:column:)
     public func isDirty(atRow r: Int32, column c: Int32) -> Bool {
+        guard r >= 0 && r < row && c >= 0 && c < column else { return false }
         return dirty[Int(r * column + c)]
     }
     
     @objc(setDirty:atRow:column:)
     public func setDirty(_ d: Bool, atRow r: Int32, column c: Int32) {
+        guard r >= 0 && r < row && c >= 0 && c < column else { return }
         dirty[Int(r * column + c)] = d
+        if d {
+            dirtyRows[Int(r)] = true
+        }
+    }
+    
+    @objc(isRowDirty:)
+    public func isRowDirty(_ r: Int32) -> Bool {
+        guard r >= 0 && r < row else { return false }
+        return dirtyRows[Int(r)]
+    }
+    
+    @objc(clearRowDirty:)
+    public func clearRowDirty(_ r: Int32) {
+        guard r >= 0 && r < row else { return }
+        dirtyRows[Int(r)] = false
     }
     
     // MARK: - Access Data
