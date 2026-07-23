@@ -21,16 +21,35 @@ public class SitesWindowController: NSWindowController, NSWindowDelegate {
         super.init(window: window)
         window.delegate = self
         
-        let sitesView = SitesView(
-            controller: controller,
-            onConnect: { [weak self] site in
-                controller.newConnection(with: site)
-                self?.dismiss()
-            },
-            onClose: { [weak self] in
-                self?.dismiss()
-            }
-        )
+        var sitesView: AnyView
+        if let container = controller.modelContainer {
+            sitesView = AnyView(
+                SitesView(
+                    controller: controller,
+                    onConnect: { [weak self] site in
+                        controller.newConnection(with: site)
+                        self?.dismiss()
+                    },
+                    onClose: { [weak self] in
+                        self?.dismiss()
+                    }
+                )
+                .modelContainer(container)
+            )
+        } else {
+            sitesView = AnyView(
+                SitesView(
+                    controller: controller,
+                    onConnect: { [weak self] site in
+                        controller.newConnection(with: site)
+                        self?.dismiss()
+                    },
+                    onClose: { [weak self] in
+                        self?.dismiss()
+                    }
+                )
+            )
+        }
         window.contentView = NSHostingView(rootView: sitesView)
     }
     

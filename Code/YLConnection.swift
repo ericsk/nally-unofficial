@@ -8,16 +8,15 @@
 
 import Cocoa
 
-@objc(YLConnectionProtocol)
-public protocol YLConnectionProtocol: NSObjectProtocol {
+public protocol YLConnectionProtocol: AnyObject {
     func close()
     func reconnect()
-    @objc(connectToSite:) func connect(to site: YLSite) -> Bool
-    @objc(connectToAddress:) func connect(toAddress addr: String) -> Bool
-    @objc(connectToAddress:port:) func connect(toAddress addr: String, port: UInt32) -> Bool
-    @objc(receiveBytes:length:) func receiveBytes(_ bytes: UnsafePointer<UInt8>, length: Int)
-    @objc(sendBytes:length:) func sendBytes(_ msg: UnsafePointer<UInt8>, length: Int)
-    @objc(sendData:) func sendData(_ msg: Data)
+    func connect(to site: YLSite) -> Bool
+    func connect(toAddress addr: String) -> Bool
+    func connect(toAddress addr: String, port: UInt32) -> Bool
+    func receiveBytes(_ bytes: UnsafePointer<UInt8>, length: Int)
+    func sendBytes(_ msg: UnsafePointer<UInt8>, length: Int)
+    func sendData(_ msg: Data)
     
     var terminal: YLTerminal? { get set }
     var connected: Bool { get set }
@@ -81,7 +80,7 @@ public class YLConnection: NSObject, YLConnectionProtocol {
         }
     }
     @objc public dynamic var isProcessing: Bool = false
-    @objc public var site: YLSite?
+    public var site: YLSite?
     
     @objc public var lastTouchDateValue: Date?
     
@@ -92,7 +91,6 @@ public class YLConnection: NSObject, YLConnectionProtocol {
     @objc public func close() {}
     @objc public func reconnect() {}
     
-    @objc(connectToSite:)
     public func connect(to site: YLSite) -> Bool {
         self.site = site
         return connect(toAddress: site.address)

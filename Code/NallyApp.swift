@@ -9,6 +9,7 @@
 import SwiftUI
 import Cocoa
 import Combine
+import SwiftData
 
 public struct TabInfo: Hashable, Identifiable {
     public var id: ObjectIdentifier {
@@ -34,6 +35,7 @@ public struct TabInfo: Hashable, Identifiable {
     }
 }
 
+@MainActor
 @Observable
 public class AppState: NSObject {
     public static let shared = AppState()
@@ -138,6 +140,7 @@ struct NallyApp: App {
             MainSwiftUIWindowView(appState: appState)
                 .preferredColorScheme(AppTheme(rawValue: appThemeRaw)?.colorScheme)
         }
+        .modelContainer(for: YLSite.self)
         .commands {
             NallyCommands()
         }

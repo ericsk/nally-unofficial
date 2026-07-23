@@ -1,37 +1,58 @@
 import SwiftUI
+import SwiftData
 
 struct SitesView: View {
     @Bindable var controller: YLController
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \YLSite.name) private var sites: [YLSite]
+    
     @State private var selectedSite: YLSite?
+    @State private var searchText: String = ""
+    @State private var columnVisibility = NavigationSplitViewVisibility.all
     
     var onConnect: (YLSite) -> Void
     var onClose: () -> Void
     
-    @State private var columnVisibility = NavigationSplitViewVisibility.all
+    private var filteredSites: [YLSite] {
+        if searchText.trimmingCharacters(in: .whitespaces).isEmpty {
+            return sites
+        }
+        let query = searchText.lowercased()
+        return sites.filter {
+            $0.name.lowercased().contains(query) || $0.address.lowercased().contains(query)
+        }
+    }
     
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             VStack(spacing: 0) {
                 List(selection: $selectedSite) {
-                    ForEach(controller.sitesList, id: \.self) { site in
+                    ForEach(filteredSites) { site in
                         HStack(spacing: 8) {
                             Image(systemName: isSSH(site) ? "lock.shield.fill" : "network")
                                 .font(.system(size: 13))
                                 .foregroundColor(isSSH(site) ? .blue : .teal)
                             
-                            Text(site.name.isEmpty ? "Untitled Site" : site.name)
-                                .font(.system(size: 13, weight: .medium))
-                                .lineLimit(1)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(site.name.isEmpty ? "Untitled Site" : site.name)
+                                    .font(.system(size: 13, weight: .medium))
+                                    .lineLimit(1)
+                                Text(site.address.isEmpty ? "(address)" : site.address)
+                                    .font(.system(size: 10))
+                                    .foregroundColor(.secondary)
+                                    .lineLimit(1)
+                            }
                             
                             Spacer()
                             
                             ProtocolBadge(isSSH: isSSH(site))
                         }
-                        .padding(.vertical, 3)
+                        .padding(.vertical, 2)
                         .tag(site)
                     }
                 }
                 .listStyle(.sidebar)
+                .searchable(text: $searchText, placement: .sidebar, prompt: "Search sites...")
                 
                 Divider()
                 
@@ -60,6 +81,20 @@ struct SitesView: View {
                     .disabled(selectedSite == nil)
                     .help("Remove selected site")
                     
+                    Divider()
+                        .frame(height: 12)
+                    
+                    Button(action: duplicateSelectedSite) {
+                        Image(systemName: "doc.on.doc")
+                            .font(.system(size: 11, weight: .medium))
+                            .frame(width: 28, height: 22)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundColor(selectedSite == nil ? .secondary.opacity(0.4) : .primary.opacity(0.8))
+                    .disabled(selectedSite == nil)
+                    .help("Duplicate selected site")
+                    
                     Spacer()
                 }
                 .padding(.horizontal, 4)
@@ -69,7 +104,7 @@ struct SitesView: View {
             .navigationTitle("Bookmarks")
         } detail: {
             if let site = selectedSite {
-                SiteDetailView(site: site, onConnect: onConnect)
+                SiteDetailView(site: site, onConnect: onConnect, onSave: saveChanges)
             } else {
                 VStack(spacing: 12) {
                     Image(systemName: "bookmark.circle")
@@ -83,13 +118,19 @@ struct SitesView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         }
-        .frame(minWidth: 580, minHeight: 400)
+        .frame(minWidth: 620, minHeight: 440)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button("Done") {
+                    saveChanges()
                     onClose()
                 }
                 .keyboardShortcut(.escape, modifiers: [])
+            }
+        }
+        .onAppear {
+            if selectedSite == nil && !sites.isEmpty {
+                selectedSite = sites.first
             }
         }
     }
@@ -99,20 +140,34 @@ struct SitesView: View {
     }
     
     private func addSite() {
-        let newSite = YLSite()
-        newSite.name = "New Site"
-        newSite.address = "bbs.example.com"
-        controller.sitesList.append(newSite)
-        controller.saveSites()
+        let newSite = YLSite(name: "New Site", address: "bbs.example.com")
+        modelContext.insert(newSite)
+        saveChanges()
         selectedSite = newSite
     }
     
     private func deleteSelectedSite() {
-        if let site = selectedSite, let index = controller.sitesList.firstIndex(of: site) {
-            controller.sitesList.remove(at: index)
-            controller.saveSites()
+        if let site = selectedSite {
+            modelContext.delete(site)
+            saveChanges()
             selectedSite = nil
         }
+    }
+    
+    private func duplicateSelectedSite() {
+        if let site = selectedSite {
+            let dup = site.copySite()
+            dup.name = "\(site.name) Copy"
+            modelContext.insert(dup)
+            saveChanges()
+            selectedSite = dup
+        }
+    }
+    
+    private func saveChanges() {
+        try? modelContext.save()
+        controller.sitesList = sites
+        controller.saveSites()
     }
 }
 
@@ -133,6 +188,7 @@ struct ProtocolBadge: View {
 struct SiteDetailView: View {
     @Bindable var site: YLSite
     var onConnect: (YLSite) -> Void
+    var onSave: () -> Void
     
     var body: some View {
         Form {
@@ -166,6 +222,7 @@ struct SiteDetailView: View {
             
             Section {
                 Button(action: {
+                    onSave()
                     onConnect(site)
                 }) {
                     HStack {
@@ -182,5 +239,12 @@ struct SiteDetailView: View {
             }
         }
         .formStyle(.grouped)
+        .onChange(of: site.name) { _, _ in onSave() }
+        .onChange(of: site.address) { _, _ in onSave() }
+        .onChange(of: site.account) { _, _ in onSave() }
+        .onChange(of: site.password) { _, _ in onSave() }
+        .onChange(of: site.encoding) { _, _ in onSave() }
+        .onChange(of: site.ansiColorKey) { _, _ in onSave() }
+        .onChange(of: site.detectDoubleByte) { _, _ in onSave() }
     }
 }

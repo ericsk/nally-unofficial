@@ -164,7 +164,7 @@ public class YLSSH: YLConnection {
         }
         
         // 4. Spawn ssh Process
-        let slaveHandle = FileHandle(fileDescriptor: slaveFd, closeOnDealloc: true)
+        let slaveHandle = FileHandle(fileDescriptor: slaveFd, closeOnDealloc: false)
         let proc = Process()
         proc.executableURL = URL(fileURLWithPath: "/usr/bin/ssh")
         

@@ -9,6 +9,7 @@
 import Cocoa
 import Combine
 import Observation
+import SwiftData
 
 @Observable
 @objc(YLController)
@@ -29,6 +30,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     @objc public dynamic weak var _exifController: YLExifController?
     
     public var sitesList: [YLSite] = []
+    public var modelContainer: ModelContainer?
     private var cancellables = Set<AnyCancellable>()
     private var lastConnectionTime = Date.distantPast
     private var lastConnectionAddress = ""
@@ -37,6 +39,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
 
     
     // MARK: - Initializer & Lifecycle
+    @MainActor
     @objc public func setupProgrammatically() {
         // Register defaults
         UserDefaults.standard.register(defaults: [
@@ -108,7 +111,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         globalConfig.showHiddenText = globalConfig.showHiddenText
         globalConfig.cellWidth = globalConfig.cellWidth
         
-        loadSites()
+        initSwiftData()
         updateSitesMenu()
         
         _pluginLoader = YLPluginLoader()
@@ -220,7 +223,6 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     }
     
     // MARK: - Connection Management
-    @objc(newConnectionWithSite:)
     public func newConnection(with site: YLSite) {
         let now = Date()
         if site.address == lastConnectionAddress && now.timeIntervalSince(lastConnectionTime) < 0.5 {
@@ -305,7 +307,73 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         }
     }
     
-    // MARK: - Serialization (User Defaults & Keychain)
+    // MARK: - Serialization (SwiftData & Keychain)
+    @MainActor
+    public func initSwiftData() {
+        do {
+            let container = try ModelContainer(for: YLSite.self)
+            self.modelContainer = container
+            syncSitesWithSwiftData()
+        } catch {
+            NSLog("Failed to initialize SwiftData ModelContainer: \(error)")
+            loadSites()
+        }
+    }
+    
+    @MainActor
+    public func syncSitesWithSwiftData() {
+        guard let container = modelContainer else {
+            loadSites()
+            return
+        }
+        let context = container.mainContext
+        do {
+            let descriptor = FetchDescriptor<YLSite>(sortBy: [SortDescriptor(\.name)])
+            var fetched = try context.fetch(descriptor)
+            
+            if fetched.isEmpty {
+                // Migrate legacy sites from UserDefaults if available
+                loadSites()
+                if !sitesList.isEmpty {
+                    for site in sitesList {
+                        context.insert(site)
+                    }
+                    try? context.save()
+                    fetched = try context.fetch(descriptor)
+                } else {
+                    // Seed default site
+                    let defaultSite = YLSite(
+                        name: "PTT 批踢踢實業坊",
+                        address: "ptt.cc",
+                        encoding: .YLBig5Encoding,
+                        ansiColorKey: .YLCtrlUANSIColorKey,
+                        detectDoubleByte: true
+                    )
+                    context.insert(defaultSite)
+                    try? context.save()
+                    fetched = [defaultSite]
+                }
+            }
+            
+            for site in fetched {
+                if let accounts = YLKeychain.accounts(forService: site.address),
+                   let account = accounts.last?["acct"] as? String {
+                    if let password = YLKeychain.password(forService: site.address, account: account) {
+                        site.account = account
+                        site.password = password
+                    }
+                }
+            }
+            
+            self.sitesList = fetched
+            updateSitesMenu()
+        } catch {
+            NSLog("SwiftData sync error: \(error)")
+            loadSites()
+        }
+    }
+
+    @MainActor
     @objc public func loadSites() {
         let defaults = UserDefaults.standard
         if let data = defaults.data(forKey: "SitesCodable") {
@@ -344,6 +412,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         }
     }
     
+    @MainActor
     @objc public func saveSites() {
         for site in sitesList {
             let password = site.password
@@ -356,12 +425,17 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
                 }
             }
         }
-        do {
-            let encodedData = try JSONEncoder().encode(sitesList)
-            UserDefaults.standard.set(encodedData, forKey: "SitesCodable")
-            UserDefaults.standard.synchronize()
-        } catch {
-            NSLog("Failed to encode SitesCodable: \(error)")
+        if let container = modelContainer {
+            let context = container.mainContext
+            try? context.save()
+        } else {
+            do {
+                let encodedData = try JSONEncoder().encode(sitesList)
+                UserDefaults.standard.set(encodedData, forKey: "SitesCodable")
+                UserDefaults.standard.synchronize()
+            } catch {
+                NSLog("Failed to encode SitesCodable: \(error)")
+            }
         }
         updateSitesMenu()
     }
@@ -468,23 +542,23 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
             name = String(name.dropFirst(6))
         }
         
-        let matchedSites = NSMutableArray()
+        var matchedSites: [YLSite] = []
         var connectSite = YLSite()
         
         if name.contains(".") { /* Normal address */
             for site in sitesList {
                 let address = site.address
                 if address.contains(name) && !(ssh != address.hasPrefix("ssh://")) {
-                    matchedSites.add(site)
+                    matchedSites.append(site)
                 }
             }
-            if matchedSites.count > 0 {
-                matchedSites.sort(using: [NSSortDescriptor(key: "address.length", ascending: true)])
-                if let firstSite = matchedSites.object(at: 0) as? YLSite {
-                    connectSite = firstSite.copy() as! YLSite
+            if !matchedSites.isEmpty {
+                matchedSites.sort { $0.address.count < $1.address.count }
+                if let firstSite = matchedSites.first {
+                    connectSite = firstSite.copySite()
                 }
             } else {
-                connectSite.address = name
+                connectSite.address = addressString
                 connectSite.name = name
                 connectSite.encoding = YLLGlobalConfig.sharedInstance().defaultEncoding
                 connectSite.ansiColorKey = YLLGlobalConfig.sharedInstance().defaultANSIColorKey
@@ -494,22 +568,22 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
             for site in sitesList {
                 let sName = site.name
                 if sName.contains(name) {
-                    matchedSites.add(site)
+                    matchedSites.append(site)
                 }
             }
-            matchedSites.sort(using: [NSSortDescriptor(key: "name.length", ascending: true)])
-            if matchedSites.count == 0 {
+            matchedSites.sort { $0.name.count < $1.name.count }
+            if matchedSites.isEmpty {
                 for site in sitesList {
                     let address = site.address
                     if address.contains(name) {
-                        matchedSites.add(site)
+                        matchedSites.append(site)
                     }
                 }
-                matchedSites.sort(using: [NSSortDescriptor(key: "address.length", ascending: true)])
+                matchedSites.sort { $0.address.count < $1.address.count }
             }
-            if matchedSites.count > 0 {
-                if let firstSite = matchedSites.object(at: 0) as? YLSite {
-                    connectSite = firstSite.copy() as! YLSite
+            if !matchedSites.isEmpty {
+                if let firstSite = matchedSites.first {
+                    connectSite = firstSite.copySite()
                 }
             } else {
                 connectSite.address = addressString
@@ -640,7 +714,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     
     @IBAction public func autoLogin(_ sender: Any?) {
         guard let conn = _telnetView?.frontMostConnection() as? YLConnection else { return }
-        guard let site = (conn.site as? YLSite)?.copy() as? YLSite else { return }
+        guard let site = (conn.site as? YLSite)?.copySite() else { return }
         
         if conn.connected {
             let account = site.account
@@ -832,6 +906,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         (tabViewItem.identifier as? YLConnection)?.close()
     }
     
+    @MainActor
     @objc public func tabView(_ tabView: YLView, didSelect tabViewItem: NSTabViewItem?) {
         guard let conn = tabViewItem?.identifier as? YLConnection else { return }
         _telnetView?.updateBackedImage()
@@ -860,6 +935,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         _telnetView?.clearSelection()
     }
     
+    @MainActor
     @objc public func tabViewDidChangeNumberOfTabViewItems(_ tabView: YLView) {
         refreshTabLabelNumber(tabView)
         AppState.shared.syncTabs(from: tabView)

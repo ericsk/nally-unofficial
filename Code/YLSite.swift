@@ -1,19 +1,19 @@
 import Foundation
-import Observation
+import SwiftData
 
-@Observable
-@objc(YLSite)
-@objcMembers
-public class YLSite: NSObject, NSCopying, Codable {
-    public dynamic var name: String = "Site Name"
-    public dynamic var address: String = "(your.site.org)"
-    public dynamic var account: String = ""
-    public dynamic var password: String = ""
-    public dynamic var encoding: YLEncoding = .YLBig5Encoding
-    public dynamic var ansiColorKey: YLANSIColorKey = .YLCtrlUANSIColorKey
-    public dynamic var detectDoubleByte: Bool = true
+@Model
+public final class YLSite: Identifiable, Codable {
+    @Attribute(.unique) public var id: UUID = UUID()
+    public var name: String = "Site Name"
+    public var address: String = "(your.site.org)"
+    public var account: String = ""
+    public var password: String = ""
+    public var encoding: YLEncoding = YLEncoding.YLBig5Encoding
+    public var ansiColorKey: YLANSIColorKey = YLANSIColorKey.YLCtrlUANSIColorKey
+    public var detectDoubleByte: Bool = true
     
     enum CodingKeys: String, CodingKey {
+        case id
         case name
         case address
         case account
@@ -23,24 +23,41 @@ public class YLSite: NSObject, NSCopying, Codable {
         case detectDoubleByte
     }
     
-    public override init() {
-        super.init()
+    public init(
+        id: UUID = UUID(),
+        name: String = "Site Name",
+        address: String = "(your.site.org)",
+        account: String = "",
+        password: String = "",
+        encoding: YLEncoding = .YLBig5Encoding,
+        ansiColorKey: YLANSIColorKey = .YLCtrlUANSIColorKey,
+        detectDoubleByte: Bool = true
+    ) {
+        self.id = id
+        self.name = name
+        self.address = address
+        self.account = account
+        self.password = password
+        self.encoding = encoding
+        self.ansiColorKey = ansiColorKey
+        self.detectDoubleByte = detectDoubleByte
     }
     
     public required init(from decoder: Decoder) throws {
-        super.init()
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        name = try container.decode(String.self, forKey: .name)
-        address = try container.decode(String.self, forKey: .address)
-        account = try container.decodeIfPresent(String.self, forKey: .account) ?? ""
-        password = try container.decodeIfPresent(String.self, forKey: .password) ?? ""
-        encoding = try container.decode(YLEncoding.self, forKey: .encoding)
-        ansiColorKey = try container.decode(YLANSIColorKey.self, forKey: .ansiColorKey)
-        detectDoubleByte = try container.decode(Bool.self, forKey: .detectDoubleByte)
+        self.id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        self.name = try container.decode(String.self, forKey: .name)
+        self.address = try container.decode(String.self, forKey: .address)
+        self.account = try container.decodeIfPresent(String.self, forKey: .account) ?? ""
+        self.password = try container.decodeIfPresent(String.self, forKey: .password) ?? ""
+        self.encoding = try container.decode(YLEncoding.self, forKey: .encoding)
+        self.ansiColorKey = try container.decode(YLANSIColorKey.self, forKey: .ansiColorKey)
+        self.detectDoubleByte = try container.decode(Bool.self, forKey: .detectDoubleByte)
     }
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
         try container.encode(name, forKey: .name)
         try container.encode(address, forKey: .address)
         try container.encode(account, forKey: .account)
@@ -50,11 +67,11 @@ public class YLSite: NSObject, NSCopying, Codable {
         try container.encode(detectDoubleByte, forKey: .detectDoubleByte)
     }
     
-    public class func site() -> YLSite {
+    public static func site() -> YLSite {
         return YLSite()
     }
     
-    public class func site(withDictionary dict: [String: Any]) -> YLSite {
+    public static func site(withDictionary dict: [String: Any]) -> YLSite {
         let s = YLSite()
         s.name = dict["name"] as? String ?? ""
         s.address = dict["address"] as? String ?? ""
@@ -83,19 +100,19 @@ public class YLSite: NSObject, NSCopying, Codable {
         return dict
     }
     
-    public override var description: String {
+    public var description: String {
         return "\(name):\(address)"
     }
     
-    public func copy(with zone: NSZone? = nil) -> Any {
-        let s = YLSite()
-        s.name = name
-        s.address = address
-        s.encoding = encoding
-        s.ansiColorKey = ansiColorKey
-        s.detectDoubleByte = detectDoubleByte
-        s.account = account
-        s.password = password
-        return s
+    public func copySite() -> YLSite {
+        return YLSite(
+            name: name,
+            address: address,
+            account: account,
+            password: password,
+            encoding: encoding,
+            ansiColorKey: ansiColorKey,
+            detectDoubleByte: detectDoubleByte
+        )
     }
 }
