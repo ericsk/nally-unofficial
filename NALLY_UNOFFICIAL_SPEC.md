@@ -96,6 +96,7 @@ graph TD
 | **SwiftData 站台數據層與現代 SwiftUI 雙欄側邊欄 (`NavigationSplitView`)** | 將 `YLSite` 升級為 SwiftData `@Model`，支援 `UserDefaults` 舊資料無縫自動遷移，重構 `SitesView` 支援關鍵字搜尋、`SSH`/`TELNET` 協定標籤與單元測試 `SiteDataTests`。 | [YLSite.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLSite.swift), [SitesView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/SitesView.swift), [SiteDataTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/SiteDataTests.swift) |
 | **macOS 14+ / 15+ 現代化 UI & UX (`MenuBarExtra` + Window Scene)** | 在頂端 Menu Bar 加入 `MenuBarExtra` 常駐一鍵快捷連線，提供「偏好設定」控制顯示開關，並全面整合原生 SwiftUI Window Scene 與鍵盤快捷鍵。 | [NallyApp.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/NallyApp.swift), [PreferencesView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/PreferencesView.swift), [AppUIStateTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/AppUIStateTests.swift) |
 | **SwiftUI 終端機分頁列 (`NallyTabBarView`) 原生化與拖曳重排** | 重構分頁列支援滑鼠 Drag & Drop 拖曳重排、Tab 右鍵選單 (Reconnect, Close, Close Others, Copy Address) 與背景訊息橙點提示燈。 | [NallyApp.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/NallyApp.swift), [YLController.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLController.swift), [TabReorderTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/TabReorderTests.swift) |
+| **終端機渲染效能與記憶體優化 (Selective Dirty Row Redraw)** | 導入列級別 (Row-level) Dirty 追蹤與 O(1) 靜態跳過，重構 `updateBackedImage()` 僅重繪文字有變動的行，大幅降低繪圖 CPU 開銷，並修正 `setDirtyForRow` 計算範圍。 | [YLTerminal.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLTerminal.swift), [YLView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLView.swift), [TerminalPerformanceTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/TerminalPerformanceTests.swift) |
 
 ---
 
@@ -141,6 +142,7 @@ xcodebuild -scheme Nally -configuration Release SYMROOT=build build
 - [x] **SwiftData 站台數據層與現代 SwiftUI 雙欄側邊欄 (`NavigationSplitView`)**：將 `YLSite` 升級為 SwiftData `@Model`，支援舊資料無縫自動遷移，重構 `SitesView` 為搜尋/標籤側邊欄介面，新增 `SiteDataTests` 測試集。
 - [x] **macOS 14+ / 15+ 現代化 UI & UX (`MenuBarExtra` + Window Scene)**：加入頂端 Menu Bar 常駐連線小工具與偏好設定開關，整合 SwiftUI Window Scene 與系統快捷鍵。
 - [x] **SwiftUI 終端機分頁列 (`NallyTabBarView`) 原生化與拖曳重排**：重構分頁列支援 Drag & Drop 拖曳重排、Tab 右鍵選單、訊息指示燈與切換重繪修復。
+- [x] **終端機渲染效能與記憶體優化 (Selective Dirty Row Redraw)**：導入 Row-level Dirty 追蹤與 O(1) 靜態跳過，實現局部變動列區域重繪，降繪圖 CPU 使用率。
 
 ---
 
