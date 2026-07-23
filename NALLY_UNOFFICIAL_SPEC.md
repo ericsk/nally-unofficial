@@ -94,6 +94,7 @@ graph TD
 | **App 佈景主題 (System/Light/Dark) 偏好設定** | 實作 `AppTheme` 列舉與 `applyTheme` 全域外觀切換介面，於 `PreferencesView` 提供即時免重啟切換並自動持久化記憶。 | [AppTheme.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/AppTheme.swift), [PreferencesView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/PreferencesView.swift) |
 | **現代 Swift Testing 自動化測試框架 (`import Testing`)** | 將單元測試框架全面升級至 Swift Testing，重構 Big5 斷字測試為 `@Test(arguments: ...)` 參數化案例，並新增 `TerminalGridTests` 與 `AppThemeTests`，支援 `make test` 命令行執行。 | [TextSuiteTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/TextSuiteTests.swift), [TerminalGridTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/TerminalGridTests.swift), [AppThemeTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/AppThemeTests.swift) |
 | **SwiftData 站台數據層與現代 SwiftUI 雙欄側邊欄 (`NavigationSplitView`)** | 將 `YLSite` 升級為 SwiftData `@Model`，支援 `UserDefaults` 舊資料無縫自動遷移，重構 `SitesView` 支援關鍵字搜尋、`SSH`/`TELNET` 協定標籤與單元測試 `SiteDataTests`。 | [YLSite.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLSite.swift), [SitesView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/SitesView.swift), [SiteDataTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/SiteDataTests.swift) |
+| **macOS 14+ / 15+ 現代化 UI & UX (`MenuBarExtra` + Window Scene)** | 在頂端 Menu Bar 加入 `MenuBarExtra` 常駐一鍵快捷連線，提供「偏好設定」控制顯示開關，並全面整合原生 SwiftUI Window Scene 與鍵盤快捷鍵。 | [NallyApp.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/NallyApp.swift), [PreferencesView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/PreferencesView.swift), [AppUIStateTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/AppUIStateTests.swift) |
 
 ---
 
@@ -137,6 +138,7 @@ xcodebuild -scheme Nally -configuration Release SYMROOT=build build
 - [x] **App 佈景主題 (System/Light/Dark) 偏好設定**：實作 `AppTheme` 列舉與 `applyTheme` 全域外觀切換介面，於 `PreferencesView` 提供即時免重啟切換並自動持久化記憶。
 - [x] **現代 Swift Testing 自動化測試框架**：全面導入 Swift Testing (`import Testing`)，將 Big5 斷字測試改寫為 `@Test(arguments: ...)` 參數化案例，新增 Terminal 矩陣畫布與 Theme 測試集，整合 `make test` CLI 指令。
 - [x] **SwiftData 站台數據層與現代 SwiftUI 雙欄側邊欄 (`NavigationSplitView`)**：將 `YLSite` 升級為 SwiftData `@Model`，支援舊資料無縫自動遷移，重構 `SitesView` 為搜尋/標籤側邊欄介面，新增 `SiteDataTests` 測試集。
+- [x] **macOS 14+ / 15+ 現代化 UI & UX (`MenuBarExtra` + Window Scene)**：加入頂端 Menu Bar 常駐連線小工具與偏好設定開關，整合 SwiftUI Window Scene 與系統快捷鍵。
 
 ---
 
