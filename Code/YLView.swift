@@ -4,11 +4,7 @@ import CoreGraphics
 
 @objc(YLView)
 @objcMembers
-public class YLView: NSView, NSTextInputClient {
-    // Custom lightweight Tab Item container (replacing NSTabView inheritance)
-    public var tabViewItems: [NSTabViewItem] = []
-    public var selectedTabViewItem: NSTabViewItem?
-    public weak var delegate: AnyObject?
+public class YLView: NSTabView, NSTextInputClient {
     // Properties matching YLView.h
     public var _fontWidth: CGFloat = 12.0
     public var _fontHeight: CGFloat = 24.0
@@ -25,25 +21,16 @@ public class YLView: NSView, NSTextInputClient {
     
     public var _textField: YLMarkedTextView?
     
-    private let cursorLayer = CALayer()
-    private let selectionLayer = CAShapeLayer()
-    
-    public var _selectionLocation: Int32 = 0 {
-        didSet {
-            updateSelectionLayer()
-        }
-    }
-    public var _selectionLength: Int32 = 0 {
-        didSet {
-            updateSelectionLayer()
-        }
-    }
+    public var _selectionLocation: Int32 = 0
+    public var _selectionLength: Int32 = 0
     
     public var _shouldOpenUrlInBackground: Bool = false
     public var _shouldUseImagePreviewer: Bool = true
     
     // Globals converted to static class variables or instance variables:
     private static var gLeftImage: NSImage?
+    private static var gSingleAdvance: UnsafeMutablePointer<CGSize>?
+    private static var gDoubleAdvance: UnsafeMutablePointer<CGSize>?
     
     private static let ANSIColorPBoardType = NSPasteboard.PasteboardType("ANSIColorPBoardType")
     
@@ -116,129 +103,13 @@ public class YLView: NSView, NSTextInputClient {
     
     private func setup() {
         self.wantsLayer = true
-        self.layerContentsRedrawPolicy = .duringViewResize
-        setupLayers()
+        while numberOfTabViewItems > 0 {
+            removeTabViewItem(tabViewItem(at: 0))
+        }
         configure()
         _selectionLength = 0
         _selectionLocation = 0
-    }
-    
-    // MARK: - Tab Item Container Management
-    public var numberOfTabViewItems: Int {
-        return tabViewItems.count
-    }
-    
-    public func tabViewItem(at index: Int) -> NSTabViewItem {
-        return tabViewItems[index]
-    }
-    
-    public func indexOfTabViewItem(_ tabViewItem: NSTabViewItem) -> Int {
-        return tabViewItems.firstIndex(of: tabViewItem) ?? NSNotFound
-    }
-    
-    public func addTabViewItem(_ tabViewItem: NSTabViewItem) {
-        tabViewItems.append(tabViewItem)
-        if selectedTabViewItem == nil {
-            selectTabViewItem(tabViewItem)
-        }
-        notifyDelegateTabCountChanged()
-    }
-    
-    public func removeTabViewItem(_ tabViewItem: NSTabViewItem) {
-        guard let index = tabViewItems.firstIndex(of: tabViewItem) else { return }
-        notifyDelegateWillClose(tabViewItem)
-        let wasSelected = (selectedTabViewItem == tabViewItem)
-        tabViewItems.remove(at: index)
-        if wasSelected {
-            let nextIndex = min(index, tabViewItems.count - 1)
-            let nextItem = nextIndex >= 0 ? tabViewItems[nextIndex] : nil
-            selectTabViewItem(nextItem)
-        } else {
-            if let current = selectedTabViewItem, let conn = current.identifier as? YLConnection {
-                conn.terminal?.setAllDirty()
-                updateBackedImage()
-                needsDisplay = true
-            }
-        }
-        notifyDelegateDidClose(tabViewItem)
-        notifyDelegateTabCountChanged()
-    }
-    
-    public func moveTab(fromIndex: Int, toIndex: Int) {
-        guard fromIndex >= 0 && fromIndex < tabViewItems.count,
-              toIndex >= 0 && toIndex < tabViewItems.count,
-              fromIndex != toIndex else { return }
-        let item = tabViewItems.remove(at: fromIndex)
-        tabViewItems.insert(item, at: toIndex)
-        notifyDelegateTabCountChanged()
-    }
-    
-    public func selectTabViewItem(_ tabViewItem: NSTabViewItem?) {
-        guard let item = tabViewItem else {
-            selectedTabViewItem = nil
-            updateBackedImage()
-            needsDisplay = true
-            return
-        }
-        guard tabViewItems.contains(item) else { return }
-        if let del = delegate as? YLController {
-            if !del.tabView(self, shouldSelect: item) { return }
-            del.tabView(self, willSelect: item)
-            selectedTabViewItem = item
-            del.tabView(self, didSelect: item)
-        } else {
-            selectedTabViewItem = item
-        }
-        (item.identifier as? YLConnection)?.terminal?.setAllDirty()
-        updateBackedImage()
-        needsDisplay = true
-    }
-    
-    public func selectTabViewItem(at index: Int) {
-        guard index >= 0 && index < tabViewItems.count else { return }
-        selectTabViewItem(tabViewItems[index])
-    }
-    
-    public func selectFirstTabViewItem(_ sender: Any?) {
-        guard !tabViewItems.isEmpty else { return }
-        selectTabViewItem(tabViewItems.first)
-    }
-    
-    public func selectLastTabViewItem(_ sender: Any?) {
-        guard !tabViewItems.isEmpty else { return }
-        selectTabViewItem(tabViewItems.last)
-    }
-    
-    public func selectNextTabViewItem(_ sender: Any?) {
-        guard let current = selectedTabViewItem,
-              let index = tabViewItems.firstIndex(of: current),
-              index + 1 < tabViewItems.count else { return }
-        selectTabViewItem(tabViewItems[index + 1])
-    }
-    
-    public func selectPreviousTabViewItem(_ sender: Any?) {
-        guard let current = selectedTabViewItem,
-              let index = tabViewItems.firstIndex(of: current),
-              index - 1 >= 0 else { return }
-        selectTabViewItem(tabViewItems[index - 1])
-    }
-    
-    private func notifyDelegateTabCountChanged() {
-        if let del = delegate as? YLController {
-            del.tabViewDidChangeNumberOfTabViewItems(self)
-        }
-    }
-    
-    private func notifyDelegateWillClose(_ item: NSTabViewItem) {
-        if let del = delegate as? YLController {
-            del.tabView(self, willClose: item)
-        }
-    }
-    
-    private func notifyDelegateDidClose(_ item: NSTabViewItem) {
-        if let del = delegate as? YLController {
-            del.tabView(self, didClose: item)
-        }
+        tabViewType = .noTabsNoBorder
     }
     
     deinit {
@@ -327,15 +198,22 @@ public class YLView: NSView, NSTextInputClient {
         
         YLView.gLeftImage = NSImage(size: NSMakeSize(_fontWidth, _fontHeight))
         
+        if YLView.gSingleAdvance == nil {
+            YLView.gSingleAdvance = UnsafeMutablePointer<CGSize>.allocate(capacity: gColumn)
+        }
+        if YLView.gDoubleAdvance == nil {
+            YLView.gDoubleAdvance = UnsafeMutablePointer<CGSize>.allocate(capacity: gColumn)
+        }
+        
+        for i in 0..<gColumn {
+            YLView.gSingleAdvance?[i] = CGSize(width: _fontWidth * 1.0, height: 0.0)
+            YLView.gDoubleAdvance?[i] = CGSize(width: _fontWidth * 2.0, height: 0.0)
+        }
+        
         _markedText = nil
         _selectedRange = NSRange(location: NSNotFound, length: 0)
         _markedRange = NSRange(location: NSNotFound, length: 0)
         _textField?.isHidden = true
-        
-        setupLayers()
-        selectionLayer.frame = bounds
-        updateCursorLayer()
-        updateSelectionLayer()
     }
     
     private func recreateBitmapContext(width: Int, height: Int) {
@@ -1008,7 +886,17 @@ public class YLView: NSView, NSTextInputClient {
     @objc public func tick() {
         autoreleasepool {
             updateBackedImage()
-            updateCursorLayer()
+            guard let ds = frontMostTerminal() else { return }
+            
+            let config = YLLGlobalConfig.sharedInstance()
+            let gRow = Int(config.row)
+            
+            if _x != ds.cursorColumn || _y != ds.cursorRow {
+                setNeedsDisplay(NSMakeRect(CGFloat(_x) * _fontWidth, CGFloat(gRow - 1 - Int(_y)) * _fontHeight, _fontWidth, _fontHeight))
+                setNeedsDisplay(NSMakeRect(CGFloat(ds.cursorColumn) * _fontWidth, CGFloat(gRow - 1 - Int(ds.cursorRow)) * _fontHeight, _fontWidth, _fontHeight))
+                _x = ds.cursorColumn
+                _y = ds.cursorRow
+            }
         }
     }
     
@@ -1022,22 +910,22 @@ public class YLView: NSView, NSTextInputClient {
     
     public override func draw(_ rect: NSRect) {
         autoreleasepool {
-            guard let context = NSGraphicsContext.current?.cgContext else { return }
             let config = YLLGlobalConfig.sharedInstance()
             let gRow = Int(config.row)
             let gColumn = Int(config.column)
             
             if connected() {
                 if let img = _backedImageCG {
-                    context.draw(img, in: bounds)
+                    let nsImage = NSImage(cgImage: img, size: bounds.size)
+                    nsImage.draw(in: bounds)
                 }
                 
-                drawBlink(in: context)
+                drawBlink()
                 
                 // Draw the url underline
                 if let ds = frontMostTerminal() {
-                    context.setStrokeColor(NSColor.orange.cgColor)
-                    context.setLineWidth(1.0)
+                    NSColor.orange.set()
+                    NSBezierPath.defaultLineWidth = 1.0
                     for r in 0..<gRow {
                         guard let currRow = ds.cells(ofRow: Int32(r)) else { continue }
                         var c = 0
@@ -1047,27 +935,39 @@ public class YLView: NSView, NSTextInputClient {
                                 c += 1
                             }
                             if c != start {
-                                context.beginPath()
-                                context.move(to: CGPoint(x: CGFloat(start) * _fontWidth, y: CGFloat(gRow - r - 1) * _fontHeight + 0.5))
-                                context.addLine(to: CGPoint(x: CGFloat(c) * _fontWidth, y: CGFloat(gRow - r - 1) * _fontHeight + 0.5))
-                                context.strokePath()
+                                NSBezierPath.strokeLine(
+                                    from: NSMakePoint(CGFloat(start) * _fontWidth, CGFloat(gRow - r - 1) * _fontHeight + 0.5),
+                                    to: NSMakePoint(CGFloat(c) * _fontWidth, CGFloat(gRow - r - 1) * _fontHeight + 0.5)
+                                )
                             }
                             c += 1
                         }
                     }
                     
+                    // Draw the cursor
+                    NSColor.white.set()
+                    NSBezierPath.defaultLineWidth = 2.0
+                    NSBezierPath.strokeLine(
+                        from: NSMakePoint(CGFloat(ds.cursorColumn) * _fontWidth, CGFloat(gRow - 1 - Int(ds.cursorRow)) * _fontHeight + 1),
+                        to: NSMakePoint(CGFloat(ds.cursorColumn + 1) * _fontWidth, CGFloat(gRow - 1 - Int(ds.cursorRow)) * _fontHeight + 1)
+                    )
+                    NSBezierPath.defaultLineWidth = 1.0
                     _x = ds.cursorColumn
                     _y = ds.cursorRow
                 }
+                
+                // Draw the selection
+                if _selectionLength != 0 {
+                    drawSelection()
+                }
             } else {
-                let bgColor = config.colorBG ?? NSColor.black
-                context.setFillColor(bgColor.cgColor)
-                context.fill(bounds)
+                (config.colorBG ?? NSColor.black).set()
+                bounds.fill()
             }
         }
     }
     
-    public func drawBlink(in context: CGContext) {
+    @objc public func drawBlink() {
         let config = YLLGlobalConfig.sharedInstance()
         guard config.blinkTicker else { return }
         guard let ds = frontMostTerminal() else { return }
@@ -1083,15 +983,43 @@ public class YLView: NSView, NSTextInputClient {
                     let bgColorIndex = attr.reverse ? attr.fgColor : attr.bgColor
                     let bold = attr.reverse ? attr.bold : false
                     
-                    let color = config.colorAtIndex(Int32(bgColorIndex), hilite: bold)
-                    context.setFillColor(color.cgColor)
-                    let rect = CGRect(x: CGFloat(c) * _fontWidth, y: CGFloat(gRow - r - 1) * _fontHeight, width: _fontWidth, height: _fontHeight)
-                    context.fill(rect)
+                    config.colorAtIndex(Int32(bgColorIndex), hilite: bold).set()
+                    NSMakeRect(CGFloat(c) * _fontWidth, CGFloat(gRow - r - 1) * _fontHeight, _fontWidth, _fontHeight).fill()
                 }
             }
         }
     }
-
+    
+    @objc public func drawSelection() {
+        let config = YLLGlobalConfig.sharedInstance()
+        let gRow = Int(config.row)
+        let gColumn = Int(config.column)
+        
+        var location: Int
+        var length: Int
+        if _selectionLength >= 0 {
+            location = Int(_selectionLocation)
+            length = Int(_selectionLength)
+        } else {
+            location = Int(_selectionLocation + _selectionLength)
+            length = 0 - Int(_selectionLength)
+        }
+        var x = location % gColumn
+        var y = location / gColumn
+        NSColor(calibratedRed: 0.6, green: 0.9, blue: 0.6, alpha: 0.4).set()
+        
+        while length > 0 {
+            if x + length <= gColumn {
+                NSMakeRect(CGFloat(x) * _fontWidth, CGFloat(gRow - y - 1) * _fontHeight, _fontWidth * CGFloat(length), _fontHeight).fill()
+                length = 0
+            } else {
+                NSMakeRect(CGFloat(x) * _fontWidth, CGFloat(gRow - y - 1) * _fontHeight, _fontWidth * CGFloat(gColumn - x), _fontHeight).fill()
+                length -= (gColumn - x)
+            }
+            x = 0
+            y += 1
+        }
+    }
     
     @objc(extendBottomFrom:to:)
     public func extendBottom(from start: Int32, to end: Int32) {
@@ -1120,10 +1048,15 @@ public class YLView: NSView, NSTextInputClient {
             memmove(data.advanced(by: destOffset), data.advanced(by: srcOffset), count)
         }
         
-        let color = config.colorAtIndex(config.bgColorIndex, hilite: false)
-        context.setFillColor(color.cgColor)
+        let previousContext = NSGraphicsContext.current
+        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
+        NSGraphicsContext.current = graphicsContext
+        
+        config.colorAtIndex(config.bgColorIndex, hilite: false).set()
         let cleanY = CGFloat(gRow - Int(end) - 1) * _fontHeight
-        context.fill(CGRect(x: 0.0, y: cleanY, width: CGFloat(gColumn) * _fontWidth, height: _fontHeight))
+        NSMakeRect(0.0, cleanY, CGFloat(gColumn) * _fontWidth, _fontHeight).fill()
+        
+        NSGraphicsContext.current = previousContext
         
         self._backedImageCG = context.makeImage()
         self.needsDisplay = true
@@ -1156,10 +1089,15 @@ public class YLView: NSView, NSTextInputClient {
             memmove(data.advanced(by: destOffset), data.advanced(by: srcOffset), count)
         }
         
-        let color = config.colorAtIndex(config.bgColorIndex, hilite: false)
-        context.setFillColor(color.cgColor)
+        let previousContext = NSGraphicsContext.current
+        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
+        NSGraphicsContext.current = graphicsContext
+        
+        config.colorAtIndex(config.bgColorIndex, hilite: false).set()
         let cleanY = CGFloat(gRow - Int(start) - 1) * _fontHeight
-        context.fill(CGRect(x: 0.0, y: cleanY, width: CGFloat(gColumn) * _fontWidth, height: _fontHeight))
+        NSMakeRect(0.0, cleanY, CGFloat(gColumn) * _fontWidth, _fontHeight).fill()
+        
+        NSGraphicsContext.current = previousContext
         
         self._backedImageCG = context.makeImage()
         self.needsDisplay = true
@@ -1173,52 +1111,69 @@ public class YLView: NSView, NSTextInputClient {
         guard let context = _bitmapContext else { return }
         
         guard let ds = frontMostTerminal() else {
-            context.setFillColor(NSColor.clear.cgColor)
+            let previousContext = NSGraphicsContext.current
+            let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
+            NSGraphicsContext.current = graphicsContext
+            
+            NSColor.clear.set()
             let rect = CGRect(x: 0, y: 0, width: CGFloat(gColumn) * _fontWidth, height: CGFloat(gRow) * _fontHeight)
-            context.fill(rect)
+            rect.fill()
+            
+            NSGraphicsContext.current = previousContext
             self._backedImageCG = context.makeImage()
             self.needsDisplay = true
-            self.updateCursorLayer()
-            self.updateSelectionLayer()
             return
         }
         
-        /* Draw Background */
-        var y = 0
-        while y < gRow {
-            var x = 0
-            while x < gColumn {
-                if ds.isDirty(atRow: Int32(y), column: Int32(x)) {
-                    let startx = x
-                    while x < gColumn && ds.isDirty(atRow: Int32(y), column: Int32(x)) {
+        let previousContext = NSGraphicsContext.current
+        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
+        NSGraphicsContext.current = graphicsContext
+        
+        if let activeCtx = NSGraphicsContext.current?.cgContext {
+            /* Draw Background */
+            var y = 0
+            while y < gRow {
+                if ds.isRowDirty(Int32(y)) {
+                    var x = 0
+                    while x < gColumn {
+                        if ds.isDirty(atRow: Int32(y), column: Int32(x)) {
+                            let startx = x
+                            while x < gColumn && ds.isDirty(atRow: Int32(y), column: Int32(x)) {
+                                x += 1
+                            }
+                            updateBackground(forRow: Int32(y), from: Int32(startx), to: Int32(x))
+                        }
                         x += 1
                     }
-                    updateBackground(forRow: Int32(y), from: Int32(startx), to: Int32(x), context: context)
                 }
-                x += 1
+                y += 1
             }
-            y += 1
-        }
-        
-        context.saveGState()
-        context.setShouldSmoothFonts(config.shouldSmoothFonts)
-        
-        /* Draw String row by row */
-        for r in 0..<gRow {
-            drawString(forRow: Int32(r), context: context)
-        }
-        context.restoreGState()
-        
-        for r in 0..<gRow {
-            for c in 0..<gColumn {
-                ds.setDirty(false, atRow: Int32(r), column: Int32(c))
+            
+            activeCtx.saveGState()
+            activeCtx.setShouldSmoothFonts(config.shouldSmoothFonts)
+            
+            /* Draw String row by row ONLY for dirty rows */
+            for r in 0..<gRow {
+                if ds.isRowDirty(Int32(r)) {
+                    drawString(forRow: Int32(r), context: activeCtx)
+                }
+            }
+            activeCtx.restoreGState()
+            
+            for r in 0..<gRow {
+                if ds.isRowDirty(Int32(r)) {
+                    for c in 0..<gColumn {
+                        ds.setDirty(false, atRow: Int32(r), column: Int32(c))
+                    }
+                    ds.clearRowDirty(Int32(r))
+                }
             }
         }
+        
+        NSGraphicsContext.current = previousContext
         
         self._backedImageCG = context.makeImage()
         self.needsDisplay = true
-        self.updateCursorLayer()
-        self.updateSelectionLayer()
     }
     
     // MARK: - Overrides
@@ -1529,122 +1484,6 @@ public class YLView: NSView, NSTextInputClient {
     
     public func baselineDeltaForCharacter(at index: Int) -> CGFloat {
         return 0
-    }
-    
-    // MARK: - Layer Optimization
-    private func setupLayers() {
-        guard let mainLayer = self.layer else { return }
-        
-        mainLayer.sublayers?.forEach {
-            if $0 === cursorLayer || $0 === selectionLayer {
-                $0.removeFromSuperlayer()
-            }
-        }
-        
-        // Disable actions (implicit animations) on these layers by default
-        selectionLayer.actions = ["onOrderIn": NSNull(), "onOrderOut": NSNull(), "sublayers": NSNull(), "contents": NSNull(), "bounds": NSNull(), "position": NSNull(), "path": NSNull()]
-        cursorLayer.actions = ["onOrderIn": NSNull(), "onOrderOut": NSNull(), "sublayers": NSNull(), "contents": NSNull(), "bounds": NSNull(), "position": NSNull()]
-        
-        // Selection layer
-        selectionLayer.fillColor = NSColor(calibratedRed: 0.6, green: 0.9, blue: 0.6, alpha: 0.4).cgColor
-        selectionLayer.strokeColor = nil
-        selectionLayer.frame = mainLayer.bounds
-        selectionLayer.isHidden = true
-        mainLayer.addSublayer(selectionLayer)
-        
-        // Cursor layer
-        cursorLayer.backgroundColor = NSColor.white.cgColor
-        cursorLayer.frame = .zero
-        cursorLayer.isHidden = true
-        mainLayer.addSublayer(cursorLayer)
-    }
-    
-    public func updateCursorLayer() {
-        if Thread.isMainThread {
-            self.performUpdateCursorLayer()
-        } else {
-            DispatchQueue.main.async { [weak self] in
-                self?.performUpdateCursorLayer()
-            }
-        }
-    }
-    
-    private func performUpdateCursorLayer() {
-        guard let ds = frontMostTerminal() else {
-            CATransaction.begin()
-            CATransaction.setDisableActions(true)
-            cursorLayer.isHidden = true
-            CATransaction.commit()
-            return
-        }
-        let config = YLLGlobalConfig.sharedInstance()
-        let gRow = Int(config.row)
-        
-        let cursorX = CGFloat(ds.cursorColumn) * _fontWidth
-        let cursorY = CGFloat(gRow - 1 - Int(ds.cursorRow)) * _fontHeight + 1
-        
-        CATransaction.begin()
-        CATransaction.setDisableActions(true)
-        cursorLayer.frame = CGRect(x: cursorX, y: cursorY, width: _fontWidth, height: 2.0)
-        cursorLayer.isHidden = false
-        _x = ds.cursorColumn
-        _y = ds.cursorRow
-        CATransaction.commit()
-    }
-    
-    public func updateSelectionLayer() {
-        if Thread.isMainThread {
-            self.performUpdateSelectionLayer()
-        } else {
-            DispatchQueue.main.async { [weak self] in
-                self?.performUpdateSelectionLayer()
-            }
-        }
-    }
-    
-    private func performUpdateSelectionLayer() {
-        guard frontMostTerminal() != nil, _selectionLength != 0 else {
-            CATransaction.begin()
-            CATransaction.setDisableActions(true)
-            selectionLayer.path = nil
-            selectionLayer.isHidden = true
-            CATransaction.commit()
-            return
-        }
-        let config = YLLGlobalConfig.sharedInstance()
-        let gRow = Int(config.row)
-        let gColumn = Int(config.column)
-        
-        var location = Int(_selectionLocation)
-        var length = Int(_selectionLength)
-        
-        if length < 0 {
-            location += length
-            length = -length
-        }
-        var x = location % gColumn
-        var y = location / gColumn
-        
-        let path = CGMutablePath()
-        while length > 0 {
-            if x + length <= gColumn {
-                let rect = CGRect(x: CGFloat(x) * _fontWidth, y: CGFloat(gRow - y - 1) * _fontHeight, width: _fontWidth * CGFloat(length), height: _fontHeight)
-                path.addRect(rect)
-                length = 0
-            } else {
-                let rect = CGRect(x: CGFloat(x) * _fontWidth, y: CGFloat(gRow - y - 1) * _fontHeight, width: _fontWidth * CGFloat(gColumn - x), height: _fontHeight)
-                path.addRect(rect)
-                length -= (gColumn - x)
-            }
-            x = 0
-            y += 1
-        }
-        
-        CATransaction.begin()
-        CATransaction.setDisableActions(true)
-        selectionLayer.path = path
-        selectionLayer.isHidden = false
-        CATransaction.commit()
     }
 }
 
