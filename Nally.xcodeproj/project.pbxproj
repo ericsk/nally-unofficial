@@ -51,6 +51,7 @@
 		CC1122334455667788990022 /* AppThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1122334455667788990011 /* AppThemeTests.swift */; };
 		EE1122334455667788990022 /* SiteDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE1122334455667788990011 /* SiteDataTests.swift */; };
 		FF1122334455667788990022 /* AppUIStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF1122334455667788990011 /* AppUIStateTests.swift */; };
+		GG1122334455667788990022 /* TabReorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG1122334455667788990011 /* TabReorderTests.swift */; };
 		8579CA2A0CF21D3D005A8353 /* YLSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8579CA290CF21D3D005A8353 /* YLSite.swift */; };
 		857EAE2A0CF1D62900777C15 /* connect.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 857EAE290CF1D62900777C15 /* connect.pdf */; };
 		857EAE4F0CF1D89300777C15 /* offline.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 857EAE4E0CF1D89300777C15 /* offline.pdf */; };
@@ -159,6 +160,7 @@
 		CC1122334455667788990011 /* AppThemeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppThemeTests.swift; path = AppThemeTests.swift; sourceTree = "<group>"; };
 		EE1122334455667788990011 /* SiteDataTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SiteDataTests.swift; path = SiteDataTests.swift; sourceTree = "<group>"; };
 		FF1122334455667788990011 /* AppUIStateTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AppUIStateTests.swift; path = AppUIStateTests.swift; sourceTree = "<group>"; };
+		GG1122334455667788990011 /* TabReorderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TabReorderTests.swift; path = TabReorderTests.swift; sourceTree = "<group>"; };
 		8579CA280CF21D3D005A8353 /* YLSite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLSite.h; sourceTree = "<group>"; };
 		8579CA290CF21D3D005A8353 /* YLSite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLSite.swift; sourceTree = "<group>"; };
 		857EAE290CF1D62900777C15 /* connect.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = connect.pdf; sourceTree = "<group>"; };
@@ -352,6 +354,7 @@
 				CC1122334455667788990011 /* AppThemeTests.swift */,
 				EE1122334455667788990011 /* SiteDataTests.swift */,
 				FF1122334455667788990011 /* AppUIStateTests.swift */,
+				GG1122334455667788990011 /* TabReorderTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -535,6 +538,7 @@
 				CC1122334455667788990022 /* AppThemeTests.swift in Sources */,
 				EE1122334455667788990022 /* SiteDataTests.swift in Sources */,
 				FF1122334455667788990022 /* AppUIStateTests.swift in Sources */,
+				GG1122334455667788990022 /* TabReorderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

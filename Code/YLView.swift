@@ -147,18 +147,37 @@ public class YLView: NSView, NSTextInputClient {
     public func removeTabViewItem(_ tabViewItem: NSTabViewItem) {
         guard let index = tabViewItems.firstIndex(of: tabViewItem) else { return }
         notifyDelegateWillClose(tabViewItem)
+        let wasSelected = (selectedTabViewItem == tabViewItem)
         tabViewItems.remove(at: index)
-        if selectedTabViewItem == tabViewItem {
+        if wasSelected {
             let nextIndex = min(index, tabViewItems.count - 1)
-            selectedTabViewItem = nextIndex >= 0 ? tabViewItems[nextIndex] : nil
+            let nextItem = nextIndex >= 0 ? tabViewItems[nextIndex] : nil
+            selectTabViewItem(nextItem)
+        } else {
+            if let current = selectedTabViewItem, let conn = current.identifier as? YLConnection {
+                conn.terminal?.setAllDirty()
+                updateBackedImage()
+                needsDisplay = true
+            }
         }
         notifyDelegateDidClose(tabViewItem)
+        notifyDelegateTabCountChanged()
+    }
+    
+    public func moveTab(fromIndex: Int, toIndex: Int) {
+        guard fromIndex >= 0 && fromIndex < tabViewItems.count,
+              toIndex >= 0 && toIndex < tabViewItems.count,
+              fromIndex != toIndex else { return }
+        let item = tabViewItems.remove(at: fromIndex)
+        tabViewItems.insert(item, at: toIndex)
         notifyDelegateTabCountChanged()
     }
     
     public func selectTabViewItem(_ tabViewItem: NSTabViewItem?) {
         guard let item = tabViewItem else {
             selectedTabViewItem = nil
+            updateBackedImage()
+            needsDisplay = true
             return
         }
         guard tabViewItems.contains(item) else { return }
@@ -170,6 +189,9 @@ public class YLView: NSView, NSTextInputClient {
         } else {
             selectedTabViewItem = item
         }
+        (item.identifier as? YLConnection)?.terminal?.setAllDirty()
+        updateBackedImage()
+        needsDisplay = true
     }
     
     public func selectTabViewItem(at index: Int) {

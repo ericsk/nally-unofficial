@@ -692,6 +692,26 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         tabView(tv, didClose: tabItem)
     }
     
+    @MainActor
+    @objc public func closeOtherTabs(except keepItem: NSTabViewItem) {
+        guard let tv = _telnetView else { return }
+        let allItems = tv.tabViewItems
+        for item in allItems where item != keepItem {
+            performCloseTabViewItem(item)
+        }
+        tv.selectTabViewItem(keepItem)
+        refreshTabLabelNumber(tv)
+        AppState.shared.syncTabs(from: tv)
+    }
+    
+    @MainActor
+    @objc public func moveTab(fromIndex: Int, toIndex: Int) {
+        guard let tv = _telnetView else { return }
+        tv.moveTab(fromIndex: fromIndex, toIndex: toIndex)
+        refreshTabLabelNumber(tv)
+        AppState.shared.syncTabs(from: tv)
+    }
+    
     @IBAction public func editSites(_ sender: Any?) {
         if let window = _mainWindow {
             SitesWindowController.show(over: window, controller: self)
@@ -909,6 +929,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     @MainActor
     @objc public func tabView(_ tabView: YLView, didSelect tabViewItem: NSTabViewItem?) {
         guard let conn = tabViewItem?.identifier as? YLConnection else { return }
+        conn.terminal?.setAllDirty()
         _telnetView?.updateBackedImage()
         _addressBar?.stringValue = conn.connectionAddress ?? ""
         _telnetView?.needsDisplay = true

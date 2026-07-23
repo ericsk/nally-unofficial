@@ -10,6 +10,7 @@ import SwiftUI
 import Cocoa
 import Combine
 import SwiftData
+import UniformTypeIdentifiers
 
 public struct TabInfo: Hashable, Identifiable {
     public var id: ObjectIdentifier {
@@ -235,48 +236,22 @@ struct MenuBarQuickConnectView: View {
 
 struct NallyTabBarView: View {
     var appState: AppState
+    @State private var draggedTab: TabInfo?
     
     var body: some View {
         HStack(spacing: 0) {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 2) {
-                    ForEach(appState.tabs) { tab in
-                        let isSelected = tab.isSelected
-                        
-                        HStack(spacing: 4) {
-                            if let icon = tab.icon {
-                                Image(nsImage: icon)
-                                    .resizable()
-                                    .frame(width: 13, height: 13)
+                HStack(spacing: 3) {
+                    ForEach(Array(appState.tabs.enumerated()), id: \.element.id) { index, tab in
+                        SingleTabItemView(tab: tab, appState: appState)
+                            .onDrag {
+                                self.draggedTab = tab
+                                return NSItemProvider(object: tab.label as NSString)
                             }
-                            
-                            Text(tab.label)
-                                .font(.system(size: 11))
-                                .foregroundColor(isSelected ? .white : .primary.opacity(0.8))
-                                .lineLimit(1)
-                            
-                            // Close button
-                            Button(action: {
-                                appState.controller.closeTabViewItem(tab.tabItem)
-                            }) {
-                                Image(systemName: "xmark")
-                                    .font(.system(size: 8, weight: .semibold))
-                                    .foregroundColor(isSelected ? .white.opacity(0.8) : .secondary)
-                                    .padding(3)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(isSelected ? Color.blue.opacity(0.8) : Color.primary.opacity(0.05))
-                        .contentShape(Rectangle())
-                        .onTapGesture {
-                            if let telnetView = appState.controller.telnetView() as? YLView {
-                                telnetView.selectTabViewItem(tab.tabItem)
-                            }
-                        }
+                            .onDrop(of: [UTType.text], delegate: TabDropDelegate(item: tab, tabs: appState.tabs, draggedItem: $draggedTab, controller: appState.controller))
                     }
                 }
+                .padding(.horizontal, 4)
                 .padding(.vertical, 2)
             }
             
@@ -293,9 +268,121 @@ struct NallyTabBarView: View {
             }
             .buttonStyle(.plain)
             .padding(.trailing, 6)
+            .help("New Connection (Cmd+T)")
         }
         .frame(height: 26)
         .background(Color(nsColor: .windowBackgroundColor))
+    }
+}
+
+struct SingleTabItemView: View {
+    let tab: TabInfo
+    var appState: AppState
+    @State private var isHovered = false
+    
+    var body: some View {
+        let isSelected = tab.isSelected
+        let conn = tab.tabItem.identifier as? YLConnection
+        let hasMessage = conn?.terminal?.hasMessage ?? false
+        
+        HStack(spacing: 4) {
+            // Message dot or connection icon
+            if hasMessage {
+                Circle()
+                    .fill(Color.orange)
+                    .frame(width: 6, height: 6)
+            } else if let icon = tab.icon {
+                Image(nsImage: icon)
+                    .resizable()
+                    .frame(width: 13, height: 13)
+            }
+            
+            Text(tab.label)
+                .font(.system(size: 11, weight: isSelected ? .medium : .regular))
+                .foregroundColor(isSelected ? .white : (isHovered ? .primary : .primary.opacity(0.8)))
+                .lineLimit(1)
+            
+            // Close button
+            Button(action: {
+                appState.controller.closeTabViewItem(tab.tabItem)
+            }) {
+                Image(systemName: "xmark")
+                    .font(.system(size: 8, weight: .semibold))
+                    .foregroundColor(isSelected ? .white.opacity(0.8) : (isHovered ? .primary : .secondary))
+                    .padding(3)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .background(
+            RoundedRectangle(cornerRadius: 5)
+                .fill(isSelected ? Color.accentColor.opacity(0.85) : (isHovered ? Color.primary.opacity(0.12) : Color.primary.opacity(0.04)))
+        )
+        .onHover { hover in
+            withAnimation(.easeInOut(duration: 0.15)) {
+                isHovered = hover
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if let telnetView = appState.controller.telnetView() as? YLView {
+                telnetView.selectTabViewItem(tab.tabItem)
+            }
+        }
+        .contextMenu {
+            Button(action: {
+                conn?.reconnect()
+            }) {
+                Label("Reconnect", systemImage: "arrow.clockwise")
+            }
+            
+            Button(action: {
+                appState.controller.closeTabViewItem(tab.tabItem)
+            }) {
+                Label("Close Tab", systemImage: "xmark.circle")
+            }
+            
+            Button(action: {
+                appState.controller.closeOtherTabs(except: tab.tabItem)
+            }) {
+                Label("Close Other Tabs", systemImage: "xmark.circle.fill")
+            }
+            
+            Divider()
+            
+            if let addr = conn?.connectionAddress, !addr.isEmpty {
+                Button(action: {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(addr, forType: .string)
+                }) {
+                    Label("Copy Address", systemImage: "doc.on.doc")
+                }
+            }
+        }
+    }
+}
+
+struct TabDropDelegate: DropDelegate {
+    let item: TabInfo
+    let tabs: [TabInfo]
+    @Binding var draggedItem: TabInfo?
+    let controller: YLController
+    
+    func performDrop(info: DropInfo) -> Bool {
+        draggedItem = nil
+        return true
+    }
+    
+    func dropEntered(info: DropInfo) {
+        guard let dragged = draggedItem,
+              dragged != item,
+              let fromIndex = tabs.firstIndex(of: dragged),
+              let toIndex = tabs.firstIndex(of: item) else { return }
+        
+        withAnimation(.default) {
+            controller.moveTab(fromIndex: fromIndex, toIndex: toIndex)
+        }
     }
 }
 
