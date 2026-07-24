@@ -1,4 +1,4 @@
-﻿/* Sheet Title */
+/* Sheet Title */
 "Are you sure you want to quit Nally?" = "您确定要退出 Nally 吗？";
 
 /* Sheet Title */
@@ -25,7 +25,7 @@
 "The connection is still alive. If you close this tab, the connection will be lost. Do you want to close this tab anyway?" = "此连接未断开。若您关闭这个标签会强制断开连接。您确定要关闭这个标签吗？";
 
 /* Preferences */
-"General" = "一般";
+"General" = "常规";
 
 /* Preferences */
 "Colors" = "颜色";
@@ -35,3 +35,65 @@
 
 /* Preferences */
 "Connection" = "连接";
+
+/* Preferences - Sections & Options */
+"Appearance" = "外观";
+"Theme Mode:" = "主题模式：";
+"System" = "系统默认";
+"Light" = "浅色";
+"Dark" = "深色";
+
+"Window & Sessions" = "窗口与标签";
+"Confirm when closing windows" = "关闭窗口时进行确认";
+"Restore last connections on startup" = "启动时恢复上次连接";
+"Show menu bar status icon (MenuBarExtra)" = "在菜单栏显示状态图标";
+
+"Terminal Behavior" = "终端行为";
+"Prefer internal image previewer" = "优先使用内置图片预览器";
+"Repeat dock icon bounce animation" = "重复 Dock 图标跳动动画";
+
+"Protocol Defaults" = "默认协议";
+"Default Encoding:" = "默认编码：";
+"Big5 (Traditional Chinese)" = "Big5（繁体中文）";
+"GBK (Simplified Chinese)" = "GBK（简体中文）";
+"ANSI Color Key:" = "ANSI 色彩切换键：";
+"Ctrl-U" = "Ctrl-U";
+"Esc + Esc" = "Esc + Esc";
+"Enable Double-Byte Character Detection" = "启用双字节字符检测";
+
+"Default URL Scheme Handlers" = "默认 URL 协议处理程序";
+"TELNET Client:" = "TELNET 客户端：";
+"SSH Client:" = "SSH 客户端：";
+
+"Chinese Font Settings" = "中文字体设置";
+"English Font Settings" = "英文字体设置";
+"Sample Traditional Chinese Text" = "华康中文字体 123";
+"Choose Font..." = "选择字体...";
+"Left Offset:" = "左侧偏移：";
+"Bottom Offset:" = "下方偏移：";
+
+"Grid Layout & Font Rendering" = "网格布局与字体渲染";
+"Cell Width:" = "字符宽度：";
+"Cell Height:" = "字符高度：";
+"Enable Font Anti-Aliasing & Smoothing" = "启用字体平滑化与平滑渲染";
+
+"ANSI Color Palette" = "ANSI 色彩调色盘";
+"Canvas Background" = "画布背景";
+"Terminal Background:" = "终端背景：";
+
+"Black" = "黑色";
+"Black (Bright)" = "黑色（高亮）";
+"Red" = "红色";
+"Red (Bright)" = "红色（高亮）";
+"Green" = "绿色";
+"Green (Bright)" = "绿色（高亮）";
+"Yellow" = "黄色";
+"Yellow (Bright)" = "黄色（高亮）";
+"Blue" = "蓝色";
+"Blue (Bright)" = "蓝色（高亮）";
+"Magenta" = "洋红色";
+"Magenta (Bright)" = "洋红色（高亮）";
+"Cyan" = "青色";
+"Cyan (Bright)" = "青色（高亮）";
+"White" = "白色";
+"White (Bright)" = "白色（高亮）";

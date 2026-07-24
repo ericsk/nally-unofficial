@@ -114,7 +114,7 @@ struct FontPreferencesView: View {
                     fontSize: $config.chineseFontSize,
                     paddingLeft: $config.chineseFontPaddingLeft,
                     paddingBottom: $config.chineseFontPaddingBottom,
-                    sampleText: "華康中文字體 123"
+                    sampleText: NSLocalizedString("Sample Traditional Chinese Text", comment: "Sample Chinese Text")
                 )
             }
             
@@ -167,7 +167,7 @@ struct ColorPreferencesView: View {
             }
             
             Section(header: Label("Canvas Background", systemImage: "square.fill")) {
-                ColorPickerRow(label: "Terminal Background:", nsColor: $config.colorBG)
+                ColorPickerRow(labelKey: "Terminal Background:", nsColor: $config.colorBG)
             }
         }
         .formStyle(.grouped)
@@ -187,7 +187,7 @@ struct AppPicker: View {
                 Text(app.name).tag(app.id)
             }
         } label: {
-            Text("\(scheme.capitalized) Client:")
+            Text("\(scheme.uppercased()) Client:")
         }
         .onChange(of: selectedAppId) { oldValue, newValue in
             LSSetDefaultHandlerForURLScheme(scheme as CFString, newValue as CFString)
@@ -299,7 +299,7 @@ struct FontSettingsRow: View {
 }
 
 struct ColorPickerRow: View {
-    let label: String
+    let labelKey: LocalizedStringKey
     @Binding var nsColor: NSColor?
     
     var body: some View {
@@ -320,7 +320,7 @@ struct ColorPickerRow: View {
                     .frame(width: 10, height: 10)
                     .overlay(Circle().stroke(Color.secondary.opacity(0.5), lineWidth: 1))
                 
-                Text(label)
+                Text(labelKey)
                     .font(.system(size: 12))
             }
         }
@@ -338,31 +338,31 @@ struct ColorPickerGrid: View {
     var body: some View {
         LazyVGrid(columns: columns, spacing: 10) {
             Group {
-                ColorPickerRow(label: "Black", nsColor: $config.colorBlack)
-                ColorPickerRow(label: "Black (Bright)", nsColor: $config.colorBlackHilite)
+                ColorPickerRow(labelKey: "Black", nsColor: $config.colorBlack)
+                ColorPickerRow(labelKey: "Black (Bright)", nsColor: $config.colorBlackHilite)
                 
-                ColorPickerRow(label: "Red", nsColor: $config.colorRed)
-                ColorPickerRow(label: "Red (Bright)", nsColor: $config.colorRedHilite)
+                ColorPickerRow(labelKey: "Red", nsColor: $config.colorRed)
+                ColorPickerRow(labelKey: "Red (Bright)", nsColor: $config.colorRedHilite)
                 
-                ColorPickerRow(label: "Green", nsColor: $config.colorGreen)
-                ColorPickerRow(label: "Green (Bright)", nsColor: $config.colorGreenHilite)
+                ColorPickerRow(labelKey: "Green", nsColor: $config.colorGreen)
+                ColorPickerRow(labelKey: "Green (Bright)", nsColor: $config.colorGreenHilite)
                 
-                ColorPickerRow(label: "Yellow", nsColor: $config.colorYellow)
-                ColorPickerRow(label: "Yellow (Bright)", nsColor: $config.colorYellowHilite)
+                ColorPickerRow(labelKey: "Yellow", nsColor: $config.colorYellow)
+                ColorPickerRow(labelKey: "Yellow (Bright)", nsColor: $config.colorYellowHilite)
             }
             
             Group {
-                ColorPickerRow(label: "Blue", nsColor: $config.colorBlue)
-                ColorPickerRow(label: "Blue (Bright)", nsColor: $config.colorBlueHilite)
+                ColorPickerRow(labelKey: "Blue", nsColor: $config.colorBlue)
+                ColorPickerRow(labelKey: "Blue (Bright)", nsColor: $config.colorBlueHilite)
                 
-                ColorPickerRow(label: "Magenta", nsColor: $config.colorMagenta)
-                ColorPickerRow(label: "Magenta (Bright)", nsColor: $config.colorMagentaHilite)
+                ColorPickerRow(labelKey: "Magenta", nsColor: $config.colorMagenta)
+                ColorPickerRow(labelKey: "Magenta (Bright)", nsColor: $config.colorMagentaHilite)
                 
-                ColorPickerRow(label: "Cyan", nsColor: $config.colorCyan)
-                ColorPickerRow(label: "Cyan (Bright)", nsColor: $config.colorCyanHilite)
+                ColorPickerRow(labelKey: "Cyan", nsColor: $config.colorCyan)
+                ColorPickerRow(labelKey: "Cyan (Bright)", nsColor: $config.colorCyanHilite)
                 
-                ColorPickerRow(label: "White", nsColor: $config.colorWhite)
-                ColorPickerRow(label: "White (Bright)", nsColor: $config.colorWhiteHilite)
+                ColorPickerRow(labelKey: "White", nsColor: $config.colorWhite)
+                ColorPickerRow(labelKey: "White (Bright)", nsColor: $config.colorWhiteHilite)
             }
         }
         .padding(.vertical, 4)

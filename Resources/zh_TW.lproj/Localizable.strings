@@ -1,4 +1,4 @@
-﻿/* Sheet Title */
+/* Sheet Title */
 "Are you sure you want to quit Nally?" = "確定要結束 Nally？";
 
 /* Sheet Title */
@@ -35,3 +35,65 @@
 
 /* Preferences */
 "Connection" = "連線";
+
+/* Preferences - Sections & Options */
+"Appearance" = "外觀";
+"Theme Mode:" = "主題模式：";
+"System" = "系統預設";
+"Light" = "淺色";
+"Dark" = "深色";
+
+"Window & Sessions" = "視窗與頁籤";
+"Confirm when closing windows" = "關閉視窗時進行確認";
+"Restore last connections on startup" = "啟動時復原上次連線";
+"Show menu bar status icon (MenuBarExtra)" = "在選單列顯示狀態圖示";
+
+"Terminal Behavior" = "終端機行為";
+"Prefer internal image previewer" = "優先使用內建圖片預覽器";
+"Repeat dock icon bounce animation" = "重複 Dock 圖示跳動動畫";
+
+"Protocol Defaults" = "預設通訊協定";
+"Default Encoding:" = "預設編碼：";
+"Big5 (Traditional Chinese)" = "Big5（繁體中文）";
+"GBK (Simplified Chinese)" = "GBK（簡體中文）";
+"ANSI Color Key:" = "ANSI 色彩切換鍵：";
+"Ctrl-U" = "Ctrl-U";
+"Esc + Esc" = "Esc + Esc";
+"Enable Double-Byte Character Detection" = "啟用雙位元組字元偵測";
+
+"Default URL Scheme Handlers" = "預設 URL 協定處理程式";
+"TELNET Client:" = "TELNET 客戶端：";
+"SSH Client:" = "SSH 客戶端：";
+
+"Chinese Font Settings" = "中文字型設定";
+"English Font Settings" = "英文字型設定";
+"Sample Traditional Chinese Text" = "華康中文字體 123";
+"Choose Font..." = "選擇字型...";
+"Left Offset:" = "左側偏移：";
+"Bottom Offset:" = "下方偏移：";
+
+"Grid Layout & Font Rendering" = "網格佈局與字型渲染";
+"Cell Width:" = "字元寬度：";
+"Cell Height:" = "字元高度：";
+"Enable Font Anti-Aliasing & Smoothing" = "啟用字型平滑化與平滑渲染";
+
+"ANSI Color Palette" = "ANSI 色彩調色盤";
+"Canvas Background" = "畫布背景";
+"Terminal Background:" = "終端機背景：";
+
+"Black" = "黑色";
+"Black (Bright)" = "黑色（高亮）";
+"Red" = "紅色";
+"Red (Bright)" = "紅色（高亮）";
+"Green" = "綠色";
+"Green (Bright)" = "綠色（高亮）";
+"Yellow" = "黃色";
+"Yellow (Bright)" = "黃色（高亮）";
+"Blue" = "藍色";
+"Blue (Bright)" = "藍色（高亮）";
+"Magenta" = "洋紅色";
+"Magenta (Bright)" = "洋紅色（高亮）";
+"Cyan" = "青色";
+"Cyan (Bright)" = "青色（高亮）";
+"White" = "白色";
+"White (Bright)" = "白色（高亮）";
