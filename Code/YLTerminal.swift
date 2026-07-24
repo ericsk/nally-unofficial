@@ -26,9 +26,9 @@ public class YLTerminal: NSObject {
     private var _blink: Bool = false
     private var _reverse: Bool = false
     
-    private var grid: UnsafeMutablePointer<UnsafeMutablePointer<cell>>
-    private var dirty: UnsafeMutablePointer<Bool>
-    private var dirtyRows: UnsafeMutablePointer<Bool>
+    private var grid: [[cell]] = []
+    private var dirty: [Bool] = []
+    private var dirtyRows: [Bool] = []
     
     private enum ParserState {
         case normal
@@ -151,27 +151,13 @@ public class YLTerminal: NSObject {
         self._scrollBeginRow = 0
         self._scrollEndRow = self.row - 1
         
-        self.grid = UnsafeMutablePointer<UnsafeMutablePointer<cell>>.allocate(capacity: Int(self.row))
-        for i in 0..<Int(self.row) {
-            self.grid[i] = UnsafeMutablePointer<cell>.allocate(capacity: Int(self.column + 1))
-            self.grid[i].initialize(repeating: cell(byte: 0, attr: attribute(v: 0)), count: Int(self.column + 1))
-        }
-        self.dirty = UnsafeMutablePointer<Bool>.allocate(capacity: Int(self.row * self.column))
-        self.dirty.initialize(repeating: false, count: Int(self.row * self.column))
-        self.dirtyRows = UnsafeMutablePointer<Bool>.allocate(capacity: Int(self.row))
-        self.dirtyRows.initialize(repeating: false, count: Int(self.row))
+        let emptyCell = cell(byte: 0, attr: attribute(v: 0))
+        self.grid = Array(repeating: Array(repeating: emptyCell, count: Int(self.column + 1)), count: Int(self.row))
+        self.dirty = Array(repeating: false, count: Int(self.row * self.column))
+        self.dirtyRows = Array(repeating: false, count: Int(self.row))
         
         super.init()
         self.clearAll()
-    }
-    
-    deinit {
-        for i in 0..<Int(self.row) {
-            self.grid[i].deallocate()
-        }
-        self.grid.deallocate()
-        self.dirty.deallocate()
-        self.dirtyRows.deallocate()
     }
     
     private func isParameter(_ c: UInt8) -> Bool {
@@ -408,7 +394,8 @@ public class YLTerminal: NSObject {
         return String(utf16CodeUnits: textBuf, count: textBuf.count)
     }
     
-    public func cells(ofRow r: Int32) -> UnsafeMutablePointer<cell>? {
+    public func cells(ofRow r: Int32) -> [cell]? {
+        guard r >= 0 && r < row else { return nil }
         return grid[Int(r)]
     }
     
@@ -426,11 +413,12 @@ public class YLTerminal: NSObject {
     
     @objc(updateDoubleByteStateForRow:)
     public func updateDoubleByteState(forRow r: Int32) {
-        let currRow = grid[Int(r)]
+        guard r >= 0 && r < row else { return }
+        let rIdx = Int(r)
         var db = 0
         for i in 0..<Int(column) {
             if db == 0 || db == 2 {
-                if currRow[i].byte > 0x7F {
+                if grid[rIdx][i].byte > 0x7F {
                     db = 1
                 } else {
                     db = 0
@@ -438,22 +426,23 @@ public class YLTerminal: NSObject {
             } else { // db == 1
                 db = 2
             }
-            currRow[i].attr.f.doubleByte = UInt32(db & 3)
+            grid[rIdx][i].attr.f.doubleByte = UInt32(db & 3)
         }
     }
     
     @objc(updateURLStateForRow:)
     public func updateURLState(forRow r: Int32) {
-        let currRow = grid[Int(r)]
+        guard r >= 0 && r < row else { return }
+        let rIdx = Int(r)
         let protocols = ["http://", "https://", "ftp://", "telnet://", "bbs://", "ssh://", "mailto:"]
         var urlState = false
         if r > 0 {
-            urlState = grid[Int(r - 1)][Int(column - 1)].attr.f.url != 0
+            urlState = grid[rIdx - 1][Int(column - 1)].attr.f.url != 0
         }
         
         for i in 0..<Int(column) {
             if urlState {
-                let c = currRow[i].byte
+                let c = grid[rIdx][i].byte
                 if c < 0x21 || c > 0x7E || c == 41 {
                     urlState = false
                 }
@@ -464,7 +453,7 @@ public class YLTerminal: NSObject {
                         var match = true
                         let pBytes = Array(p.utf8)
                         for s in 0..<len {
-                            if currRow[i + s].byte != pBytes[s] || currRow[i + s].attr.f.doubleByte != 0 {
+                            if grid[rIdx][i + s].byte != pBytes[s] || grid[rIdx][i + s].attr.f.doubleByte != 0 {
                                 match = false
                                 break
                             }
@@ -477,9 +466,9 @@ public class YLTerminal: NSObject {
                 }
             }
             
-            let currentUrlBit = currRow[i].attr.f.url != 0
+            let currentUrlBit = grid[rIdx][i].attr.f.url != 0
             if currentUrlBit != urlState {
-                currRow[i].attr.f.url = urlState ? 1 : 0
+                grid[rIdx][i].attr.f.url = urlState ? 1 : 0
                 setDirty(true, atRow: r, column: Int32(i))
             }
         }
@@ -1130,7 +1119,9 @@ extension YLTerminal {
                 updateURLState(forRow: Int32(rowIdx))
             }
             
-            _delegate?.perform(#selector(YLView.tick), with: nil, afterDelay: 0.07)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.07) { [weak self] in
+                self?._delegate?.tick()
+            }
         }
     }
 }

@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		71FA727BB5A46478C054CFE0 /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71FA727BB5A46478C054CFE1 /* AppTheme.swift */; };
+		71FA727BB5A46478C054CFE7 /* AppUIStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71FA727BB5A46478C054CFE2 /* AppUIStateTests.swift */; };
+		71FA727BB5A46478C054CFE8 /* AppThemeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71FA727BB5A46478C054CFE3 /* AppThemeTests.swift */; };
+		71FA727BB5A46478C054CFE9 /* TerminalGridTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71FA727BB5A46478C054CFE4 /* TerminalGridTests.swift */; };
+		71FA727BB5A46478C054CFEA /* TabReorderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71FA727BB5A46478C054CFE5 /* TabReorderTests.swift */; };
+		71FA727BB5A46478C054CFEB /* SiteDataTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71FA727BB5A46478C054CFE6 /* SiteDataTests.swift */; };
 		07B73DA20E581E2C00CC97D3 /* YLEncodingTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73DA10E581E2C00CC97D3 /* YLEncodingTable.swift */; };
 		07B73DA50E581E2C00CC97D3 /* g2u.bin in Resources */ = {isa = PBXBuildFile; fileRef = 07B73DA30E581E2C00CC97D3 /* g2u.bin */; };
 		07B73DA60E581E2C00CC97D3 /* b2u.bin in Resources */ = {isa = PBXBuildFile; fileRef = 07B73DA40E581E2C00CC97D3 /* b2u.bin */; };
@@ -35,13 +41,11 @@
 		E5A600F899A24A63B0AE81C0 /* TerminalViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE1511238C74DF7885CF963 /* TerminalViewRepresentable.swift */; };
 		E32052940E5B45E095566BDA /* YLMarkedTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A609D0540DF044A0AF45A8F0 /* YLMarkedTextView.swift */; };
 		721248E781FC4EE79CF48A58 /* YLExifController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED64F2661F241159554F130 /* YLExifController.swift */; };
-		5690CA5C46CE454E8E12248B /* NallyToolbarDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70FEB60EFE5F4AC69374F3C4 /* NallyToolbarDelegate.swift */; };
 		E2665651C95547EDB97441CA /* NallyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A74C4D5473A24D27B9222EB3 /* NallyApp.swift */; };
 		E6239651091B4E9C86AA895A /* NallyAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */; };
 		105B234BF52D4039A30D3682 /* NallyCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80104742B2954F909E42FC73 /* NallyCommands.swift */; };
 		02A5DAA01EFF4F8996F0203C /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F5FFE76102B4FF89F7D4501 /* PreferencesView.swift */; };
 		70FBA727BB5A46478C054CFE /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB0ABA97A66411D956D72E1 /* PreferencesWindowController.swift */; };
-		09CBA2F51FA74189BF59B060 /* SitesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 949F3018955547859CEC2E24 /* SitesManager.swift */; };
 		9F2EBBE877A24C96811D3B8C /* SitesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B6BE7F372734231B6A39829 /* SitesView.swift */; };
 		B4EA8B034E014F96BF4549BB /* SitesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FE8F77BC375454396299F9E /* SitesWindowController.swift */; };
 		079E9BB00F08B9480089C9E2 /* HUDSave.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */; };
@@ -61,10 +65,6 @@
 		85AE9DAE0CB15D220045317F /* bookmark.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DAD0CB15D220045317F /* bookmark.pdf */; };
 		85AF012B12912AD000728C12 /* nally.public.pem in Resources */ = {isa = PBXBuildFile; fileRef = 85AF012A12912AD000728C12 /* nally.public.pem */; };
 
-		85B0176E12913CA5004F06E4 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 85B0176C12913CA5004F06E4 /* MainMenu.xib */; };
-		85B0177212913CF3004F06E4 /* PSMTabBarControl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 85B0177112913CF3004F06E4 /* PSMTabBarControl.framework */; };
-		85B017D81291441F004F06E4 /* PSMTabBarControl.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 85B0177112913CF3004F06E4 /* PSMTabBarControl.framework */; };
-
 		85F7F2090B06EE36000C4CDF /* YLLGlobalConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.swift */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
@@ -78,14 +78,28 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				85B017D81291441F004F06E4 /* PSMTabBarControl.framework in CopyFiles */,
-
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
+/* Begin PBXContainerItemProxy section */
+		71FA727BB5A46478C054CFEC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8D1107260486CEB800E47090;
+			remoteInfo = Nally;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
+		71FA727BB5A46478C054CFE1 /* AppTheme.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
+		71FA727BB5A46478C054CFE2 /* AppUIStateTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppUIStateTests.swift; sourceTree = "<group>"; };
+		71FA727BB5A46478C054CFE3 /* AppThemeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppThemeTests.swift; sourceTree = "<group>"; };
+		71FA727BB5A46478C054CFE4 /* TerminalGridTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalGridTests.swift; sourceTree = "<group>"; };
+		71FA727BB5A46478C054CFE5 /* TabReorderTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabReorderTests.swift; sourceTree = "<group>"; };
+		71FA727BB5A46478C054CFE6 /* SiteDataTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SiteDataTests.swift; sourceTree = "<group>"; };
 		07B73DA10E581E2C00CC97D3 /* YLEncodingTable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLEncodingTable.swift; sourceTree = "<group>"; };
 		07B73DA30E581E2C00CC97D3 /* g2u.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = g2u.bin; sourceTree = "<group>"; };
 		07B73DA40E581E2C00CC97D3 /* b2u.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = b2u.bin; sourceTree = "<group>"; };
@@ -112,13 +126,11 @@
 		9EE1511238C74DF7885CF963 /* TerminalViewRepresentable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalViewRepresentable.swift; sourceTree = "<group>"; };
 		A609D0540DF044A0AF45A8F0 /* YLMarkedTextView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLMarkedTextView.swift; sourceTree = "<group>"; };
 		DED64F2661F241159554F130 /* YLExifController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLExifController.swift; sourceTree = "<group>"; };
-		70FEB60EFE5F4AC69374F3C4 /* NallyToolbarDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyToolbarDelegate.swift; sourceTree = "<group>"; };
 		A74C4D5473A24D27B9222EB3 /* NallyApp.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyApp.swift; sourceTree = "<group>"; };
 		49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyAppDelegate.swift; sourceTree = "<group>"; };
 		80104742B2954F909E42FC73 /* NallyCommands.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyCommands.swift; sourceTree = "<group>"; };
 		7F5FFE76102B4FF89F7D4501 /* PreferencesView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		EFB0ABA97A66411D956D72E1 /* PreferencesWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
-		949F3018955547859CEC2E24 /* SitesManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SitesManager.swift; sourceTree = "<group>"; };
 		1B6BE7F372734231B6A39829 /* SitesView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SitesView.swift; sourceTree = "<group>"; };
 		9FE8F77BC375454396299F9E /* SitesWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SitesWindowController.swift; sourceTree = "<group>"; };
 		079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = HUDSave.tiff; sourceTree = "<group>"; };
@@ -137,7 +149,6 @@
 		8540FE4712AB8BA3000FE1D6 /* TextSuiteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TextSuiteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8540FE4812AB8BA3000FE1D6 /* TextSuiteTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "TextSuiteTests-Info.plist"; sourceTree = "<group>"; };
 		8570AD5E0A3923A900838442 /* YLView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLView.swift; sourceTree = "<group>"; };
-		8579CA280CF21D3D005A8353 /* YLSite.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLSite.h; sourceTree = "<group>"; };
 		8579CA290CF21D3D005A8353 /* YLSite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLSite.swift; sourceTree = "<group>"; };
 		857EAE290CF1D62900777C15 /* connect.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = connect.pdf; sourceTree = "<group>"; };
 		857EAE4E0CF1D89300777C15 /* offline.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = offline.pdf; sourceTree = "<group>"; };
@@ -149,13 +160,10 @@
 		85AE9DAD0CB15D220045317F /* bookmark.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = bookmark.pdf; sourceTree = "<group>"; };
 		85AF012612912A8C00728C12 /* Nally_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Nally_Prefix.pch; path = Code/Nally_Prefix.pch; sourceTree = "<group>"; };
 		85AF012A12912AD000728C12 /* nally.public.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = nally.public.pem; path = Deploy/nally.public.pem; sourceTree = SOURCE_ROOT; };
-		85B0176D12913CA5004F06E4 /* English */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = English; path = Resources/English.lproj/MainMenu.xib; sourceTree = "<group>"; };
-		85B0177112913CF3004F06E4 /* PSMTabBarControl.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PSMTabBarControl.framework; path = Dependencies/PSMTabBarControl.framework; sourceTree = "<group>"; };
 		85B247E60CEA1B840090046C /* DragonBall.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = DragonBall.icns; sourceTree = "<group>"; };
 
 		85EA93240D0791240098C94B /* zh_TW */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = zh_TW; path = zh_TW.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		85EA93250D0791240098C94B /* zh_TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = zh_TW; path = zh_TW.lproj/Localizable.strings; sourceTree = "<group>"; };
-		85F7F2070B06EE36000C4CDF /* YLLGlobalConfig.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YLLGlobalConfig.h; sourceTree = "<group>"; };
 		85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLLGlobalConfig.swift; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8DCEE14C182CDF3D008A9259 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -177,8 +185,6 @@
 
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				850711AB0CA7A347005F4734 /* ApplicationServices.framework in Frameworks */,
-
-				85B0177212913CF3004F06E4 /* PSMTabBarControl.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -188,6 +194,7 @@
 		080E96DDFE201D6D7F000001 /* Code */ = {
 			isa = PBXGroup;
 			children = (
+				71FA727BB5A46478C054CFE1 /* AppTheme.swift */,
 				ADD0047EEFFBB9E5B3F1DF71 /* YLRun.swift */,
 				ADD0049A21A8637E143E8D94 /* YLLine.swift */,
 				ADD004B64F3082459AC49E15 /* YLTextSuite.swift */,
@@ -208,17 +215,14 @@
 				9EE1511238C74DF7885CF963 /* TerminalViewRepresentable.swift */,
 				A609D0540DF044A0AF45A8F0 /* YLMarkedTextView.swift */,
 				DED64F2661F241159554F130 /* YLExifController.swift */,
-				70FEB60EFE5F4AC69374F3C4 /* NallyToolbarDelegate.swift */,
 				A74C4D5473A24D27B9222EB3 /* NallyApp.swift */,
 				49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */,
 				80104742B2954F909E42FC73 /* NallyCommands.swift */,
 				7F5FFE76102B4FF89F7D4501 /* PreferencesView.swift */,
 				EFB0ABA97A66411D956D72E1 /* PreferencesWindowController.swift */,
-				949F3018955547859CEC2E24 /* SitesManager.swift */,
 				1B6BE7F372734231B6A39829 /* SitesView.swift */,
 				9FE8F77BC375454396299F9E /* SitesWindowController.swift */,
 				85ED53BA0D0934DC003296D4 /* Constant & Utilities */,
-				85F7F2070B06EE36000C4CDF /* YLLGlobalConfig.h */,
 				85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.swift */,
 				85D9B9D20C97DF7B006C5E0F /* Views */,
 				85ED53B90D09349C003296D4 /* Abstract Interface */,
@@ -240,9 +244,6 @@
 		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				85B0177112913CF3004F06E4 /* PSMTabBarControl.framework */,
-
-
 				29B97324FDCFA39411CA2CEA /* AppKit.framework */,
 				29B97325FDCFA39411CA2CEA /* Foundation.framework */,
 			);
@@ -301,7 +302,6 @@
 				8D1107310486CEB800E47090 /* Info.plist */,
 				85A0E73B0D06B72900ACA26F /* Localizable.strings */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
-				85B0176C12913CA5004F06E4 /* MainMenu.xib */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -326,6 +326,11 @@
 		8540FD0312AB8843000FE1D6 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				71FA727BB5A46478C054CFE2 /* AppUIStateTests.swift */,
+				71FA727BB5A46478C054CFE3 /* AppThemeTests.swift */,
+				71FA727BB5A46478C054CFE4 /* TerminalGridTests.swift */,
+				71FA727BB5A46478C054CFE5 /* TabReorderTests.swift */,
+				71FA727BB5A46478C054CFE6 /* SiteDataTests.swift */,
 				07B73DA70E581E2C00CC97D3 /* TextSuiteTests.swift */,
 				GG88344122119933004455BB /* TerminalPerformanceTests.swift */,
 			);
@@ -366,7 +371,6 @@
 		85F701440C895C8600E27A1E /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				8579CA280CF21D3D005A8353 /* YLSite.h */,
 				8579CA290CF21D3D005A8353 /* YLSite.swift */,
 				8540FBF812AB5AFB000FE1D6 /* Text Suite */,
 			);
@@ -387,6 +391,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				71FA727BB5A46478C054CFED /* PBXTargetDependency */,
 			);
 			name = TextSuiteTests;
 			productName = TextSuiteTests;
@@ -444,6 +449,14 @@
 		};
 /* End PBXProject section */
 
+/* Begin PBXTargetDependency section */
+		71FA727BB5A46478C054CFED /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8D1107260486CEB800E47090 /* Nally */;
+			targetProxy = 71FA727BB5A46478C054CFEC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXResourcesBuildPhase section */
 		8540FE4212AB8BA3000FE1D6 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
@@ -472,7 +485,6 @@
 				85AF012B12912AD000728C12 /* nally.public.pem in Resources */,
 				07B73DA50E581E2C00CC97D3 /* g2u.bin in Resources */,
 				07B73DA60E581E2C00CC97D3 /* b2u.bin in Resources */,
-				85B0176E12913CA5004F06E4 /* MainMenu.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -499,6 +511,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				71FA727BB5A46478C054CFE7 /* AppUIStateTests.swift in Sources */,
+				71FA727BB5A46478C054CFE8 /* AppThemeTests.swift in Sources */,
+				71FA727BB5A46478C054CFE9 /* TerminalGridTests.swift in Sources */,
+				71FA727BB5A46478C054CFEA /* TabReorderTests.swift in Sources */,
+				71FA727BB5A46478C054CFEB /* SiteDataTests.swift in Sources */,
 				07B73DA80E581E2C00CC97D3 /* TextSuiteTests.swift in Sources */,
 				GG88344122119933004455AA /* TerminalPerformanceTests.swift in Sources */,
 			);
@@ -529,13 +546,11 @@
 				E5A600F899A24A63B0AE81C0 /* TerminalViewRepresentable.swift in Sources */,
 				E32052940E5B45E095566BDA /* YLMarkedTextView.swift in Sources */,
 				721248E781FC4EE79CF48A58 /* YLExifController.swift in Sources */,
-				5690CA5C46CE454E8E12248B /* NallyToolbarDelegate.swift in Sources */,
 				E2665651C95547EDB97441CA /* NallyApp.swift in Sources */,
 				E6239651091B4E9C86AA895A /* NallyAppDelegate.swift in Sources */,
 				105B234BF52D4039A30D3682 /* NallyCommands.swift in Sources */,
 				02A5DAA01EFF4F8996F0203C /* PreferencesView.swift in Sources */,
 				70FBA727BB5A46478C054CFE /* PreferencesWindowController.swift in Sources */,
-				09CBA2F51FA74189BF59B060 /* SitesManager.swift in Sources */,
 				9F2EBBE877A24C96811D3B8C /* SitesView.swift in Sources */,
 				B4EA8B034E014F96BF4549BB /* SitesWindowController.swift in Sources */,
 				8570AD5F0A3923A900838442 /* YLView.swift in Sources */,
@@ -543,6 +558,7 @@
 				07B73DA00E581E2C00CC97D3 /* YLKeychain.swift in Sources */,
 				85F7F2090B06EE36000C4CDF /* YLLGlobalConfig.swift in Sources */,
 				8579CA2A0CF21D3D005A8353 /* YLSite.swift in Sources */,
+				71FA727BB5A46478C054CFE0 /* AppTheme.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -567,15 +583,6 @@
 				71585BD70EFE06C200E04E4E /* zh_CN */,
 			);
 			name = Localizable.strings;
-			sourceTree = "<group>";
-		};
-		85B0176C12913CA5004F06E4 /* MainMenu.xib */ = {
-			isa = PBXVariantGroup;
-			children = (
-				85B0176D12913CA5004F06E4 /* English */,
-			);
-			name = MainMenu.xib;
-			path = ..;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
