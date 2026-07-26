@@ -1183,23 +1183,30 @@ public class YLView: NSView, NSTextInputClient {
             return
         }
         
-        /* Draw Background */
-        var y = 0
-        while y < gRow {
-            if ds.isRowDirty(Int32(y)) {
-                var x = 0
-                while x < gColumn {
-                    if ds.isDirty(atRow: Int32(y), column: Int32(x)) {
-                        let startx = x
-                        while x < gColumn && ds.isDirty(atRow: Int32(y), column: Int32(x)) {
-                            x += 1
+
+        let previousContext = NSGraphicsContext.current
+        let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
+        NSGraphicsContext.current = graphicsContext
+        
+        if let activeCtx = NSGraphicsContext.current?.cgContext {
+            /* Draw Background */
+            var y = 0
+            while y < gRow {
+                if ds.isRowDirty(Int32(y)) {
+                    var x = 0
+                    while x < gColumn {
+                        if ds.isDirty(atRow: Int32(y), column: Int32(x)) {
+                            let startx = x
+                            while x < gColumn && ds.isDirty(atRow: Int32(y), column: Int32(x)) {
+                                x += 1
+                            }
+                            updateBackground(forRow: Int32(y), from: Int32(startx), to: Int32(x), context: activeCtx)
                         }
-                        updateBackground(forRow: Int32(y), from: Int32(startx), to: Int32(x), context: context)
+                        x += 1
                     }
-                    x += 1
                 }
+                y += 1
             }
-            y += 1
         }
         
         context.saveGState()

@@ -45,10 +45,42 @@ public class YLContextualMenuManager: NSObject {
         return "http://" + s
     }
     
+    @objc public func extractPTTAID(from string: String) -> String? {
+        let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        
+        let pattern = "(#1[0-9a-zA-Z_\\-]{7,8})|(\\b1[0-9a-zA-Z_\\-]{7,8}\\b)"
+        guard let regex = try? NSRegularExpression(pattern: pattern, options: []) else { return nil }
+        let nsString = trimmed as NSString
+        let results = regex.matches(in: trimmed, options: [], range: NSRange(location: 0, length: nsString.length))
+        
+        if let match = results.first {
+            let matchedStr = nsString.substring(with: match.range)
+            return matchedStr.hasPrefix("#") ? matchedStr : "#" + matchedStr
+        }
+        return nil
+    }
+    
     @objc public func availableMenuItemForSelectionString(_ selectedString: String) -> [NSMenuItem] {
         var items: [NSMenuItem] = []
         let shortURL = extractShortURL(from: selectedString)
         let longURL = extractLongURL(from: selectedString)
+        
+        if let aid = extractPTTAID(from: selectedString) {
+            let jumpTitle = String(format: NSLocalizedString("Jump to PTT Article (%@)", comment: "Menu"), aid)
+            let jumpItem = NSMenuItem(title: jumpTitle, action: #selector(jumpToPTTAID(_:)), keyEquivalent: "")
+            jumpItem.target = self
+            jumpItem.representedObject = aid
+            items.append(jumpItem)
+            
+            let copyAidTitle = String(format: NSLocalizedString("Copy PTT AID (%@)", comment: "Menu"), aid)
+            let copyAidItem = NSMenuItem(title: copyAidTitle, action: #selector(copyPTTAID(_:)), keyEquivalent: "")
+            copyAidItem.target = self
+            copyAidItem.representedObject = aid
+            items.append(copyAidItem)
+            
+            items.append(NSMenuItem.separator())
+        }
         
         if isUrlLike(longURL) {
             let seps = CharacterSet(charactersIn: " \r\n")
@@ -133,6 +165,23 @@ public class YLContextualMenuManager: NSObject {
         }
         
         return items
+    }
+    
+    @objc public func jumpToPTTAID(_ sender: Any?) {
+        guard let item = sender as? NSMenuItem, let rawAid = item.representedObject as? String else { return }
+        let cleanAid = rawAid.hasPrefix("#") ? String(rawAid.dropFirst()) : rawAid
+        if let delegate = NSApp.delegate as? NallyAppDelegate,
+           let controller = delegate.controller,
+           let telnetView = controller.telnetView() as? YLView {
+            telnetView.insertText("#" + cleanAid + "\r", replacementRange: NSRange(location: NSNotFound, length: 0))
+        }
+    }
+    
+    @objc public func copyPTTAID(_ sender: Any?) {
+        guard let item = sender as? NSMenuItem, let aid = item.representedObject as? String else { return }
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(aid, forType: .string)
     }
     
     @objc public func openURL(_ sender: Any?) {

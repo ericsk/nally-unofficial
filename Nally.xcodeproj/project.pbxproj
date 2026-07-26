@@ -16,8 +16,10 @@
 		07B73DA20E581E2C00CC97D3 /* YLEncodingTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73DA10E581E2C00CC97D3 /* YLEncodingTable.swift */; };
 		07B73DA50E581E2C00CC97D3 /* g2u.bin in Resources */ = {isa = PBXBuildFile; fileRef = 07B73DA30E581E2C00CC97D3 /* g2u.bin */; };
 		07B73DA60E581E2C00CC97D3 /* b2u.bin in Resources */ = {isa = PBXBuildFile; fileRef = 07B73DA40E581E2C00CC97D3 /* b2u.bin */; };
+		GG11223344556677889900AA /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG11223344556677889900BB /* AppTheme.swift */; };
 		07B73DA80E581E2C00CC97D3 /* TextSuiteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73DA70E581E2C00CC97D3 /* TextSuiteTests.swift */; };
 		GG88344122119933004455AA /* TerminalPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG88344122119933004455BB /* TerminalPerformanceTests.swift */; };
+		GG99455233220044005566AA /* PTTAIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG99455233220044005566BB /* PTTAIDTests.swift */; };
 		GG88344122119933004455EE /* YLTerminal.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD001F408FCD8990CB2B96A /* YLTerminal.swift */; };
 		07B73DA00E581E2C00CC97D3 /* YLKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73D9F0E581E2C00CC97D3 /* YLKeychain.swift */; };
 		07B73D9E0E581E2C00CC97D3 /* YLBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73D9D0E581E2C00CC97D3 /* YLBundle.swift */; };
@@ -93,6 +95,14 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXTargetDependency section */
+		71FA727BB5A46478C054CFED /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8D1107260486CEB800E47090 /* Nally */;
+			targetProxy = 71FA727BB5A46478C054CFEC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXFileReference section */
 		71FA727BB5A46478C054CFE1 /* AppTheme.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppTheme.swift; sourceTree = "<group>"; };
 		71FA727BB5A46478C054CFE2 /* AppUIStateTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppUIStateTests.swift; sourceTree = "<group>"; };
@@ -105,6 +115,7 @@
 		07B73DA40E581E2C00CC97D3 /* b2u.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = b2u.bin; sourceTree = "<group>"; };
 		07B73DA70E581E2C00CC97D3 /* TextSuiteTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextSuiteTests.swift; sourceTree = "<group>"; };
 		GG88344122119933004455BB /* TerminalPerformanceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalPerformanceTests.swift; sourceTree = "<group>"; };
+		GG99455233220044005566BB /* PTTAIDTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PTTAIDTests.swift; sourceTree = "<group>"; };
 		07B73D9F0E581E2C00CC97D3 /* YLKeychain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLKeychain.swift; sourceTree = "<group>"; };
 		ADD0047EEFFBB9E5B3F1DF71 /* YLRun.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLRun.swift; sourceTree = "<group>"; };
 		ADD0049A21A8637E143E8D94 /* YLLine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLLine.swift; sourceTree = "<group>"; };
@@ -160,6 +171,7 @@
 		85AE9DAD0CB15D220045317F /* bookmark.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = bookmark.pdf; sourceTree = "<group>"; };
 		85AF012612912A8C00728C12 /* Nally_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Nally_Prefix.pch; path = Code/Nally_Prefix.pch; sourceTree = "<group>"; };
 		85AF012A12912AD000728C12 /* nally.public.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = nally.public.pem; path = Deploy/nally.public.pem; sourceTree = SOURCE_ROOT; };
+
 		85B247E60CEA1B840090046C /* DragonBall.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = DragonBall.icns; sourceTree = "<group>"; };
 
 		85EA93240D0791240098C94B /* zh_TW */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = zh_TW; path = zh_TW.lproj/InfoPlist.strings; sourceTree = "<group>"; };
@@ -182,7 +194,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8DCEE14D182CDF3D008A9259 /* Security.framework in Frameworks */,
-
 				8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */,
 				850711AB0CA7A347005F4734 /* ApplicationServices.framework in Frameworks */,
 			);
@@ -333,6 +344,7 @@
 				71FA727BB5A46478C054CFE6 /* SiteDataTests.swift */,
 				07B73DA70E581E2C00CC97D3 /* TextSuiteTests.swift */,
 				GG88344122119933004455BB /* TerminalPerformanceTests.swift */,
+				GG99455233220044005566BB /* PTTAIDTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -502,7 +514,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Extract English strings (use this to check if you added new strings to your nibs)\n\n\n\nfor LANG in zh_TW zh_CN; do\n  for NIB in MainMenu; do\n    LPROJ_DIR=${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/${LANG}.lproj\n    ibtool --export-strings-file Resources/English.lproj/${NIB}.English.strings Resources/English.lproj/${NIB}.xib\n    ibtool --import-strings-file Resources/${LANG}.lproj/${NIB}.${LANG}.strings Resources/English.lproj/${NIB}.xib --write ${LPROJ_DIR}/${NIB}.full.xib\n    ibtool --compile ${LPROJ_DIR}/${NIB}.nib ${LPROJ_DIR}/${NIB}.full.xib\n    rm -rf ${LPROJ_DIR}/${NIB}.full.xib\n  done\ndone\n\n# Remove .svn\nfind ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Resources -type d -name \".svn\" | xargs rm -rf\n\n# Remove .DS_Store\nfind ${BUILT_PRODUCTS_DIR}/Nally.app -name \".DS_Store\" -delete\n\n# Remove Headers\nfind ${BUILT_PRODUCTS_DIR}/Nally.app/Contents/Frameworks -name \"Headers\" | xargs rm -rf\n";
+			shellScript = "# Remove .DS_Store\nfind ${BUILT_PRODUCTS_DIR}/Nally.app -name \".DS_Store\" -delete\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -518,6 +530,7 @@
 				71FA727BB5A46478C054CFEB /* SiteDataTests.swift in Sources */,
 				07B73DA80E581E2C00CC97D3 /* TextSuiteTests.swift in Sources */,
 				GG88344122119933004455AA /* TerminalPerformanceTests.swift in Sources */,
+				GG99455233220044005566AA /* PTTAIDTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -540,6 +553,7 @@
 				ADD0001E4E44D1B43ED8F9C8 /* CommonType.swift in Sources */,
 				DAE10B3BED2F493E815B0126 /* ImagePreviewerView.swift in Sources */,
 				CF077DECCA3246279792BA50 /* YLImagePreviewer.swift in Sources */,
+				GG11223344556677889900AA /* AppTheme.swift in Sources */,
 				C54B4B3F2B60495FAD09F58A /* YLViewDrawing.swift in Sources */,
 				9E9A1D34D2954474A29D890D /* MainContentView.swift in Sources */,
 				6ABBEE0D97F646E68759628D /* TabBarRepresentable.swift in Sources */,
