@@ -8,13 +8,12 @@
 import Cocoa
 import QuickLookUI
 
-@MainActor
 public class YLQuickLookHelper: NSObject, QLPreviewPanelDataSource, QLPreviewPanelDelegate {
-    public static let shared = YLQuickLookHelper()
+    @MainActor public static let shared = YLQuickLookHelper()
     
     private var previewURL: URL?
     
-    public func preview(fileURL: URL) {
+    @MainActor public func preview(fileURL: URL) {
         self.previewURL = fileURL
         if let panel = QLPreviewPanel.shared() {
             panel.dataSource = self

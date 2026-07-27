@@ -152,7 +152,7 @@ public class YLSSH: YLConnection {
         size.ws_row = UInt16(config.row)
         size.ws_xpixel = 0
         size.ws_ypixel = 0
-        ioctl(slaveFd, TIOCSWINSZ, &size)
+        _ = ioctl(slaveFd, TIOCSWINSZ, &size)
         
         // 3. Enable Packet Mode
         var one: Int32 = 1

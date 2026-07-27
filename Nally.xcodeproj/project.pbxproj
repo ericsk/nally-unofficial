@@ -510,6 +510,7 @@
 
 /* Begin PBXShellScriptBuildPhase section */
 		71BFE93910550718005ACFF5 /* ShellScript */ = {
+			alwaysOutOfDate = 1;
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -619,7 +620,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
-					"\"$(SRCROOT)/Dependencies\"",
 				);
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
@@ -634,6 +634,7 @@
 					"-framework",
 					XCTest,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.TextSuiteTests;
 				PRODUCT_NAME = TextSuiteTests;
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = xctest;
@@ -655,7 +656,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
-					"\"$(SRCROOT)/Dependencies\"",
 				);
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
@@ -668,6 +668,7 @@
 					"-framework",
 					XCTest,
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.TextSuiteTests;
 				PRODUCT_NAME = TextSuiteTests;
 				SDKROOT = macosx;
 				WRAPPER_EXTENSION = xctest;
@@ -688,7 +689,6 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
-					"\"$(SRCROOT)/Dependencies\"",
 				);
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
@@ -698,6 +698,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				OTHER_CFLAGS = "-D__DUMPPACKET__";
+				PRODUCT_BUNDLE_IDENTIFIER = org.yllan.Nally;
 				PRODUCT_NAME = Nally;
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = "Code/Nally-Bridging-Header.h";
@@ -719,13 +720,13 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)\"",
-					"\"$(SRCROOT)/Dependencies\"",
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				INFOPLIST_FILE = Resources/Info.plist;
 				INSTALL_PATH = "$(HOME)/Applications";
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				PRODUCT_BUNDLE_IDENTIFIER = org.yllan.Nally;
 				PRODUCT_NAME = Nally;
 				SDKROOT = macosx;
 				SWIFT_OBJC_BRIDGING_HEADER = "Code/Nally-Bridging-Header.h";
@@ -741,6 +742,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = arm64;
+				DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_PREFIX_HEADER = "";
@@ -757,6 +759,7 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ARCHS = arm64;
+				DISABLE_MANUAL_TARGET_ORDER_BUILD_WARNING = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				INFOPLIST_PREFIX_HEADER = "";

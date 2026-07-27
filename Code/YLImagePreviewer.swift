@@ -10,7 +10,6 @@ import SwiftUI
 import ImageIO
 import UniformTypeIdentifiers
 
-@MainActor
 @objc(YLImagePreviewer)
 public class YLImagePreviewer: NSObject, ObservableObject, URLSessionDownloadDelegate {
     private var downloadTask: URLSessionDownloadTask?
@@ -135,7 +134,7 @@ public class YLImagePreviewer: NSObject, ObservableObject, URLSessionDownloadDel
         }
     }
     
-    public func showQuickLook() {
+    @MainActor public func showQuickLook() {
         guard let data = downloadedData else { return }
         if tempFileURL == nil {
             let tempDir = FileManager.default.temporaryDirectory

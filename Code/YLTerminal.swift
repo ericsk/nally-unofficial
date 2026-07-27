@@ -203,7 +203,6 @@ public class YLTerminal: NSObject {
     }
     
     private func setGridByte(_ c: UInt8) {
-        var x: Int
         if _cursorX <= column - 1 {
             if _modeIRM {
                 for col in stride(from: Int(column) - 1, to: Int(_cursorX), by: -1) {
@@ -574,7 +573,6 @@ extension YLTerminal {
     @objc(feedBytes:length:connection:)
     public func feedBytes(_ bytes: UnsafePointer<UInt8>, length len: Int32, connection: Any) {
         autoreleasepool {
-            var x: Int
             var i = 0
             while i < Int(len) {
                 let c = bytes[i]
