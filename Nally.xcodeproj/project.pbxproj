@@ -20,6 +20,8 @@
 		07B73DA80E581E2C00CC97D3 /* TextSuiteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73DA70E581E2C00CC97D3 /* TextSuiteTests.swift */; };
 		GG88344122119933004455AA /* TerminalPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG88344122119933004455BB /* TerminalPerformanceTests.swift */; };
 		GG99455233220044005566AA /* PTTAIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG99455233220044005566BB /* PTTAIDTests.swift */; };
+		GG778899001122334455AA01 /* YLQuickLookHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG778899001122334455BB01 /* YLQuickLookHelper.swift */; };
+		GG778899001122334455AA02 /* ImagePreviewerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG778899001122334455BB02 /* ImagePreviewerTests.swift */; };
 		GG88344122119933004455EE /* YLTerminal.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD001F408FCD8990CB2B96A /* YLTerminal.swift */; };
 		07B73DA00E581E2C00CC97D3 /* YLKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73D9F0E581E2C00CC97D3 /* YLKeychain.swift */; };
 		07B73D9E0E581E2C00CC97D3 /* YLBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73D9D0E581E2C00CC97D3 /* YLBundle.swift */; };
@@ -116,6 +118,8 @@
 		07B73DA70E581E2C00CC97D3 /* TextSuiteTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TextSuiteTests.swift; sourceTree = "<group>"; };
 		GG88344122119933004455BB /* TerminalPerformanceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalPerformanceTests.swift; sourceTree = "<group>"; };
 		GG99455233220044005566BB /* PTTAIDTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PTTAIDTests.swift; sourceTree = "<group>"; };
+		GG778899001122334455BB01 /* YLQuickLookHelper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLQuickLookHelper.swift; sourceTree = "<group>"; };
+		GG778899001122334455BB02 /* ImagePreviewerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImagePreviewerTests.swift; sourceTree = "<group>"; };
 		07B73D9F0E581E2C00CC97D3 /* YLKeychain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLKeychain.swift; sourceTree = "<group>"; };
 		ADD0047EEFFBB9E5B3F1DF71 /* YLRun.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLRun.swift; sourceTree = "<group>"; };
 		ADD0049A21A8637E143E8D94 /* YLLine.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLLine.swift; sourceTree = "<group>"; };
@@ -220,6 +224,7 @@
 				ADD0002313DA553B87270B44 /* CommonType.swift */,
 				90E568408F064A5CA6079187 /* ImagePreviewerView.swift */,
 				DF3B7EEA050E444887AB782D /* YLImagePreviewer.swift */,
+				GG778899001122334455BB01 /* YLQuickLookHelper.swift */,
 				3E066B4D1A8E4543BDC3006C /* YLViewDrawing.swift */,
 				07865512AF61492F98C0DAC8 /* MainContentView.swift */,
 				29AE3BC084E14F4EB69EE672 /* TabBarRepresentable.swift */,
@@ -345,6 +350,7 @@
 				07B73DA70E581E2C00CC97D3 /* TextSuiteTests.swift */,
 				GG88344122119933004455BB /* TerminalPerformanceTests.swift */,
 				GG99455233220044005566BB /* PTTAIDTests.swift */,
+				GG778899001122334455BB02 /* ImagePreviewerTests.swift */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -531,6 +537,7 @@
 				07B73DA80E581E2C00CC97D3 /* TextSuiteTests.swift in Sources */,
 				GG88344122119933004455AA /* TerminalPerformanceTests.swift in Sources */,
 				GG99455233220044005566AA /* PTTAIDTests.swift in Sources */,
+				GG778899001122334455AA02 /* ImagePreviewerTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -553,6 +560,7 @@
 				ADD0001E4E44D1B43ED8F9C8 /* CommonType.swift in Sources */,
 				DAE10B3BED2F493E815B0126 /* ImagePreviewerView.swift in Sources */,
 				CF077DECCA3246279792BA50 /* YLImagePreviewer.swift in Sources */,
+				GG778899001122334455AA01 /* YLQuickLookHelper.swift in Sources */,
 				GG11223344556677889900AA /* AppTheme.swift in Sources */,
 				C54B4B3F2B60495FAD09F58A /* YLViewDrawing.swift in Sources */,
 				9E9A1D34D2954474A29D890D /* MainContentView.swift in Sources */,

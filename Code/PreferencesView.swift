@@ -45,6 +45,8 @@ struct GeneralPreferencesView: View {
     @Binding var restoreConnection: Bool
     @AppStorage("AppTheme") var appThemeRaw: String = AppTheme.system.rawValue
     @AppStorage("ShowMenuBarExtra") var showMenuBarExtra: Bool = true
+    @AppStorage("ImagePreviewStyle") var imagePreviewStyle: String = "popover"
+    @AppStorage("EnableCmdHoverPreview") var enableCmdHoverPreview: Bool = true
     
     var body: some View {
         Form {
@@ -66,8 +68,16 @@ struct GeneralPreferencesView: View {
                 Toggle("Show menu bar status icon (MenuBarExtra)", isOn: $showMenuBarExtra)
             }
             
-            Section(header: Label("Terminal Behavior", systemImage: "display")) {
+            Section(header: Label("Terminal Behavior & Image Preview", systemImage: "display")) {
                 Toggle("Prefer internal image previewer", isOn: $config.shouldPreferImagePreviewer)
+                if config.shouldPreferImagePreviewer {
+                    Picker("Preview Style:", selection: $imagePreviewStyle) {
+                        Text("Popover (Floating Overlay)").tag("popover")
+                        Text("HUD Window (Independent)").tag("window")
+                    }
+                    .pickerStyle(.segmented)
+                    Toggle("Enable Cmd + Hover quick url preview", isOn: $enableCmdHoverPreview)
+                }
                 Toggle("Repeat dock icon bounce animation", isOn: $config.repeatBounce)
             }
         }

@@ -45,6 +45,19 @@ public class YLContextualMenuManager: NSObject {
         return "http://" + s
     }
     
+    @objc public func isImageURL(_ url: URL) -> Bool {
+        let pathExt = url.pathExtension.lowercased()
+        let imageExtensions = ["png", "jpg", "jpeg", "gif", "webp", "avif", "heic", "heif", "bmp", "svg", "tiff"]
+        if imageExtensions.contains(pathExt) {
+            return true
+        }
+        let host = url.host?.lowercased() ?? ""
+        if host.contains("imgur.com") || host.contains("postimg.cc") || host.contains("upload.cc") || host.contains("i.red.it") {
+            return !url.path.isEmpty && url.path != "/"
+        }
+        return false
+    }
+    
     @objc public func extractPTTAID(from string: String) -> String? {
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
