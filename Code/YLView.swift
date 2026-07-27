@@ -649,13 +649,17 @@ public class YLView: NSView, NSTextInputClient {
     @objc(loadUrlOfString:)
     public func loadUrl(of urlString: String) {
         guard let url = URL(string: urlString) else { return }
-        let pathExtension = url.pathExtension.lowercased()
         
-        let isImageExtension = ["png", "jpg", "jpeg", "gif", "tiff", "bmp", "webp"].contains(pathExtension)
-        let isImage = _shouldUseImagePreviewer && !urlString.hasSuffix("/") && isImageExtension && pathExtension != "pdf"
-        
-        if isImage {
-            _ = YLImagePreviewer(url: url)
+        let isImage = YLContextualMenuManager.sharedInstance.isImageURL(url)
+        if isImage && _shouldUseImagePreviewer {
+            let previewer = YLImagePreviewer(url: url)
+            let style = UserDefaults.standard.string(forKey: "ImagePreviewStyle") ?? "popover"
+            if style == "popover" {
+                let centerRect = NSRect(x: bounds.midX, y: bounds.midY, width: 1, height: 1)
+                previewer.showPopover(relativeTo: centerRect, of: self, preferredEdge: .minY)
+            } else {
+                previewer.showLoadingWindow()
+            }
         } else {
             let configuration = NSWorkspace.OpenConfiguration()
             configuration.activates = !_shouldOpenUrlInBackground
