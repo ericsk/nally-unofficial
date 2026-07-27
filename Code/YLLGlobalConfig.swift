@@ -224,7 +224,7 @@ public class YLLGlobalConfig: NSObject {
     private func loadColor(index: Int, key: String, hilite: Bool = false, defaultColor: NSColor) {
         let h = hilite ? 1 : 0
         if let c = UserDefaults.standard.myColor(forKey: key) {
-            colorTable[h][index] = c.usingColorSpaceName(.calibratedRGB) ?? c
+            colorTable[h][index] = c.usingColorSpace(.sRGB) ?? c
         } else {
             colorTable[h][index] = defaultColor
         }
@@ -233,7 +233,7 @@ public class YLLGlobalConfig: NSObject {
     private func saveColor(index: Int, key: String, hilite: Bool = false, color: NSColor?) {
         let h = hilite ? 1 : 0
         let c = color ?? NSColor.black
-        colorTable[h][index] = c.usingColorSpaceName(.calibratedRGB) ?? c
+        colorTable[h][index] = c.usingColorSpace(.sRGB) ?? c
         UserDefaults.standard.setMyColor(c, forKey: key)
     }
     
@@ -279,7 +279,7 @@ public class YLLGlobalConfig: NSObject {
         let hIdx = h ? 1 : 0
         if i >= 0 && i < 10 {
             let color = c ?? NSColor.black
-            colorTable[hIdx][Int(i)] = color.usingColorSpaceName(.calibratedRGB) ?? color
+            colorTable[hIdx][Int(i)] = color.usingColorSpace(.sRGB) ?? color
         }
     }
     

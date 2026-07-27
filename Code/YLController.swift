@@ -14,7 +14,7 @@ import SwiftData
 @Observable
 @objc(YLController)
 @objcMembers
-public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
+public class YLController: NSObject, NSWindowDelegate {
     @objc public dynamic weak var _mainWindow: NSWindow?
     @objc public dynamic var _telnetView: YLView?
     @objc public dynamic weak var _addressBar: NSTextField?
@@ -258,7 +258,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
             
             tabItem.label = site.name
             
-            connection.connect(to: site)
+            _ = connection.connect(to: site)
             _telnetView?.selectTabViewItem(tabItem)
             _telnetView?.updateBackedImage()
             _telnetView?.needsDisplay = true
@@ -466,7 +466,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         var lastConnectedSites: [YLSite] = []
         for i in 0..<tabNumber {
             if let connection = tv.tabViewItem(at: i).identifier as? YLConnection, connection.terminal != nil {
-                if let site = connection.site as? YLSite {
+                if let site = connection.site {
                     lastConnectedSites.append(site)
                 }
             }
@@ -653,7 +653,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     }
     
     @objc public func closeTabViewItem(_ tabItem: NSTabViewItem) {
-        guard let tv = _telnetView else { return }
+        guard _telnetView != nil else { return }
         guard let connection = tabItem.identifier as? YLConnection else {
             performCloseTabViewItem(tabItem)
             return
@@ -734,7 +734,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
     
     @IBAction public func autoLogin(_ sender: Any?) {
         guard let conn = _telnetView?.frontMostConnection() as? YLConnection else { return }
-        guard let site = (conn.site as? YLSite)?.copySite() else { return }
+        guard let site = conn.site?.copySite() else { return }
         
         if conn.connected {
             let account = site.account
@@ -939,7 +939,7 @@ public class YLController: NSObject, NSTabViewDelegate, NSWindowDelegate {
         conn.terminal?.hasMessage = false
         updateEncodingMenu()
         
-        let ddb = (conn.site as? YLSite)?.detectDoubleByte ?? false
+        let ddb = conn.site?.detectDoubleByte ?? false
         _detectDoubleByteButton?.state = ddb ? .on : .off
         _detectDoubleByteMenuItem?.state = ddb ? .on : .off
         

@@ -1188,7 +1188,6 @@ public class YLView: NSView, NSTextInputClient {
         }
         
 
-        let previousContext = NSGraphicsContext.current
         let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
         NSGraphicsContext.current = graphicsContext
         

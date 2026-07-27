@@ -16,14 +16,7 @@ extension UserDefaults {
 
     @objc public func myColor(forKey aKey: String) -> NSColor? {
         guard let theData = self.data(forKey: aKey) else { return nil }
-        do {
-            if let color = try NSKeyedUnarchiver.unarchivedObject(ofClass: NSColor.self, from: theData) {
-                return color
-            }
-        } catch {
-            // Fallback to legacy unarchiver
-        }
-        return NSUnarchiver.unarchiveObject(with: theData) as? NSColor
+        return (try? NSKeyedUnarchiver.unarchivedObject(ofClass: NSColor.self, from: theData))
     }
 }
 
@@ -36,12 +29,12 @@ public class YLApplication: NSApplication {
 
     public override init() {
         super.init()
-        NSColor.ignoresAlpha = false
+        NSColorPanel.shared.showsAlpha = true
     }
     
     required init?(coder: NSCoder) {
         super.init(coder: coder)
-        NSColor.ignoresAlpha = false
+        NSColorPanel.shared.showsAlpha = true
     }
 
     public override func sendEvent(_ event: NSEvent) {
