@@ -1,12 +1,12 @@
 import SwiftUI
 
 struct NallyCommands: Commands {
+    @Environment(\.openWindow) private var openWindow
+    
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
             Button("New Connection...") {
-                if let controller = NallyAppDelegate.shared.controller {
-                    controller.editSites(nil)
-                }
+                openWindow(id: "sites")
             }
             .keyboardShortcut("n", modifiers: .command)
             
@@ -90,9 +90,7 @@ struct NallyCommands: Commands {
         
         CommandMenu("Sites") {
             Button("Edit Sites...") {
-                if let controller = NallyAppDelegate.shared.controller {
-                    controller.editSites(nil)
-                }
+                openWindow(id: "sites")
             }
             .keyboardShortcut("b", modifiers: .command)
             

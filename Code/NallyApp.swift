@@ -46,6 +46,7 @@ public class AppState: NSObject {
     
     public var addressText: String = ""
     public var focusAddressBar: Bool = false
+    public var openSitesWindowAction: (() -> Void)?
     
     public var termWidth: CGFloat = 960
     public var termHeight: CGFloat = 576
@@ -390,6 +391,7 @@ struct MainSwiftUIWindowView: View {
     var appState: AppState
     @Bindable var config = YLLGlobalConfig.sharedInstance()
     @FocusState private var isAddressBarFocused: Bool
+    @Environment(\.openWindow) private var openWindow
     
     var body: some View {
         VStack(spacing: 0) {
@@ -467,6 +469,11 @@ struct MainSwiftUIWindowView: View {
             if newValue {
                 isAddressBarFocused = true
                 appState.focusAddressBar = false
+            }
+        }
+        .onAppear {
+            appState.openSitesWindowAction = { [openWindow] in
+                openWindow(id: "sites")
             }
         }
     }
