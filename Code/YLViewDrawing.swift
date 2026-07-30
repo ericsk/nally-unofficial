@@ -2,6 +2,28 @@ import Cocoa
 import CoreText
 import CoreGraphics
 
+@MainActor
+private class RowDrawingBuffer {
+    var textBuf: [unichar] = []
+    var isDoubleByte: [Bool] = []
+    var isDoubleColor: [Bool] = []
+    var bufIndex: [Int] = []
+    var position: [CGPoint] = []
+    
+    func ensureCapacity(_ count: Int) {
+        if textBuf.count < count {
+            textBuf = [unichar](repeating: 0, count: count)
+            isDoubleByte = [Bool](repeating: false, count: count)
+            isDoubleColor = [Bool](repeating: false, count: count)
+            bufIndex = [Int](repeating: 0, count: count)
+            position = [CGPoint](repeating: .zero, count: count)
+        }
+    }
+}
+
+@MainActor
+private let sharedRowDrawingBuffer = RowDrawingBuffer()
+
 extension YLView {
     
     private func isSpecialSymbol(_ ch: unichar) -> Bool {
@@ -92,11 +114,8 @@ extension YLView {
         let start = x
         var end = x
         
-        var textBuf = [unichar](repeating: 0, count: gColumn)
-        var isDoubleByte = [Bool](repeating: false, count: gColumn)
-        var isDoubleColor = [Bool](repeating: false, count: gColumn)
-        var bufIndex = [Int](repeating: 0, count: gColumn)
-        var position = [CGPoint](repeating: .zero, count: gColumn)
+        let buffer = sharedRowDrawingBuffer
+        buffer.ensureCapacity(gColumn)
         var bufLength = 0
         
         // Update the information array
@@ -110,15 +129,15 @@ extension YLView {
             let db = doubleByteOfAttribute(currRow[x].attr)
             
             if db == 0 {
-                isDoubleByte[bufLength] = false
+                buffer.isDoubleByte[bufLength] = false
                 let b = currRow[x].byte
-                textBuf[bufLength] = UInt16(b == 0 ? UInt8(ascii: " ") : b)
-                bufIndex[bufLength] = x
-                position[bufLength] = CGPoint(
+                buffer.textBuf[bufLength] = UInt16(b == 0 ? UInt8(ascii: " ") : b)
+                buffer.bufIndex[bufLength] = x
+                buffer.position[bufLength] = CGPoint(
                     x: CGFloat(x) * fontWidth + ePaddingLeft,
                     y: CGFloat(gRow - 1 - Int(r)) * fontHeight + CTFontGetDescent(config.englishCTFont!) + ePaddingBottom
                 )
-                isDoubleColor[bufLength] = false
+                buffer.isDoubleColor[bufLength] = false
                 bufLength += 1
             } else if db == 1 {
                 // Continue
@@ -133,12 +152,12 @@ extension YLView {
                 } else {
                     let attrLeft = currRow[x - 1].attr
                     let attrRight = currRow[x].attr
-                    isDoubleColor[bufLength] = (fgColorIndexOfAttribute(attrLeft) != fgColorIndexOfAttribute(attrRight) ||
+                    buffer.isDoubleColor[bufLength] = (fgColorIndexOfAttribute(attrLeft) != fgColorIndexOfAttribute(attrRight) ||
                                                 fgBoldOfAttribute(attrLeft) != fgBoldOfAttribute(attrRight))
-                    isDoubleByte[bufLength] = true
-                    textBuf[bufLength] = ch
-                    bufIndex[bufLength] = x
-                    position[bufLength] = CGPoint(
+                    buffer.isDoubleByte[bufLength] = true
+                    buffer.textBuf[bufLength] = ch
+                    buffer.bufIndex[bufLength] = x
+                    buffer.position[bufLength] = CGPoint(
                         x: CGFloat(x - 1) * fontWidth + cPaddingLeft,
                         y: CGFloat(gRow - 1 - Int(r)) * fontHeight + CTFontGetDescent(config.chineseCTFont!) + cPaddingBottom
                     )
@@ -159,22 +178,19 @@ extension YLView {
         
         if bufLength == 0 { return }
         
-        guard let str = CFStringCreateWithCharacters(kCFAllocatorDefault, textBuf, bufLength),
-              let attributedString = CFAttributedStringCreate(kCFAllocatorDefault, str, nil),
-              let mutableAttributedString = CFAttributedStringCreateMutableCopy(kCFAllocatorDefault, 0, attributedString) else {
-            return
-        }
+        let str = String(utf16CodeUnits: buffer.textBuf, count: bufLength)
+        let mutableAttributedString = NSMutableAttributedString(string: str)
         
         // Run-length of the style
         var c = 0
         while c < bufLength {
             let location = c
-            let db = isDoubleByte[c]
-            let lastAttr = currRow[bufIndex[c]].attr
+            let db = buffer.isDoubleByte[c]
+            let lastAttr = currRow[buffer.bufIndex[c]].attr
             
             while c < bufLength {
-                let currAttr = currRow[bufIndex[c]].attr
-                if currAttr.v != lastAttr.v || isDoubleByte[c] != db {
+                let currAttr = currRow[buffer.bufIndex[c]].attr
+                if currAttr.v != lastAttr.v || buffer.isDoubleByte[c] != db {
                     break
                 }
                 c += 1
@@ -217,13 +233,13 @@ extension YLView {
             myCGContext.setLineWidth(1.0)
             
             var location = 0
-            var lastIndex = bufIndex[glyphOffset]
+            var lastIndex = buffer.bufIndex[glyphOffset]
             var hidden = isHiddenAttribute(currRow[lastIndex].attr) != 0
-            var lastDoubleByte = isDoubleByte[glyphOffset]
+            var lastDoubleByte = buffer.isDoubleByte[glyphOffset]
             
             var runGlyphIndex = 0
             while runGlyphIndex <= runGlyphCount {
-                let index = (runGlyphIndex == runGlyphCount) ? lastIndex : bufIndex[glyphOffset + runGlyphIndex]
+                let index = (runGlyphIndex == runGlyphCount) ? lastIndex : buffer.bufIndex[glyphOffset + runGlyphIndex]
                 
                 let isAtEnd = (runGlyphIndex == runGlyphCount)
                 let showHiddenText = config.showHiddenText
@@ -231,13 +247,13 @@ extension YLView {
                 
                 let cond1 = isAtEnd
                 let cond2 = showHiddenText && (isHiddenAtIdx != hidden)
-                let cond3 = !isAtEnd && isDoubleByte[runGlyphIndex + glyphOffset] && (index != lastIndex + 2)
-                let cond4 = !isAtEnd && !isDoubleByte[runGlyphIndex + glyphOffset] && (index != lastIndex + 1)
-                let cond5 = !isAtEnd && (isDoubleByte[runGlyphIndex + glyphOffset] != lastDoubleByte)
+                let cond3 = !isAtEnd && buffer.isDoubleByte[runGlyphIndex + glyphOffset] && (index != lastIndex + 2)
+                let cond4 = !isAtEnd && !buffer.isDoubleByte[runGlyphIndex + glyphOffset] && (index != lastIndex + 1)
+                let cond5 = !isAtEnd && (buffer.isDoubleByte[runGlyphIndex + glyphOffset] != lastDoubleByte)
                 
                 if cond1 || cond2 || cond3 || cond4 || cond5 {
                     if !isAtEnd {
-                        lastDoubleByte = isDoubleByte[runGlyphIndex + glyphOffset]
+                        lastDoubleByte = buffer.isDoubleByte[runGlyphIndex + glyphOffset]
                     }
                     let len = runGlyphIndex - location
                     
@@ -251,7 +267,7 @@ extension YLView {
                     textMatrix.ty = 0
                     myCGContext.textMatrix = textMatrix
                     
-                    let glyphPositions = Array(position[(glyphOffset + location)..<(glyphOffset + location + len)])
+                    let glyphPositions = Array(buffer.position[(glyphOffset + location)..<(glyphOffset + location + len)])
                     myCGContext.showGlyphs(glyphs, at: glyphPositions)
                     
                     location = runGlyphIndex
@@ -265,11 +281,11 @@ extension YLView {
             
             // Double Color
             for runGlyphIndex in 0..<runGlyphCount {
-                if isDoubleColor[glyphOffset + runGlyphIndex] {
+                if buffer.isDoubleColor[glyphOffset + runGlyphIndex] {
                     var glyph = CGGlyph()
                     CTRunGetGlyphs(run, CFRangeMake(runGlyphIndex, 1), &glyph)
                     
-                    let index = bufIndex[glyphOffset + runGlyphIndex] - 1
+                    let index = buffer.bufIndex[glyphOffset + runGlyphIndex] - 1
                     let attr = currRow[index].attr
                     let bgColor = UInt32(bgColorIndexOfAttribute(attr))
                     let fgColor = UInt32(fgColorIndexOfAttribute(attr))
