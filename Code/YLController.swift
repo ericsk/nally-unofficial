@@ -713,9 +713,7 @@ public class YLController: NSObject, NSWindowDelegate {
     }
     
     @IBAction public func editSites(_ sender: Any?) {
-        if let window = _mainWindow {
-            SitesWindowController.show(over: window, controller: self)
-        }
+        AppState.shared.openSitesWindowAction?()
     }
     
     @IBAction public func openSites(_ sender: Any?) {
@@ -762,7 +760,11 @@ public class YLController: NSObject, NSWindowDelegate {
     }
     
     @IBAction public func openPreferencesWindow(_ sender: Any?) {
-        PreferencesWindowController.show()
+        if #available(macOS 13, *) {
+            NSApp.sendAction(Selector("showSettingsWindow:"), to: nil, from: nil)
+        } else {
+            NSApp.sendAction(Selector("showPreferencesWindow:"), to: nil, from: nil)
+        }
     }
     
     // MARK: - Accessors

@@ -49,9 +49,7 @@
 		E6239651091B4E9C86AA895A /* NallyAppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */; };
 		105B234BF52D4039A30D3682 /* NallyCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80104742B2954F909E42FC73 /* NallyCommands.swift */; };
 		02A5DAA01EFF4F8996F0203C /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F5FFE76102B4FF89F7D4501 /* PreferencesView.swift */; };
-		70FBA727BB5A46478C054CFE /* PreferencesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB0ABA97A66411D956D72E1 /* PreferencesWindowController.swift */; };
 		9F2EBBE877A24C96811D3B8C /* SitesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B6BE7F372734231B6A39829 /* SitesView.swift */; };
-		B4EA8B034E014F96BF4549BB /* SitesWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FE8F77BC375454396299F9E /* SitesWindowController.swift */; };
 		079E9BB00F08B9480089C9E2 /* HUDSave.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */; };
 		079E9BB10F08B9480089C9E2 /* HUDSaveActive.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */; };
 		850711AB0CA7A347005F4734 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 850711AA0CA7A347005F4734 /* ApplicationServices.framework */; };
@@ -145,9 +143,7 @@
 		49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyAppDelegate.swift; sourceTree = "<group>"; };
 		80104742B2954F909E42FC73 /* NallyCommands.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyCommands.swift; sourceTree = "<group>"; };
 		7F5FFE76102B4FF89F7D4501 /* PreferencesView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
-		EFB0ABA97A66411D956D72E1 /* PreferencesWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesWindowController.swift; sourceTree = "<group>"; };
 		1B6BE7F372734231B6A39829 /* SitesView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SitesView.swift; sourceTree = "<group>"; };
-		9FE8F77BC375454396299F9E /* SitesWindowController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SitesWindowController.swift; sourceTree = "<group>"; };
 		079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = HUDSave.tiff; sourceTree = "<group>"; };
 		079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = HUDSaveActive.tiff; sourceTree = "<group>"; };
 
@@ -234,9 +230,7 @@
 				49E5BC39D6804CA19A64E7F1 /* NallyAppDelegate.swift */,
 				80104742B2954F909E42FC73 /* NallyCommands.swift */,
 				7F5FFE76102B4FF89F7D4501 /* PreferencesView.swift */,
-				EFB0ABA97A66411D956D72E1 /* PreferencesWindowController.swift */,
 				1B6BE7F372734231B6A39829 /* SitesView.swift */,
-				9FE8F77BC375454396299F9E /* SitesWindowController.swift */,
 				85ED53BA0D0934DC003296D4 /* Constant & Utilities */,
 				85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.swift */,
 				85D9B9D20C97DF7B006C5E0F /* Views */,
@@ -571,9 +565,7 @@
 				E6239651091B4E9C86AA895A /* NallyAppDelegate.swift in Sources */,
 				105B234BF52D4039A30D3682 /* NallyCommands.swift in Sources */,
 				02A5DAA01EFF4F8996F0203C /* PreferencesView.swift in Sources */,
-				70FBA727BB5A46478C054CFE /* PreferencesWindowController.swift in Sources */,
 				9F2EBBE877A24C96811D3B8C /* SitesView.swift in Sources */,
-				B4EA8B034E014F96BF4549BB /* SitesWindowController.swift in Sources */,
 				8570AD5F0A3923A900838442 /* YLView.swift in Sources */,
 				07B73DA20E581E2C00CC97D3 /* YLEncodingTable.swift in Sources */,
 				07B73DA00E581E2C00CC97D3 /* YLKeychain.swift in Sources */,
