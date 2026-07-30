@@ -173,7 +173,6 @@
 		85A0E73C0D06B72900ACA26F /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
 		85AE9DA60CB1597A0045317F /* reload.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = reload.pdf; sourceTree = "<group>"; };
 		85AE9DAD0CB15D220045317F /* bookmark.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = bookmark.pdf; sourceTree = "<group>"; };
-		85AF012612912A8C00728C12 /* Nally_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Nally_Prefix.pch; path = Code/Nally_Prefix.pch; sourceTree = "<group>"; };
 		85AF012A12912AD000728C12 /* nally.public.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = nally.public.pem; path = Deploy/nally.public.pem; sourceTree = SOURCE_ROOT; };
 
 		85B247E60CEA1B840090046C /* DragonBall.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = DragonBall.icns; sourceTree = "<group>"; };
@@ -293,7 +292,6 @@
 		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				85AF012612912A8C00728C12 /* Nally_Prefix.pch */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -624,8 +622,6 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
 				INFOPLIST_FILE = "TextSuiteTests-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				OTHER_LDFLAGS = (
@@ -658,8 +654,6 @@
 					"\"$(SRCROOT)\"",
 				);
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
 				INFOPLIST_FILE = "TextSuiteTests-Info.plist";
 				INSTALL_PATH = "$(USER_LIBRARY_DIR)/Bundles";
 				OTHER_LDFLAGS = (
@@ -701,7 +695,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.yllan.Nally;
 				PRODUCT_NAME = Nally;
 				SDKROOT = macosx;
-				SWIFT_OBJC_BRIDGING_HEADER = "Code/Nally-Bridging-Header.h";
 				WRAPPER_EXTENSION = app;
 				DEFINES_MODULE = YES;
 				ENABLE_TESTABILITY = YES;
@@ -729,7 +722,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = org.yllan.Nally;
 				PRODUCT_NAME = Nally;
 				SDKROOT = macosx;
-				SWIFT_OBJC_BRIDGING_HEADER = "Code/Nally-Bridging-Header.h";
 				WRAPPER_EXTENSION = app;
 				DEFINES_MODULE = YES;
 				ENABLE_TESTABILITY = YES;

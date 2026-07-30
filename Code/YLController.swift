@@ -148,7 +148,7 @@ public class YLController: NSObject, NSWindowDelegate {
         if isWindowSetupDone { return }
         isWindowSetupDone = true
         
-        window._setContentHasShadow(false)
+        window.hasShadow = false
         window.isOpaque = false
         if #available(macOS 11.0, *) {
             window.toolbarStyle = .expanded
