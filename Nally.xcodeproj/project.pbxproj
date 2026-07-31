@@ -31,6 +31,8 @@
 		ADD003CB467A75A449C9BD8F /* YLApplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD003D20928BCB11D2B70EC /* YLApplication.swift */; };
 		ADD003EA0F185478C410AB6C /* YLContextualMenuManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD003F485BFBD9404335BAE /* YLContextualMenuManager.swift */; };
 		ADD0032B082E22056008245D /* YLController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD003306659F452C22F522E /* YLController.swift */; };
+		71E1E8EB0000000000000001 /* YLController+Delegates.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71E1E8EB0000000000000002 /* YLController+Delegates.swift */; };
+		71E1E8EB0000000000000005 /* YLController+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71E1E8EB0000000000000006 /* YLController+Actions.swift */; };
 		ADD001EEE29E83A87CE86C8A /* YLTerminal.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD001F408FCD8990CB2B96A /* YLTerminal.swift */; };
 		ADD000A88119515F88A137E7 /* YLConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD000B780D12F1CE4CCCAA6 /* YLConnection.swift */; };
 		ADD000C21FF91B9B670C67B2 /* YLTelnet.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD000D5E726BC113FCE71D5 /* YLTelnet.swift */; };
@@ -55,6 +57,9 @@
 		850711AB0CA7A347005F4734 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 850711AA0CA7A347005F4734 /* ApplicationServices.framework */; };
 		85137B330D02192800833909 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 85137B320D02192800833909 /* Credits.rtf */; };
 		8570AD5F0A3923A900838442 /* YLView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8570AD5E0A3923A900838442 /* YLView.swift */; };
+		71E1E8EB0000000000000003 /* YLView+KeyboardIME.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71E1E8EB0000000000000004 /* YLView+KeyboardIME.swift */; };
+		71E1E8EB0000000000000007 /* YLView+MouseEvents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71E1E8EB0000000000000008 /* YLView+MouseEvents.swift */; };
+		71E1E8EB0000000000000009 /* YLView+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71E1E8EB000000000000000A /* YLView+Actions.swift */; };
 		8579CA2A0CF21D3D005A8353 /* YLSite.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8579CA290CF21D3D005A8353 /* YLSite.swift */; };
 		857EAE2A0CF1D62900777C15 /* connect.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 857EAE290CF1D62900777C15 /* connect.pdf */; };
 		857EAE4F0CF1D89300777C15 /* offline.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 857EAE4E0CF1D89300777C15 /* offline.pdf */; };
@@ -125,6 +130,8 @@
 		ADD003D20928BCB11D2B70EC /* YLApplication.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLApplication.swift; sourceTree = "<group>"; };
 		ADD003F485BFBD9404335BAE /* YLContextualMenuManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLContextualMenuManager.swift; sourceTree = "<group>"; };
 		ADD003306659F452C22F522E /* YLController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLController.swift; sourceTree = "<group>"; };
+		71E1E8EB0000000000000002 /* YLController+Delegates.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "YLController+Delegates.swift"; sourceTree = "<group>"; };
+		71E1E8EB0000000000000006 /* YLController+Actions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "YLController+Actions.swift"; sourceTree = "<group>"; };
 		ADD001F408FCD8990CB2B96A /* YLTerminal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLTerminal.swift; sourceTree = "<group>"; };
 		ADD000B780D12F1CE4CCCAA6 /* YLConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLConnection.swift; sourceTree = "<group>"; };
 		ADD000D5E726BC113FCE71D5 /* YLTelnet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLTelnet.swift; sourceTree = "<group>"; };
@@ -160,6 +167,9 @@
 		8540FE4712AB8BA3000FE1D6 /* TextSuiteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TextSuiteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8540FE4812AB8BA3000FE1D6 /* TextSuiteTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "TextSuiteTests-Info.plist"; sourceTree = "<group>"; };
 		8570AD5E0A3923A900838442 /* YLView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLView.swift; sourceTree = "<group>"; };
+		71E1E8EB0000000000000004 /* YLView+KeyboardIME.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "YLView+KeyboardIME.swift"; sourceTree = "<group>"; };
+		71E1E8EB0000000000000008 /* YLView+MouseEvents.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "YLView+MouseEvents.swift"; sourceTree = "<group>"; };
+		71E1E8EB000000000000000A /* YLView+Actions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "YLView+Actions.swift"; sourceTree = "<group>"; };
 		8579CA290CF21D3D005A8353 /* YLSite.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLSite.swift; sourceTree = "<group>"; };
 		857EAE290CF1D62900777C15 /* connect.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = connect.pdf; sourceTree = "<group>"; };
 		857EAE4E0CF1D89300777C15 /* offline.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = offline.pdf; sourceTree = "<group>"; };
@@ -211,6 +221,8 @@
 				ADD003D20928BCB11D2B70EC /* YLApplication.swift */,
 				ADD003F485BFBD9404335BAE /* YLContextualMenuManager.swift */,
 				ADD003306659F452C22F522E /* YLController.swift */,
+				71E1E8EB0000000000000002 /* YLController+Delegates.swift */,
+				71E1E8EB0000000000000006 /* YLController+Actions.swift */,
 				ADD001F408FCD8990CB2B96A /* YLTerminal.swift */,
 				ADD000B780D12F1CE4CCCAA6 /* YLConnection.swift */,
 				ADD000D5E726BC113FCE71D5 /* YLTelnet.swift */,
@@ -358,6 +370,9 @@
 			isa = PBXGroup;
 			children = (
 				8570AD5E0A3923A900838442 /* YLView.swift */,
+				71E1E8EB0000000000000004 /* YLView+KeyboardIME.swift */,
+				71E1E8EB0000000000000008 /* YLView+MouseEvents.swift */,
+				71E1E8EB000000000000000A /* YLView+Actions.swift */,
 				07B73DA10E581E2C00CC97D3 /* YLEncodingTable.swift */,
 				07B73D9F0E581E2C00CC97D3 /* YLKeychain.swift */,
 			);
@@ -545,6 +560,8 @@
 				ADD003CB467A75A449C9BD8F /* YLApplication.swift in Sources */,
 				ADD003EA0F185478C410AB6C /* YLContextualMenuManager.swift in Sources */,
 				ADD0032B082E22056008245D /* YLController.swift in Sources */,
+				71E1E8EB0000000000000001 /* YLController+Delegates.swift in Sources */,
+				71E1E8EB0000000000000005 /* YLController+Actions.swift in Sources */,
 				ADD001EEE29E83A87CE86C8A /* YLTerminal.swift in Sources */,
 				ADD000A88119515F88A137E7 /* YLConnection.swift in Sources */,
 				ADD000C21FF91B9B670C67B2 /* YLTelnet.swift in Sources */,
@@ -567,6 +584,9 @@
 				02A5DAA01EFF4F8996F0203C /* PreferencesView.swift in Sources */,
 				9F2EBBE877A24C96811D3B8C /* SitesView.swift in Sources */,
 				8570AD5F0A3923A900838442 /* YLView.swift in Sources */,
+				71E1E8EB0000000000000003 /* YLView+KeyboardIME.swift in Sources */,
+				71E1E8EB0000000000000007 /* YLView+MouseEvents.swift in Sources */,
+				71E1E8EB0000000000000009 /* YLView+Actions.swift in Sources */,
 				07B73DA20E581E2C00CC97D3 /* YLEncodingTable.swift in Sources */,
 				07B73DA00E581E2C00CC97D3 /* YLKeychain.swift in Sources */,
 				85F7F2090B06EE36000C4CDF /* YLLGlobalConfig.swift in Sources */,
