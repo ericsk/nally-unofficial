@@ -14,10 +14,10 @@ all:
 
 clean:
 	@echo "Cleaning Nally build artifacts..."
-	@$(XCODEBUILD) -scheme $(SCHEME) clean -derivedDataPath "$(DERIVED_DATA)" SYMROOT="$(SYMROOT)" 2>/dev/null || true
 	@rm -rf "$(SYMROOT)"
 	@rm -f Nally.xcodeproj/project.xcworkspace/xcuserdata/* 2>/dev/null || true
 	@rm -f Nally.xcodeproj/xcuserdata/* 2>/dev/null || true
+	@rm -f Nally.xcodeproj/*.mode1v3 Nally.xcodeproj/*.pbxuser 2>/dev/null || true
 	@echo "Clean completed."
 
 test:
