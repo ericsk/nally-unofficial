@@ -4,6 +4,7 @@ import SwiftUI
 @testable import Nally
 
 @Suite("App UI State & MenuBar Integration Tests")
+@MainActor
 struct AppUIStateTests {
     
     @Test("AppState Initialization and Focus Flags")

@@ -62,7 +62,11 @@ public class YLTelnet: YLConnection {
     private let TELQUAL_SEND: UInt8 = 1
 
     deinit {
-        close()
+        readTask?.cancel()
+        if let conn = connection {
+            conn.stateUpdateHandler = nil
+            conn.cancel()
+        }
     }
     
     @objc public override func close() {

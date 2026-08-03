@@ -4,6 +4,7 @@ import SwiftData
 @testable import Nally
 
 @Suite("SwiftData Site Management Tests")
+@MainActor
 struct SiteDataTests {
     
     @Test("YLSite Model Creation and Defaults Initialization")

@@ -11,6 +11,7 @@ import AppKit
 @testable import Nally
 
 @Suite("Modern Image Previewer & Format Detection Tests")
+@MainActor
 struct ImagePreviewerTests {
     
     @Test("Image Extension Recognition for Modern Formats")

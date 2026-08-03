@@ -8,6 +8,7 @@
 
 import Cocoa
 
+@MainActor
 public protocol YLConnectionProtocol: AnyObject {
     func close()
     func reconnect()
@@ -28,6 +29,7 @@ public protocol YLConnectionProtocol: AnyObject {
     func lastTouchDate() -> Date?
 }
 
+@MainActor
 @objc(YLConnection)
 public class YLConnection: NSObject, YLConnectionProtocol {
     @objc(connectionWithAddress:)

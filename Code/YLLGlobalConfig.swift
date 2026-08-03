@@ -2,6 +2,7 @@ import Foundation
 import Observation
 import Cocoa
 
+@MainActor
 @Observable
 @objc(YLLGlobalConfig)
 @objcMembers

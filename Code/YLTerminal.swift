@@ -8,6 +8,7 @@
 
 import Cocoa
 
+@MainActor
 @objc(YLTerminal)
 public class YLTerminal: NSObject {
     @objc public var row: Int32 = 0
