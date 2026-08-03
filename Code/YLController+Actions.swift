@@ -283,9 +283,9 @@ extension YLController {
     
     @IBAction public func openPreferencesWindow(_ sender: Any?) {
         if #available(macOS 13, *) {
-            NSApp.sendAction(Selector("showSettingsWindow:"), to: nil, from: nil)
+            NSApp.sendAction(NSSelectorFromString("showSettingsWindow:"), to: nil, from: nil)
         } else {
-            NSApp.sendAction(Selector("showPreferencesWindow:"), to: nil, from: nil)
+            NSApp.sendAction(NSSelectorFromString("showPreferencesWindow:"), to: nil, from: nil)
         }
     }
 }

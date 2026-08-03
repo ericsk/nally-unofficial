@@ -208,14 +208,14 @@ struct AppPicker: View {
     }
     
     private func loadApps() {
-        let schemeCF = scheme as CFString
         var list: [(id: String, name: String)] = []
-        if let handlers = LSCopyAllHandlersForURLScheme(schemeCF)?.takeRetainedValue() as? [String] {
-            let ws = NSWorkspace.shared
-            for handler in handlers {
-                if let appURL = ws.urlForApplication(withBundleIdentifier: handler) {
+        let ws = NSWorkspace.shared
+        if let dummyURL = URL(string: "\(scheme)://") {
+            let appURLs = ws.urlsForApplications(toOpen: dummyURL)
+            for appURL in appURLs {
+                if let bundleId = Bundle(url: appURL)?.bundleIdentifier {
                     let name = (try? appURL.resourceValues(forKeys: [.localizedNameKey]).localizedName) ?? appURL.deletingPathExtension().lastPathComponent
-                    list.append((id: handler, name: name))
+                    list.append((id: bundleId, name: name))
                 }
             }
         }
@@ -227,8 +227,14 @@ struct AppPicker: View {
         
         self.apps = list
         
-        if let defaultHandler = LSCopyDefaultHandlerForURLScheme(schemeCF)?.takeRetainedValue() as String? {
-            self.selectedAppId = defaultHandler
+        var defaultHandler: String? = nil
+        if let dummyURL = URL(string: "\(scheme)://"),
+           let appURL = NSWorkspace.shared.urlForApplication(toOpen: dummyURL) {
+            defaultHandler = Bundle(url: appURL)?.bundleIdentifier
+        }
+        
+        if let handler = defaultHandler {
+            self.selectedAppId = handler
         } else {
             self.selectedAppId = nallyId
         }

@@ -1,7 +1,6 @@
 import Foundation
 import SwiftData
 
-@MainActor
 @Model
 public final class YLSite: Identifiable, Codable {
     @Attribute(.unique) public var id: UUID = UUID()

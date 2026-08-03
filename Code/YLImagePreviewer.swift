@@ -12,7 +12,7 @@ import UniformTypeIdentifiers
 
 @MainActor
 @objc(YLImagePreviewer)
-public class YLImagePreviewer: NSObject, ObservableObject, URLSessionDownloadDelegate {
+public class YLImagePreviewer: NSObject, ObservableObject, @preconcurrency URLSessionDownloadDelegate {
     private var downloadTask: URLSessionDownloadTask?
     private var downloadedData: Data?
     public private(set) var originalUrl: URL
