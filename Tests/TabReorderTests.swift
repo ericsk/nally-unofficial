@@ -4,6 +4,7 @@ import AppKit
 @testable import Nally
 
 @Suite("Terminal Tab Reordering & Management Tests")
+@MainActor
 struct TabReorderTests {
     
     @Test("YLView Tab Array Reordering Bounds & Operation")

@@ -381,6 +381,7 @@ struct ColorPickerGrid: View {
 
 // MARK: - Font Panel Bridge Implementation
 
+@MainActor
 @objcMembers
 class FontPanelBridge: NSObject {
     static let shared = FontPanelBridge()

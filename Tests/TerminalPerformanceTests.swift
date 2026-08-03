@@ -10,6 +10,7 @@ import Foundation
 @testable import Nally
 
 @Suite("Terminal Rendering Performance & Selective Redraw Tests")
+@MainActor
 struct TerminalPerformanceTests {
     
     @Test("Row Dirty Tracking and Clearing Logic")

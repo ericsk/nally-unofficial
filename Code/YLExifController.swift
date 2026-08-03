@@ -1,6 +1,7 @@
 import Cocoa
 import SwiftUI
 
+@MainActor
 @objc(YLExifController)
 @Observable
 public class YLExifController: NSObject {

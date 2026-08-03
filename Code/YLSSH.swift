@@ -10,7 +10,13 @@ public class YLSSH: YLConnection {
     private var ioTask: Task<Void, Never>?
     
     deinit {
-        close()
+        ioTask?.cancel()
+        if let proc = process, proc.isRunning {
+            proc.terminate()
+        }
+        if masterFd >= 0 {
+            Darwin.close(masterFd)
+        }
     }
     
     @objc public override func close() {

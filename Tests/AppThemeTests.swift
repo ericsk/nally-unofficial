@@ -4,6 +4,7 @@ import SwiftUI
 @testable import Nally
 
 @Suite("App Theme Preference & Appearance Tests")
+@MainActor
 struct AppThemeTests {
     @Test("AppTheme Conversion to NSAppearance")
     func testNSAppearanceMapping() {

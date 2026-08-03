@@ -11,6 +11,7 @@ import Combine
 import Observation
 import SwiftData
 
+@MainActor
 @Observable
 @objc(YLController)
 @objcMembers

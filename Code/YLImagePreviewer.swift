@@ -10,6 +10,7 @@ import SwiftUI
 import ImageIO
 import UniformTypeIdentifiers
 
+@MainActor
 @objc(YLImagePreviewer)
 public class YLImagePreviewer: NSObject, ObservableObject, URLSessionDownloadDelegate {
     private var downloadTask: URLSessionDownloadTask?

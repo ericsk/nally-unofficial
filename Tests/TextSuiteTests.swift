@@ -3,6 +3,7 @@ import Foundation
 @testable import Nally
 
 @Suite("Text Suite & Line Wrapping Tests")
+@MainActor
 struct TextSuiteTests {
     init() {
         YLEncodingTable.initTable()

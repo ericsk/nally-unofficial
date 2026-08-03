@@ -11,6 +11,7 @@ import AppKit
 @testable import Nally
 
 @Suite("PTT Article Code (#AID) Parsing & Menu Tests")
+@MainActor
 struct PTTAIDTests {
     
     @Test("Extract Standard PTT AID with Hash Prefix")

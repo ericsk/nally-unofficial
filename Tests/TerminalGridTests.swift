@@ -3,6 +3,7 @@ import Foundation
 @testable import Nally
 
 @Suite("Terminal Grid & Memory Safety Tests")
+@MainActor
 struct TerminalGridTests {
     @Test("YLTerminal Grid Matrix Initialization and Row/Column Dimensions")
     func testTerminalInitialization() {
