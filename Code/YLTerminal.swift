@@ -285,20 +285,35 @@ public class YLTerminal: NSObject {
     
     @objc(clearRow:fromStart:toEnd:)
     public func clearRow(_ r: Int32, fromStart s: Int32, toEnd e: Int32) {
+        guard r >= 0 && r < row && s >= 0 && e < column && s <= e else { return }
+        var emptyAttr = attribute(v: gEmptyAttr)
+        emptyAttr.f.bgColor = UInt32(_bgColor & 0xF)
+        emptyAttr.f.reverse = UInt32(_reverse ? 1 : 0)
+        let emptyCell = cell(byte: 0, attr: emptyAttr)
+        
         for i in Int(s)...Int(e) {
-            grid[Int(r)][i].byte = 0
-            grid[Int(r)][i].attr.v = gEmptyAttr
-            grid[Int(r)][i].attr.f.bgColor = UInt32(_bgColor & 0xF)
-            grid[Int(r)][i].attr.f.reverse = UInt32(_reverse ? 1 : 0)
-            setDirty(true, atRow: r, column: Int32(i))
+            grid[Int(r)][i] = emptyCell
         }
+        
+        let startIdx = Int(r * column + s)
+        let endIdx = Int(r * column + e)
+        dirty.withUnsafeMutableBufferPointer { buf in
+            guard let base = buf.baseAddress else { return }
+            for i in startIdx...endIdx {
+                base[i] = true
+            }
+        }
+        dirtyRows[Int(r)] = true
     }
     
     // MARK: - Dirty
     @objc public func setAllDirty() {
         let end = Int(column * row)
-        for i in 0..<end {
-            dirty[i] = true
+        dirty.withUnsafeMutableBufferPointer { buf in
+            guard let base = buf.baseAddress else { return }
+            for i in 0..<end {
+                base[i] = true
+            }
         }
         for r in 0..<Int(row) {
             dirtyRows[r] = true
@@ -310,10 +325,27 @@ public class YLTerminal: NSObject {
         guard r >= 0 && r < row else { return }
         let start = Int(r * column)
         let end = Int((r + 1) * column)
-        for i in start..<end {
-            dirty[i] = true
+        dirty.withUnsafeMutableBufferPointer { buf in
+            guard let base = buf.baseAddress else { return }
+            for i in start..<end {
+                base[i] = true
+            }
         }
         dirtyRows[Int(r)] = true
+    }
+    
+    @objc(clearDirtyForRow:)
+    public func clearDirty(forRow r: Int32) {
+        guard r >= 0 && r < row else { return }
+        let start = Int(r * column)
+        let end = Int((r + 1) * column)
+        dirty.withUnsafeMutableBufferPointer { buf in
+            guard let base = buf.baseAddress else { return }
+            for i in start..<end {
+                base[i] = false
+            }
+        }
+        dirtyRows[Int(r)] = false
     }
     
     @objc(isDirtyAtRow:column:)

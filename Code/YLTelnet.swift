@@ -26,6 +26,7 @@ public class YLTelnet: YLConnection {
     private var typeOfOperation: UInt8 = 0
     private var sbOption: UInt8 = 0
     private var sbBuffer: NSMutableData?
+    private var reusableReadBuffer = [UInt8]()
     
     private enum TelnetState {
         case topLevel
@@ -206,7 +207,8 @@ public class YLTelnet: YLConnection {
     
     @objc(receiveBytes:length:)
     public override func receiveBytes(_ bytes: UnsafePointer<UInt8>, length: Int) {
-        var terminalBuf = [UInt8]()
+        reusableReadBuffer.removeAll(keepingCapacity: true)
+        reusableReadBuffer.reserveCapacity(length)
         
         for i in 0..<length {
             let c = bytes[i]
@@ -218,7 +220,7 @@ public class YLTelnet: YLConnection {
                     state = .seenIAC
                 } else {
                     if !synch {
-                        terminalBuf.append(c)
+                        reusableReadBuffer.append(c)
                     } else if c == DM {
                         synch = false
                     }
@@ -310,10 +312,10 @@ public class YLTelnet: YLConnection {
             }
         }
         
-        if !terminalBuf.isEmpty {
-            terminalBuf.withUnsafeBufferPointer { bufferPtr in
+        if !reusableReadBuffer.isEmpty {
+            reusableReadBuffer.withUnsafeBufferPointer { bufferPtr in
                 if let baseAddress = bufferPtr.baseAddress {
-                    self.terminal?.feedBytes(baseAddress, length: Int32(terminalBuf.count), connection: self)
+                    self.terminal?.feedBytes(baseAddress, length: Int32(reusableReadBuffer.count), connection: self)
                 }
             }
         }
