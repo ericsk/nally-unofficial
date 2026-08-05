@@ -601,10 +601,7 @@ public class YLView: NSView {
         
         for r in 0..<gRow {
             if ds.isRowDirty(Int32(r)) {
-                for c in 0..<gColumn {
-                    ds.setDirty(false, atRow: Int32(r), column: Int32(c))
-                }
-                ds.clearRowDirty(Int32(r))
+                ds.clearDirty(forRow: Int32(r))
             }
         }
         

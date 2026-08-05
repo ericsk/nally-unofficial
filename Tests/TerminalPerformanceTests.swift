@@ -91,4 +91,44 @@ struct TerminalPerformanceTests {
         #expect(term.isRowDirty(0) == true)
         #expect(term.isRowDirty(23) == true)
     }
+    
+    @Test("Row Dirty Batch Clear and Set")
+    func testRowDirtyBatchClearAndSet() {
+        let term = YLTerminal()
+        term.row = 24
+        term.column = 80
+        term.clearAll()
+        
+        term.setAllDirty()
+        #expect(term.isRowDirty(5) == true)
+        #expect(term.isDirty(atRow: 5, column: 0) == true)
+        #expect(term.isDirty(atRow: 5, column: 79) == true)
+        
+        term.clearDirty(forRow: 5)
+        #expect(term.isRowDirty(5) == false)
+        #expect(term.isDirty(atRow: 5, column: 0) == false)
+        #expect(term.isDirty(atRow: 5, column: 79) == false)
+        #expect(term.isRowDirty(4) == true)
+        #expect(term.isRowDirty(6) == true)
+    }
+    
+    @Test("Clear Row Optimization and Attribute Preserving")
+    func testClearRowOptimization() {
+        let term = YLTerminal()
+        term.row = 24
+        term.column = 80
+        term.clearAll()
+        
+        // Clear dirty flags
+        for r in 0..<24 {
+            term.clearDirty(forRow: Int32(r))
+        }
+        
+        term.clearRow(10, fromStart: 5, toEnd: 15)
+        #expect(term.isRowDirty(10) == true)
+        #expect(term.isDirty(atRow: 10, column: 4) == false)
+        #expect(term.isDirty(atRow: 10, column: 5) == true)
+        #expect(term.isDirty(atRow: 10, column: 15) == true)
+        #expect(term.isDirty(atRow: 10, column: 16) == false)
+    }
 }
