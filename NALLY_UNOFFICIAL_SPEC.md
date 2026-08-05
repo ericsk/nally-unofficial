@@ -3,7 +3,7 @@
 ## 1. 專案概述 (Project Overview)
 Nally Unofficial 是一個開源的 macOS 終端機/BBS (Telnet/SSH) 用戶端程式。本專案的主要目標是將傳統基於 Objective-C、Nib/XIB 以及過時 Cocoa 繪圖與事件處理 API 的 Nally 移植至現代的 Apple Silicon (arm64) 架構，並逐步重構為基於 Swift 與 SwiftUI 的現代 macOS 應用程式。
 
-目前主分支已成功完成 **Phase A 至 Phase C** 以及 **Option 1 ~ Option 3** 的全面升級，達成了 100% 純程式化與純 SwiftUI 生命週期、零 Interface Builder / Nib 依賴、完全淘汰外部 PSMTabBarControl 框架、以及 SSH/Telnet 網路傳輸層的全 Concurrency 化。
+目前主分支已成功完成 **Phase A 至 Phase C**、**Option 1 ~ Option 3** 以及 **Priority 1 ~ Priority 2 效能與記憶體深度優化**，達成了 100% 純程式化與純 SwiftUI 生命週期、零 Interface Builder / Nib 依賴、完全淘汰外部 PSMTabBarControl 框架、SSH/Telnet 網路傳輸層全 Concurrency 化、終端機捲動與繪圖生命週期徹底解耦、以及 CoreText/Dirty 狀態管理的全程零初始化與 O(1) 批次操作。
 
 ---
 
@@ -49,12 +49,14 @@ graph TD
 
 ### 2.4 網路通訊層 (Network Stack & Swift Concurrency)
 * **[YLConnection.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLConnection.swift)**: 網路通訊協定抽象介面與連線工廠。屬性 `connected` 採 Stored `@objc dynamic var` 配合 `didSet` 自動觸發 KVO 並透過 `YLConnectionStateDidChangeNotification` 全域發送狀態改變廣播。
-* **[YLTelnet.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLTelnet.swift)**: 採用 Swift Concurrency (`Task` / `AsyncStream<Data>`) 重構。徹底剔除舊式 `performSelector(afterDelay:)` 延遲與遞迴接收閉包，實現結構化非阻塞資料流接收與協定剖析。
+* **[YLTelnet.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLTelnet.swift)**: 採用 Swift Concurrency (`Task` / `AsyncStream<Data>`) 重構，並實作長期保留容量的 `reusableReadBuffer` 緩衝區，在短時間大流量 BBS 資料封包接收時達成零 Heap 動態再分配。徹底剔除舊式 `performSelector(afterDelay:)` 延遲與遞迴接收閉包，實現結構化非阻塞資料流接收與協定剖析。
 * **[YLSSH.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLSSH.swift)**: 採用 Swift Concurrency (`Task` / `AsyncStream<Data>`) 重構。利用 POSIX `posix_openpt` / `ptsname` 建立虛擬終端機 (PTY)，搭配 Foundation `Process` 執行系統 `/usr/bin/ssh`，實現非阻塞雙向讀寫與安全程序釋放。
 
 ### 2.5 繪圖與渲染引擎 (Rendering Engine)
 * **[YLViewDrawing.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLViewDrawing.swift)**: 透過 Swift 擴充 `YLView` 繪圖邏輯。使用 CoreGraphics / CoreText API 進行 GPU 加速字元渲染：
-  * 解析 ANSI 色彩並套用對應的前景色與背景色。
+  * 將終端機 VT100 換行捲動與點陣圖同步繪製完全解耦，移除舊有的 Cocoa Bitmap 記憶體搬移 (`extendBottom`/`extendTop`)。
+  * 採用 `Array(unsafeUninitializedCapacity:)` 與 `RowDrawingBuffer` 重用空間著色 Glyph 與座標序列，避免陣列初始填零與切片拷貝，達成 CoreText 渲染零動態分配。
+  * 解析 ANSI 色彩並套用對應的前景色與背景色，支援 Dirty 狀態列級 O(1) 批次清除與重設。
   * 繪製 BBS 特殊框線與符號字元（如三角塊 `◢◣◤◥`、方塊等），採用自訂 Bezier 路徑填充。
   * 實作選取區 (Selection)、游標閃爍 (Blink) 與字型平滑化 (Font Smoothing)。
 
@@ -97,6 +99,8 @@ graph TD
 | **macOS 14+ / 15+ 現代化 UI & UX (`MenuBarExtra` + Window Scene)** | 在頂端 Menu Bar 加入 `MenuBarExtra` 常駐一鍵快捷連線，提供「偏好設定」控制顯示開關，並全面整合原生 SwiftUI Window Scene 與鍵盤快捷鍵。 | [NallyApp.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/NallyApp.swift), [PreferencesView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/PreferencesView.swift), [AppUIStateTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/AppUIStateTests.swift) |
 | **SwiftUI 終端機分頁列 (`NallyTabBarView`) 原生化與拖曳重排** | 重構分頁列支援滑鼠 Drag & Drop 拖曳重排、Tab 右鍵選單 (Reconnect, Close, Close Others, Copy Address) 與背景訊息橙點提示燈。 | [NallyApp.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/NallyApp.swift), [YLController.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLController.swift), [TabReorderTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/TabReorderTests.swift) |
 | **終端機渲染效能與記憶體優化 (Selective Dirty Row Redraw)** | 導入列級別 (Row-level) Dirty 追蹤與 O(1) 靜態跳過，重構 `updateBackedImage()` 僅重繪文字有變動的行，大幅降低繪圖 CPU 開銷，並修正 `setDirtyForRow` 計算範圍。 | [YLTerminal.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLTerminal.swift), [YLView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLView.swift), [TerminalPerformanceTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/TerminalPerformanceTests.swift) |
+| **終端機捲動與 CoreText 繪圖記憶體零初始化優化 (Priority 1)** | 徹底解耦 VT100 換行捲動 (`ESC_IND`, `ESC_RI`, `ESC_NEL`, Wraptext, Backspace wrap) 與同步點陣圖重繪，移除 75 行遺留的 Cocoa `extendBottom`/`extendTop` 記憶體搬移；改用 `Array(unsafeUninitializedCapacity:)` 改寫 CoreText Glyph 與座標緩衝區著色。 | [YLTerminal.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLTerminal.swift), [YLView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLView.swift), [YLViewDrawing.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLViewDrawing.swift), [TerminalPerformanceTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/TerminalPerformanceTests.swift) |
+| **Dirty 狀態列級 O(1) 批次重置與 Telnet 重用緩衝區 (Priority 2)** | 於 `YLTerminal` 實作 `clearDirty(forRow:)`，以 `withUnsafeMutableBufferPointer` 批次重置整列 Dirty Boolean，將 `YLView.updateBackedImage()` 內迴圈由 1,920 次尋址降至每列 1 次呼叫；優化 `clearRow` 改用預構建 `emptyCell` 進行區段賦值；於 `YLTelnet` 引入容量保留的 `reusableReadBuffer: [UInt8]` 消除網路封包接收時的 Heap 動態分配。 | [YLTerminal.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLTerminal.swift), [YLView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLView.swift), [YLTelnet.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLTelnet.swift), [TerminalPerformanceTests.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Tests/TerminalPerformanceTests.swift) |
 
 ---
 
@@ -143,6 +147,8 @@ xcodebuild -scheme Nally -configuration Release SYMROOT=build build
 - [x] **macOS 14+ / 15+ 現代化 UI & UX (`MenuBarExtra` + Window Scene)**：加入頂端 Menu Bar 常駐連線小工具與偏好設定開關，整合 SwiftUI Window Scene 與系統快捷鍵。
 - [x] **SwiftUI 終端機分頁列 (`NallyTabBarView`) 原生化與拖曳重排**：重構分頁列支援 Drag & Drop 拖曳重排、Tab 右鍵選單、訊息指示燈與切換重繪修復。
 - [x] **終端機渲染效能與記憶體優化 (Selective Dirty Row Redraw)**：導入 Row-level Dirty 追蹤與 O(1) 靜態跳過，實現局部變動列區域重繪，降繪圖 CPU 使用率。
+- [x] **終端機捲動與 CoreText 繪圖記憶體零初始化優化 (Priority 1)**：解耦 VT100 換行捲動與點陣圖同步重繪，刪除 75 行遺留的 Cocoa `extendBottom`/`extendTop` 搬移代碼，改用 `Array(unsafeUninitializedCapacity:)` 著色 Glyph 與座標緩衝區，並新增解耦驗證測試。
+- [x] **Dirty 狀態列級 O(1) 批次重置與 Telnet 網路接收重用緩衝區 (Priority 2)**：實作 `YLTerminal.clearDirty(forRow:)` 搭配 `withUnsafeMutableBufferPointer` 批次清空 Boolean，消除每畫面 1,920 次尋址；`YLTelnet` 導入容量保留式 `reusableReadBuffer: [UInt8]` 避免接收時 Heap 重新配置；並於 `TerminalPerformanceTests` 完成全套單元測試覆蓋。
 
 ---
 
