@@ -62,4 +62,33 @@ struct TerminalPerformanceTests {
         #expect(term.isRowDirty(4) == false)
         #expect(term.isDirty(atRow: 4, column: 0) == false)
     }
+    
+    @Test("Terminal Scrolling Decoupled from View Delegate")
+    func testTerminalScrollingDecoupled() {
+        let term = YLTerminal()
+        term.row = 24
+        term.column = 80
+        term.clearAll()
+        
+        // Test ESC_IND scrolling at bottom line without delegate
+        term._cursorX = 0
+        term._cursorY = 23
+        let lf: [UInt8] = [0x0A]
+        lf.withUnsafeBufferPointer { buf in
+            term.feedBytes(buf.baseAddress!, length: 1, connection: term)
+        }
+        #expect(term.row == 24)
+        #expect(term.column == 80)
+        #expect(term.isRowDirty(0) == true)
+        #expect(term.isRowDirty(23) == true)
+        
+        // Test ESC_RI Reverse Index scrolling at top line without delegate
+        term._cursorY = 0
+        let ri: [UInt8] = [0x1B, 0x4D]
+        ri.withUnsafeBufferPointer { buf in
+            term.feedBytes(buf.baseAddress!, length: 2, connection: term)
+        }
+        #expect(term.isRowDirty(0) == true)
+        #expect(term.isRowDirty(23) == true)
+    }
 }

@@ -543,81 +543,8 @@ public class YLView: NSView {
                 }
             }
         }
-    }
+    }    
 
-    
-    @objc(extendBottomFrom:to:)
-    public func extendBottom(from start: Int32, to end: Int32) {
-        let config = YLLGlobalConfig.sharedInstance()
-        let gRow = Int(config.row)
-        let gColumn = Int(config.column)
-        
-        guard let context = _bitmapContext, let data = context.data else { return }
-        let scale = self.window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2.0
-        let bytesPerRow = context.bytesPerRow
-        
-        let srcYPoints = CGFloat(gRow - Int(end) - 1) * _fontHeight
-        let destYPoints = CGFloat(gRow - Int(end)) * _fontHeight
-        let copyHeightPoints = CGFloat(end - start) * _fontHeight
-        
-        let srcY = Int(srcYPoints * scale)
-        let destY = Int(destYPoints * scale)
-        let copyHeight = Int(copyHeightPoints * scale)
-        
-        let srcOffset = srcY * bytesPerRow
-        let destOffset = destY * bytesPerRow
-        let count = copyHeight * bytesPerRow
-        
-        let totalBytes = context.height * bytesPerRow
-        if srcOffset + count <= totalBytes && destOffset + count <= totalBytes {
-            memmove(data.advanced(by: destOffset), data.advanced(by: srcOffset), count)
-        }
-        
-        let color = config.colorAtIndex(config.bgColorIndex, hilite: false)
-        context.setFillColor(color.cgColor)
-        let cleanY = CGFloat(gRow - Int(end) - 1) * _fontHeight
-        context.fill(CGRect(x: 0.0, y: cleanY, width: CGFloat(gColumn) * _fontWidth, height: _fontHeight))
-        
-        self._backedImageCG = context.makeImage()
-        self.needsDisplay = true
-    }
-    
-    @objc(extendTopFrom:to:)
-    public func extendTop(from start: Int32, to end: Int32) {
-        let config = YLLGlobalConfig.sharedInstance()
-        let gRow = Int(config.row)
-        let gColumn = Int(config.column)
-        
-        guard let context = _bitmapContext, let data = context.data else { return }
-        let scale = self.window?.backingScaleFactor ?? NSScreen.main?.backingScaleFactor ?? 2.0
-        let bytesPerRow = context.bytesPerRow
-        
-        let srcYPoints = CGFloat(gRow - Int(end)) * _fontHeight
-        let destYPoints = CGFloat(gRow - Int(end) - 1) * _fontHeight
-        let copyHeightPoints = CGFloat(end - start) * _fontHeight
-        
-        let srcY = Int(srcYPoints * scale)
-        let destY = Int(destYPoints * scale)
-        let copyHeight = Int(copyHeightPoints * scale)
-        
-        let srcOffset = srcY * bytesPerRow
-        let destOffset = destY * bytesPerRow
-        let count = copyHeight * bytesPerRow
-        
-        let totalBytes = context.height * bytesPerRow
-        if srcOffset + count <= totalBytes && destOffset + count <= totalBytes {
-            memmove(data.advanced(by: destOffset), data.advanced(by: srcOffset), count)
-        }
-        
-        let color = config.colorAtIndex(config.bgColorIndex, hilite: false)
-        context.setFillColor(color.cgColor)
-        let cleanY = CGFloat(gRow - Int(start) - 1) * _fontHeight
-        context.fill(CGRect(x: 0.0, y: cleanY, width: CGFloat(gColumn) * _fontWidth, height: _fontHeight))
-        
-        self._backedImageCG = context.makeImage()
-        self.needsDisplay = true
-    }
-    
     @objc public func updateBackedImage() {
         let config = YLLGlobalConfig.sharedInstance()
         let gRow = Int(config.row)

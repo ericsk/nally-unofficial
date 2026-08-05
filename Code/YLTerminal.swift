@@ -219,8 +219,6 @@ public class YLTerminal: NSObject {
             _cursorX = 0
             _gotWrapped = true
             if _cursorY == _scrollEndRow {
-                _delegate?.updateBackedImage()
-                _delegate?.extendBottom(from: _scrollBeginRow, to: _scrollEndRow)
                 let emptyLine = grid[Int(_scrollBeginRow)]
                 clearRow(_scrollBeginRow)
                 for rowIdx in Int(_scrollBeginRow)..<Int(_scrollEndRow) {
@@ -253,7 +251,6 @@ public class YLTerminal: NSObject {
     // MARK: - Start / Stop
     @objc public func startConnection() {
         self.clearAll()
-        _delegate?.updateBackedImage()
         _delegate?.needsDisplay = true
     }
     
@@ -600,8 +597,6 @@ extension YLTerminal {
                         } else if _cursorX == 0 && _gotWrapped {
                             _cursorX = column - 1
                             if _cursorY == _scrollBeginRow {
-                                _delegate?.updateBackedImage()
-                                _delegate?.extendTop(from: _scrollBeginRow, to: _scrollEndRow)
                                 let emptyLine = grid[Int(_scrollEndRow)]
                                 clearRow(_scrollEndRow)
                                 for rowIdx in stride(from: Int(_scrollEndRow), to: Int(_scrollBeginRow), by: -1) {
@@ -659,8 +654,6 @@ extension YLTerminal {
                         parserState = .control
                     } else if c == ESC_RI {
                         if _cursorY == _scrollBeginRow {
-                            _delegate?.updateBackedImage()
-                            _delegate?.extendTop(from: _scrollBeginRow, to: _scrollEndRow)
                             let emptyLine = grid[Int(_scrollEndRow)]
                             clearRow(_scrollEndRow)
                             for rowIdx in stride(from: Int(_scrollEndRow), to: Int(_scrollBeginRow), by: -1) {
@@ -675,8 +668,6 @@ extension YLTerminal {
                         parserState = .normal
                     } else if c == ESC_IND {
                         if _cursorY == _scrollEndRow {
-                            _delegate?.updateBackedImage()
-                            _delegate?.extendBottom(from: _scrollBeginRow, to: _scrollEndRow)
                             let emptyLine = grid[Int(_scrollBeginRow)]
                             clearRow(_scrollBeginRow)
                             for rowIdx in Int(_scrollBeginRow)..<Int(_scrollEndRow) {
@@ -718,8 +709,6 @@ extension YLTerminal {
                     } else if c == ESC_NEL {
                         _cursorX = 0
                         if _cursorY == _scrollEndRow {
-                            _delegate?.updateBackedImage()
-                            _delegate?.extendBottom(from: _scrollBeginRow, to: _scrollEndRow)
                             let emptyLine = grid[Int(_scrollBeginRow)]
                             clearRow(_scrollBeginRow)
                             for rowIdx in Int(_scrollBeginRow)..<Int(_scrollEndRow) {

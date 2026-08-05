@@ -9,6 +9,7 @@ private class RowDrawingBuffer {
     var isDoubleColor: [Bool] = []
     var bufIndex: [Int] = []
     var position: [CGPoint] = []
+    var glyphBuffer: [CGGlyph] = []
     
     func ensureCapacity(_ count: Int) {
         if textBuf.count < count {
@@ -17,6 +18,7 @@ private class RowDrawingBuffer {
             isDoubleColor = [Bool](repeating: false, count: count)
             bufIndex = [Int](repeating: 0, count: count)
             position = [CGPoint](repeating: .zero, count: count)
+            glyphBuffer = [CGGlyph](repeating: 0, count: count)
         }
     }
 }
@@ -259,15 +261,21 @@ extension YLView {
                     
                     myCGContext.setTextDrawingMode((showHiddenText && hidden) ? .stroke : .fill)
                     
-                    var glyphs = [CGGlyph](repeating: 0, count: len)
-                    CTRunGetGlyphs(run, CFRangeMake(location, len), &glyphs)
+                    let glyphs = Array<CGGlyph>(unsafeUninitializedCapacity: len) { glyphBuf, initializedCount in
+                        CTRunGetGlyphs(run, CFRangeMake(location, len), glyphBuf.baseAddress!)
+                        initializedCount = len
+                    }
                     
                     var textMatrix = CTRunGetTextMatrix(run)
                     textMatrix.tx = 0
                     textMatrix.ty = 0
                     myCGContext.textMatrix = textMatrix
                     
-                    let glyphPositions = Array(buffer.position[(glyphOffset + location)..<(glyphOffset + location + len)])
+                    let glyphPositions = Array<CGPoint>(unsafeUninitializedCapacity: len) { posBuf, initializedCount in
+                        let src = buffer.position.withUnsafeBufferPointer { $0.baseAddress! + glyphOffset + location }
+                        posBuf.baseAddress!.initialize(from: src, count: len)
+                        initializedCount = len
+                    }
                     myCGContext.showGlyphs(glyphs, at: glyphPositions)
                     
                     location = runGlyphIndex
