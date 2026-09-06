@@ -43,6 +43,14 @@ public class YLView: NSView {
     public var _shouldOpenUrlInBackground: Bool = false
     public var _shouldUseImagePreviewer: Bool = true
     
+    // Active asynchronous paste streaming task
+    public var activePasteTask: Task<Void, Never>?
+    
+    @objc public func cancelCurrentPaste() {
+        activePasteTask?.cancel()
+        activePasteTask = nil
+    }
+    
     // Globals converted to static class variables or instance variables:
     private static var gLeftImage: NSImage?
     
@@ -146,6 +154,7 @@ public class YLView: NSView {
     }
     
     public func removeTabViewItem(_ tabViewItem: NSTabViewItem) {
+        cancelCurrentPaste()
         guard let index = tabViewItems.firstIndex(of: tabViewItem) else { return }
         notifyDelegateWillClose(tabViewItem)
         let wasSelected = (selectedTabViewItem == tabViewItem)
@@ -175,6 +184,7 @@ public class YLView: NSView {
     }
     
     public func selectTabViewItem(_ tabViewItem: NSTabViewItem?) {
+        cancelCurrentPaste()
         guard let item = tabViewItem else {
             selectedTabViewItem = nil
             updateBackedImage()

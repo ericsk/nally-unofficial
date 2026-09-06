@@ -160,36 +160,60 @@ extension YLView: NSTextInputClient {
         let mStr = NSMutableString(string: str)
         mStr.replaceOccurrences(of: "\n", with: "\r", options: .literal, range: NSRange(location: 0, length: mStr.length))
         
+        guard let conn = frontMostConnection() else { return }
+        let encoding = conn.site?.encoding ?? conn.terminal?.encoding ?? .YLBig5Encoding
+        
         var data = Data()
-        guard let conn = frontMostConnection(), let site = conn.site else { return }
+        data.reserveCapacity(mStr.length * 2)
         
         for i in 0..<mStr.length {
             let ch = mStr.character(at: i)
-            var buf = [UInt8](repeating: 0, count: 2)
             if ch < 0x007F {
-                buf[0] = UInt8(ch)
-                data.append(&buf, count: 1)
+                var b = UInt8(ch)
+                data.append(&b, count: 1)
             } else {
-                let code: UInt16
-                if site.encoding == .YLBig5Encoding {
-                    code = lookupU2B(ch)
-                } else {
-                    code = lookupU2G(ch)
-                }
-                buf[0] = UInt8(code >> 8)
-                buf[1] = UInt8(code & 0xFF)
+                let code: UInt16 = (encoding == .YLBig5Encoding) ? lookupU2B(ch) : lookupU2G(ch)
+                var buf: [UInt8] = [UInt8(code >> 8), UInt8(code & 0xFF)]
                 data.append(&buf, count: 2)
             }
         }
         
-        if microsecond == 0 {
-            conn.sendData(data)
-        } else {
-            let dataBytes = [UInt8](data)
-            for byte in dataBytes {
-                var b = byte
-                conn.sendBytes(&b, length: 1)
-                usleep(useconds_t(microsecond))
+        sendDataChunked(data, to: conn, microsecondDelay: microsecond)
+    }
+    
+    @objc(sendDataChunked:toConnection:microsecondDelay:)
+    public func sendDataChunked(_ data: Data, to connection: YLConnection, microsecondDelay: Int32) {
+        cancelCurrentPaste()
+        
+        if microsecondDelay == 0 || data.count <= 32 {
+            connection.sendData(data)
+            return
+        }
+        
+        let chunkSize = 32
+        let chunkDelayNanos = UInt64(max(Int(microsecondDelay) * chunkSize, 2_000)) * 1_000
+        
+        activePasteTask = Task { [weak self, weak connection] in
+            guard let conn = connection else { return }
+            let total = data.count
+            var offset = 0
+            
+            while offset < total {
+                if Task.isCancelled || !conn.connected {
+                    break
+                }
+                let nextOffset = min(offset + chunkSize, total)
+                let chunk = data.subdata(in: offset..<nextOffset)
+                conn.sendData(chunk)
+                offset = nextOffset
+                
+                if offset < total {
+                    try? await Task.sleep(nanoseconds: chunkDelayNanos)
+                }
+            }
+            
+            await MainActor.run { [weak self] in
+                self?.activePasteTask = nil
             }
         }
     }
@@ -201,6 +225,7 @@ extension YLView: NSTextInputClient {
             ch[0] = 0x0D
             frontMostConnection()?.sendBytes(&ch, length: 1)
         } else if aSelector == #selector(NSResponder.cancelOperation(_:)) {
+            cancelCurrentPaste()
             ch[0] = 0x1B
             frontMostConnection()?.sendBytes(&ch, length: 1)
         } else if aSelector == #selector(NSResponder.scrollToBeginningOfDocument(_:)) {
