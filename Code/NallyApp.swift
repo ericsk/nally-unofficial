@@ -430,9 +430,7 @@ struct MainSwiftUIWindowView: View {
                 .toggleStyle(.button)
                 .help("Toggle Double Byte Detection")
                 .onChange(of: config.detectDoubleByte) { _, newValue in
-                    let btn = NSButton()
-                    btn.state = newValue ? .on : .off
-                    appState.controller.setDetectDoubleByteAction(btn)
+                    appState.controller.setDetectDoubleByte(newValue)
                 }
             }
             
@@ -443,9 +441,7 @@ struct MainSwiftUIWindowView: View {
                 .toggleStyle(.button)
                 .help("Toggle Show Hidden Text")
                 .onChange(of: config.showHiddenText) { _, newValue in
-                    let btn = NSButton()
-                    btn.state = newValue ? .on : .off
-                    appState.controller.showHiddenText(btn)
+                    appState.controller.setShowHiddenText(newValue)
                 }
             }
             

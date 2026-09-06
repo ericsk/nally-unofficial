@@ -19,16 +19,7 @@ public class YLController: NSObject, NSWindowDelegate {
     @objc public dynamic weak var _mainWindow: NSWindow?
     @objc public dynamic var _telnetView: YLView?
     @objc public dynamic weak var _addressBar: NSTextField?
-    @objc public dynamic weak var _detectDoubleByteButton: NSButton?
-    
-    @objc public dynamic weak var _detectDoubleByteMenuItem: NSMenuItem?
-    @objc public dynamic weak var _closeWindowMenuItem: NSMenuItem?
-    @objc public dynamic weak var _closeTabMenuItem: NSMenuItem?
-    
-    @objc public dynamic weak var _sitesMenu: NSMenuItem?
-    @objc public dynamic weak var _showHiddenTextMenuItem: NSMenuItem?
-    @objc public dynamic weak var _encodingMenuItem: NSMenuItem?
-    @objc public dynamic weak var _exifController: YLExifController?
+    public static let encodingDidChangeNotification = Notification.Name("YLEncodingDidChangeNotification")
     
     public var sitesList: [YLSite] = []
     public var modelContainer: ModelContainer?
@@ -36,6 +27,7 @@ public class YLController: NSObject, NSWindowDelegate {
     private var lastConnectionTime = Date.distantPast
     private var lastConnectionAddress = ""
     @objc public dynamic var _pluginLoader: YLPluginLoader?
+    @objc public dynamic weak var _exifController: YLExifController?
     
 
     
@@ -58,12 +50,6 @@ public class YLController: NSObject, NSWindowDelegate {
         
         let globalConfig = YLLGlobalConfig.sharedInstance()
         
-        globalConfig.publisher(for: \.showHiddenText)
-            .sink { [weak self] show in
-                self?._showHiddenTextMenuItem?.state = show ? .on : .off
-            }
-            .store(in: &cancellables)
-            
         globalConfig.publisher(for: \.messageCount)
             .sink { count in
                 let dockTile = NSApp.dockTile
@@ -188,32 +174,11 @@ public class YLController: NSObject, NSWindowDelegate {
         }
     }
     
-    // MARK: - Menu Updates
+    // MARK: - Menu Updates (Obsolete: Handled declaratively by SwiftUI NallyCommands)
     @objc public func updateSitesMenu() {
-        guard let submenu = _sitesMenu?.submenu else { return }
-        let total = submenu.numberOfItems
-        if total > 3 {
-            for _ in 3..<total {
-                submenu.removeItem(at: 3)
-            }
-        }
-        
-        for site in sitesList {
-            let menuItem = NSMenuItem(title: site.name, action: #selector(openSiteMenu(_:)), keyEquivalent: "")
-            menuItem.representedObject = site
-            submenu.addItem(menuItem)
-        }
     }
     
     @objc public func updateEncodingMenu() {
-        guard let submenu = _encodingMenuItem?.submenu else { return }
-        for i in 0..<submenu.numberOfItems {
-            let item = submenu.item(at: i)
-            item?.state = .off
-            if let term = _telnetView?.frontMostTerminal(), i == Int(term.encoding.rawValue) {
-                item?.state = .on
-            }
-        }
     }
     
     @objc public func updateBlinkTicker(_ timer: Timer) {
@@ -268,10 +233,6 @@ public class YLController: NSObject, NSWindowDelegate {
                 refreshTabLabelNumber(tv)
             }
             updateEncodingMenu()
-            
-            let ddb = site.detectDoubleByte
-            _detectDoubleByteButton?.state = ddb ? .on : .off
-            _detectDoubleByteMenuItem?.state = ddb ? .on : .off
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -494,17 +455,13 @@ public class YLController: NSObject, NSWindowDelegate {
         _addressBar = addressBar as? NSTextField
     }
     
-    @objc public func setDetectDoubleByteButton(_ detectDoubleByteButton: Any?) {
-        _detectDoubleByteButton = detectDoubleByteButton as? NSButton
-    }
-    
     // MARK: - MenuItem Validation
     @objc public func validateMenuItem(_ item: NSMenuItem) -> Bool {
         let action = item.action
         let numTabs = _telnetView?.numberOfTabViewItems ?? 0
         if (action == #selector(selectNextTab(_:)) || action == #selector(selectPrevTab(_:))) && numTabs == 0 {
             return false
-        } else if action == #selector(setEncoding(_:)) && numTabs == 0 {
+        } else if action == #selector(setEncodingAction(_:)) && numTabs == 0 {
             return false
         }
         return true

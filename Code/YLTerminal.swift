@@ -554,11 +554,14 @@ public class YLTerminal: NSObject {
         set { cursorMoveTo(newValue, _cursorY) }
     }
     
+    private var _encoding: YLEncoding = .YLBig5Encoding
+    
     @objc public var encoding: YLEncoding {
         get {
-            return _connection?.site?.encoding ?? .YLBig5Encoding
+            return _connection?.site?.encoding ?? _encoding
         }
         set {
+            _encoding = newValue
             _connection?.site?.encoding = newValue
         }
     }

@@ -6,6 +6,7 @@ import CoreGraphics
 @objcMembers
 public class YLView: NSView {
     // Custom lightweight Tab Item container (replacing NSTabView inheritance)
+    public static let tabSelectionDidChangeNotification = Notification.Name("YLTabSelectionDidChangeNotification")
     public var tabViewItems: [NSTabViewItem] = []
     public var selectedTabViewItem: NSTabViewItem?
     public weak var delegate: AnyObject?
@@ -178,6 +179,7 @@ public class YLView: NSView {
             selectedTabViewItem = nil
             updateBackedImage()
             needsDisplay = true
+            NotificationCenter.default.post(name: YLView.tabSelectionDidChangeNotification, object: self)
             return
         }
         guard tabViewItems.contains(item) else { return }
@@ -192,6 +194,7 @@ public class YLView: NSView {
         (item.identifier as? YLConnection)?.terminal?.setAllDirty()
         updateBackedImage()
         needsDisplay = true
+        NotificationCenter.default.post(name: YLView.tabSelectionDidChangeNotification, object: self)
     }
     
     public func selectTabViewItem(at index: Int) {
