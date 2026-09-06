@@ -14,6 +14,8 @@ public class YLRun: NSObject {
     @objc public var type: YLRunType
     @objc public var string: String
     
+    private var _cachedLength: Int = -1
+    
     @objc public init(string: String, type: YLRunType, encoding: YLEncoding) {
         self.string = string
         self.type = type
@@ -26,27 +28,38 @@ public class YLRun: NSObject {
     }
     
     @objc public var length: Int {
-        if type == .space { return 1 }
-        if type == .tab { return 1 } // matches original C comment: not correct!
+        if _cachedLength >= 0 {
+            return _cachedLength
+        }
+        if type == .space {
+            _cachedLength = 1
+            return 1
+        }
+        if type == .tab {
+            _cachedLength = 1
+            return 1
+        } // matches original C comment: not correct!
         
-        var length = 0
+        var calculatedLength = 0
         for char in string.utf16 {
             if char > 0x0020 && char < 0x0080 {
-                length += 1
+                calculatedLength += 1
             } else if char >= 0x0080 {
                 // Call low-level mapping functions (bridged from encoding.h)
                 let lookupVal = (encoding == .YLBig5Encoding) ? lookupU2B(char) : lookupU2G(char)
                 if lookupVal != 0x0000 {
-                    length += 2
+                    calculatedLength += 2
                 }
             }
         }
-        return length
+        _cachedLength = calculatedLength
+        return calculatedLength
     }
     
     @objc public func appendString(_ string: String) {
         assert(self.type == .string, "You can only append run to a string.")
         self.string += string
+        _cachedLength = -1
     }
     
     @objc public func forceSplitToMaxLength(_ maxLength: Int) -> [YLRun] {
@@ -83,12 +96,20 @@ public class YLRun: NSObject {
         ]
     }
     
+    private static let forbiddenBeginTokens: [String] = [
+        "，", "。", "、", "：", "；", "？", "！", "」", "』", "》", "〉", "】", "〕", "）",
+        ",", ".", ":", ";", "!", ")", "]", "}", "-", "–"
+    ]
+    
+    private static let forbiddenEndTokens: [String] = [
+        "「", "『", "《", "〈", "【", "〔", "（", "(", "[", "{", "'", "\""
+    ]
+    
     @objc public func shouldBeAvoidAtBeginOfLine() -> Bool {
         if type == .space || type == .tab { return true }
         if type != .string { return false }
         
-        let forbiddenTokens = ["，", "。", "、", "：", "；", "？", "！", "」", "』", "》", "〉", "】", "〕", "）", ",", ".", ":", ";", "!", ")", "]", "}", "-", "–"]
-        for token in forbiddenTokens {
+        for token in Self.forbiddenBeginTokens {
             if string.hasPrefix(token) {
                 return true
             }
@@ -97,8 +118,7 @@ public class YLRun: NSObject {
     }
     
     @objc public func shouldBeAvoidAtEndOfLine() -> Bool {
-        let forbiddenTokens = ["「", "『", "《", "〈", "【", "〔", "（", "(", "[", "{", "'", "\""]
-        for token in forbiddenTokens {
+        for token in Self.forbiddenEndTokens {
             if string.hasSuffix(token) {
                 return true
             }
