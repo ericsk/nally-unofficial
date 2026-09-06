@@ -212,20 +212,29 @@ public class YLSSH: YLConnection {
         let dataStream = AsyncStream<Data> { continuation in
             let readQueue = DispatchQueue(label: "org.yllan.nally.ssh.read")
             let readSource = DispatchSource.makeReadSource(fileDescriptor: fd, queue: readQueue)
+            let bufferCapacity = 4096
+            let buf = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferCapacity)
+            var isBufferDeallocated = false
+            let deallocateBuffer = {
+                if !isBufferDeallocated {
+                    isBufferDeallocated = true
+                    buf.deallocate()
+                }
+            }
+            
             readSource.setEventHandler {
-                var buf = [UInt8](repeating: 0, count: 4096)
-                let readRes = Darwin.read(fd, &buf, buf.count)
+                let readRes = Darwin.read(fd, buf, bufferCapacity)
                 if readRes > 0 {
                     let data: Data
                     if packetMode {
                         if readRes > 1 {
                             if buf[0] == 0 { // TIOCPKT_DATA
-                                data = Data(buf[1..<readRes])
+                                data = Data(bytes: buf.advanced(by: 1), count: readRes - 1)
                                 continuation.yield(data)
                             }
                         }
                     } else {
-                        data = Data(buf[0..<readRes])
+                        data = Data(bytes: buf, count: readRes)
                         continuation.yield(data)
                     }
                 } else if readRes == 0 {
@@ -239,6 +248,7 @@ public class YLSSH: YLConnection {
             }
             
             readSource.setCancelHandler {
+                deallocateBuffer()
                 continuation.finish()
             }
             

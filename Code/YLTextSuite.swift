@@ -65,10 +65,11 @@ public class YLTextSuite: NSObject {
         var result: [String] = []
         let len = Int(length)
         var line = YLLine(width: len)
+        var queue = RunQueue(runs: runs)
         
         /* Layout the run */
-        while !runs.isEmpty {
-            let run = runs.removeFirst()
+        while !queue.isEmpty {
+            guard let run = queue.popFirst() else { break }
             
             if run.type == .newLine {
                 result.append(line.description)
@@ -85,7 +86,7 @@ public class YLTextSuite: NSObject {
             if line.runs.isEmpty {
                 let splittedRuns = run.forceSplitToMaxLength(len)
                 if splittedRuns.count > 1 {
-                    runs.insert(contentsOf: splittedRuns, at: 0)
+                    queue.prepend(contentsOf: splittedRuns)
                 } else {
                     line.addRun(run)
                 }
@@ -93,13 +94,13 @@ public class YLTextSuite: NSObject {
             }
             
             // create a new line
-            runs.insert(run, at: 0)
+            queue.prepend(run)
             if run.shouldBeAvoidAtBeginOfLine() || (line.lastStringRun()?.shouldBeAvoidAtEndOfLine() ?? false) {
                 if let poppedRuns = line.popRunsToWrapLine(), !poppedRuns.isEmpty {
-                    runs.insert(contentsOf: poppedRuns, at: 0)
+                    queue.prepend(contentsOf: poppedRuns)
                 } else if line.length < line.width { // can't pop, force split
-                    let first = runs.removeFirst()
-                    runs.insert(contentsOf: first.forceSplitToMaxLength(line.width - line.length), at: 0)
+                    let first = queue.popFirst()!
+                    queue.prepend(contentsOf: first.forceSplitToMaxLength(line.width - line.length))
                     continue
                 }
             }
@@ -134,3 +135,40 @@ public class YLTextSuite: NSObject {
         return result
     }
 }
+
+private struct RunQueue {
+    private let originalRuns: [YLRun]
+    private var headIndex: Int = 0
+    private var prependStack: [YLRun] = []
+    
+    init(runs: [YLRun]) {
+        self.originalRuns = runs
+    }
+    
+    var isEmpty: Bool {
+        return prependStack.isEmpty && headIndex >= originalRuns.count
+    }
+    
+    mutating func popFirst() -> YLRun? {
+        if let run = prependStack.popLast() {
+            return run
+        }
+        if headIndex < originalRuns.count {
+            let run = originalRuns[headIndex]
+            headIndex += 1
+            return run
+        }
+        return nil
+    }
+    
+    mutating func prepend(_ run: YLRun) {
+        prependStack.append(run)
+    }
+    
+    mutating func prepend(contentsOf runs: [YLRun]) {
+        for run in runs.reversed() {
+            prependStack.append(run)
+        }
+    }
+}
+

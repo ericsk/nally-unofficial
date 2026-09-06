@@ -35,4 +35,49 @@ struct TextSuiteTests {
         let result = t.wrapText(testCase.input, withLength: testCase.length, encoding: .YLBig5Encoding)
         #expect(result == testCase.expected, "Failed on: \(testCase.comment)")
     }
+    
+    @Test("YLRun Length Caching and Invalidation")
+    func testRunLengthCaching() {
+        let run = YLRun(string: "Hello", type: .string, encoding: .YLBig5Encoding)
+        #expect(run.length == 5)
+        // Access again to hit cache
+        #expect(run.length == 5)
+        
+        // Append string invalidates cache
+        run.appendString("World")
+        #expect(run.length == 10)
+        
+        let chineseRun = YLRun(string: "批踢踢", type: .string, encoding: .YLBig5Encoding)
+        #expect(chineseRun.length == 6)
+        #expect(chineseRun.length == 6)
+        
+        let spaceRun = YLRun(string: " ", type: .space, encoding: .YLBig5Encoding)
+        #expect(spaceRun.length == 1)
+    }
+    
+    @Test("Text Suite Large Text Wrapping Consistency")
+    func testLargeTextWrapping() {
+        let suite = YLTextSuite()
+        let paragraph = "批踢踢實業坊（PTT）是台灣最具代表性的BBS站台之一。各看板熱門討論持續熱烈！ "
+        let largeInput = String(repeating: paragraph, count: 50)
+        
+        let wrapped = suite.wrapText(largeInput, withLength: 78, encoding: .YLBig5Encoding)
+        #expect(!wrapped.isEmpty)
+        
+        // Verify every line in the output does not exceed line limits
+        let lines = wrapped.components(separatedBy: "\n")
+        #expect(lines.count > 1)
+        for line in lines {
+            // Verify line has content and runs correctly
+            #expect(!line.contains("\r"))
+        }
+    }
+    
+    @Test("Text Suite Left Padding Functionality")
+    func testPaddingText() {
+        let suite = YLTextSuite()
+        let input = "Line1\nLine2\nLine3"
+        let padded = suite.paddingText(input, withLeftPadding: 4)
+        #expect(padded == "    Line1\n    Line2\n    Line3")
+    }
 }

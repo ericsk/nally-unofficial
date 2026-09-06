@@ -60,9 +60,10 @@ public class YLLine: NSObject {
         
         while !runs.isEmpty {
             let run = runs.removeLast()
-            poppedRuns.insert(run, at: 0)
+            poppedRuns.append(run)
             
             if !runs.isEmpty && !runs.last!.shouldBeAvoidAtEndOfLine() && !run.shouldBeAvoidAtBeginOfLine() {
+                poppedRuns.reverse()
                 return poppedRuns
             }
         }
