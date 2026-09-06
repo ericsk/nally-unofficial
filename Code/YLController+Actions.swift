@@ -3,30 +3,47 @@ import SwiftUI
 
 extension YLController {
     // MARK: - Actions
+    public func setDetectDoubleByte(_ ddb: Bool) {
+        ((_telnetView?.frontMostConnection() as? YLConnection)?.site as? YLSite)?.detectDoubleByte = ddb
+    }
+    
     @IBAction public func setDetectDoubleByteAction(_ sender: Any?) {
         var ddb: Bool
         if let control = sender as? NSControl {
             ddb = control.integerValue != 0
         } else if let menuItem = sender as? NSMenuItem {
             ddb = menuItem.state == .off
+        } else if let boolVal = sender as? Bool {
+            ddb = boolVal
         } else {
             ddb = false
         }
-        
-        ((_telnetView?.frontMostConnection() as? YLConnection)?.site as? YLSite)?.detectDoubleByte = ddb
-        _detectDoubleByteButton?.state = ddb ? .on : .off
-        _detectDoubleByteMenuItem?.state = ddb ? .on : .off
+        setDetectDoubleByte(ddb)
     }
     
-    @IBAction public func setEncoding(_ sender: Any?) {
-        guard let menuItem = sender as? NSMenuItem, let submenu = _encodingMenuItem?.submenu else { return }
-        let index = submenu.index(of: menuItem)
-        if let term = _telnetView?.frontMostTerminal() {
-            term.encoding = YLEncoding(rawValue: UInt16(index)) ?? .YLBig5Encoding
-            term.setAllDirty()
-            _telnetView?.updateBackedImage()
-            _telnetView?.needsDisplay = true
-            updateEncodingMenu()
+    @objc(setEncodingWithEncoding:)
+    public func setEncoding(_ encoding: YLEncoding) {
+        guard let term = _telnetView?.frontMostTerminal() else { return }
+        guard term.encoding != encoding else { return }
+        term.encoding = encoding
+        term.setAllDirty()
+        _telnetView?.updateBackedImage()
+        _telnetView?.needsDisplay = true
+        NotificationCenter.default.post(name: YLController.encodingDidChangeNotification, object: term)
+    }
+    
+    @IBAction
+    @objc(setEncoding:)
+    public func setEncodingAction(_ sender: Any?) {
+        if let enc = sender as? YLEncoding {
+            setEncoding(enc)
+            return
+        }
+        if let menuItem = sender as? NSMenuItem {
+            if let enc = YLEncoding(rawValue: UInt16(menuItem.tag)) {
+                setEncoding(enc)
+                return
+            }
         }
     }
     
@@ -265,20 +282,25 @@ extension YLController {
         }
     }
     
+    public func setShowHiddenText(_ show: Bool) {
+        YLLGlobalConfig.sharedInstance().showHiddenText = show
+        _telnetView?.refreshHiddenRegion()
+        _telnetView?.updateBackedImage()
+        _telnetView?.needsDisplay = true
+    }
+    
     @IBAction public func showHiddenText(_ sender: Any?) {
         var show: Bool
         if let menuItem = sender as? NSMenuItem {
             show = menuItem.state == .off
         } else if let control = sender as? NSControl {
             show = control.integerValue != 0
+        } else if let boolVal = sender as? Bool {
+            show = boolVal
         } else {
             show = false
         }
-        
-        YLLGlobalConfig.sharedInstance().showHiddenText = show
-        _telnetView?.refreshHiddenRegion()
-        _telnetView?.updateBackedImage()
-        _telnetView?.needsDisplay = true
+        setShowHiddenText(show)
     }
     
     @IBAction public func openPreferencesWindow(_ sender: Any?) {

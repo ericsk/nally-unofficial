@@ -152,12 +152,15 @@ struct EncodingPicker: View {
             Text("GBK").tag(YLEncoding.YLGBKEncoding)
         }
         .onChange(of: currentEncoding) { _, newValue in
-            setEncoding(Int(newValue.rawValue))
+            setEncoding(newValue)
         }
         .onAppear {
             updateCurrentEncoding()
         }
-        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NSTabViewDidChangeSelectionNotification"))) { _ in
+        .onReceive(NotificationCenter.default.publisher(for: YLView.tabSelectionDidChangeNotification)) { _ in
+            updateCurrentEncoding()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: YLController.encodingDidChangeNotification)) { _ in
             updateCurrentEncoding()
         }
     }
@@ -166,15 +169,15 @@ struct EncodingPicker: View {
         if let controller = NallyAppDelegate.shared.controller,
            let telnetView = controller.telnetView() as? YLView,
            let terminal = telnetView.swiftFrontMostTerminal() {
-            self.currentEncoding = terminal.encoding
+            if self.currentEncoding != terminal.encoding {
+                self.currentEncoding = terminal.encoding
+            }
         }
     }
     
-    private func setEncoding(_ tag: Int) {
+    private func setEncoding(_ encoding: YLEncoding) {
         if let controller = NallyAppDelegate.shared.controller {
-            let item = NSMenuItem()
-            item.tag = tag
-            controller.setEncoding(item)
+            controller.setEncoding(encoding)
         }
     }
 }
@@ -187,8 +190,13 @@ struct DynamicSitesMenu: View {
             if let controller = NallyAppDelegate.shared.controller {
                 let sites = controller.sitesList
                 ForEach(sites, id: \.self) { site in
-                    Button(site.name) {
+                    Button(action: {
                         controller.newConnection(with: site)
+                    }) {
+                        Label(
+                            site.name.isEmpty ? site.address : site.name,
+                            systemImage: site.address.lowercased().hasPrefix("ssh://") ? "lock.shield.fill" : "network"
+                        )
                     }
                 }
             }

@@ -102,13 +102,9 @@ extension YLController {
     }
     
     @objc public func windowDidBecomeKey(_ notification: Notification) {
-        _closeWindowMenuItem?.keyEquivalentModifierMask = [.command, .shift]
-        _closeTabMenuItem?.keyEquivalent = "w"
     }
     
     @objc public func windowDidResignKey(_ notification: Notification) {
-        _closeWindowMenuItem?.keyEquivalentModifierMask = [.command]
-        _closeTabMenuItem?.keyEquivalent = ""
     }
     
     @objc public func getUrl(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
@@ -145,13 +141,10 @@ extension YLController {
             window.makeFirstResponder(tv)
         }
         conn.terminal?.hasMessage = false
-        updateEncodingMenu()
-        
-        let ddb = conn.site?.detectDoubleByte ?? false
-        _detectDoubleByteButton?.state = ddb ? .on : .off
-        _detectDoubleByteMenuItem?.state = ddb ? .on : .off
         
         AppState.shared.syncTabs(from: tabView)
+        NotificationCenter.default.post(name: YLController.encodingDidChangeNotification, object: conn.terminal)
+        NotificationCenter.default.post(name: YLView.tabSelectionDidChangeNotification, object: tabView)
     }
     
     @objc public func tabView(_ tabView: YLView, shouldSelect tabViewItem: NSTabViewItem?) -> Bool {
