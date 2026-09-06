@@ -136,4 +136,43 @@ struct AppUIStateTests {
         
         cancellable.cancel()
     }
+    
+    @Test("YLView Non-Blocking Paste Streaming and Cancellation")
+    func testNonBlockingPasteStreaming() async {
+        class MockChunkedConnection: YLConnection {
+            var sentChunks: [Data] = []
+            override func sendData(_ msg: Data) {
+                sentChunks.append(msg)
+            }
+        }
+        
+        let view = YLView(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
+        let mockConn = MockChunkedConnection()
+        mockConn.connected = true
+        let tabItem = NSTabViewItem(identifier: mockConn)
+        view.addTabViewItem(tabItem)
+        view.selectTabViewItem(tabItem)
+        
+        // 1. Small payload sent immediately
+        let smallData = "Hello".data(using: .utf8)!
+        view.sendDataChunked(smallData, to: mockConn, microsecondDelay: 100)
+        #expect(mockConn.sentChunks.count == 1)
+        #expect(view.activePasteTask == nil)
+        
+        // 2. Large payload creates asynchronous task without blocking
+        mockConn.sentChunks.removeAll()
+        let largeData = Data(repeating: 0x41, count: 256)
+        view.sendDataChunked(largeData, to: mockConn, microsecondDelay: 50)
+        #expect(view.activePasteTask != nil)
+        
+        // 3. Cancel paste terminates the task
+        view.cancelCurrentPaste()
+        #expect(view.activePasteTask == nil)
+        
+        // 4. Esc key cancelOperation aborts ongoing paste
+        view.sendDataChunked(largeData, to: mockConn, microsecondDelay: 50)
+        #expect(view.activePasteTask != nil)
+        view.doCommand(by: #selector(NSResponder.cancelOperation(_:)))
+        #expect(view.activePasteTask == nil)
+    }
 }

@@ -200,12 +200,7 @@ extension YLView {
         writeBuffer.append(contentsOf: "[m".utf8)
         
         if let conn = frontMostConnection() {
-            let writeBufferBytes = [UInt8](writeBuffer)
-            for byte in writeBufferBytes {
-                var b = byte
-                conn.sendBytes(&b, length: 1)
-                usleep(100)
-            }
+            sendDataChunked(Data(writeBuffer), to: conn, microsecondDelay: 100)
         }
     }
     
