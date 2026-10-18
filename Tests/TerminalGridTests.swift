@@ -23,4 +23,19 @@ struct TerminalGridTests {
         terminal.setDirty(false, atRow: 0, column: 0)
         #expect(terminal.isDirty(atRow: 0, column: 0) == false)
     }
+    
+    @Test("YLTerminal FeedBytes Only Marks Modified Rows Dirty")
+    func testFeedBytesDirtyRowIsolation() {
+        let terminal = YLTerminal()
+        for r in 0..<terminal.row {
+            terminal.clearDirty(forRow: r)
+        }
+        
+        let conn = YLConnection()
+        terminal.feedData(Data("Hello Row 0".utf8), connection: conn)
+        
+        #expect(terminal.isRowDirty(0) == true)
+        #expect(terminal.isRowDirty(1) == false)
+        #expect(terminal.isRowDirty(23) == false)
+    }
 }

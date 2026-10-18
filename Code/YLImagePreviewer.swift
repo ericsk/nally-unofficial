@@ -7,31 +7,34 @@
 
 import Cocoa
 import SwiftUI
+import Observation
 import ImageIO
 import UniformTypeIdentifiers
 
 @MainActor
+@Observable
 @objc(YLImagePreviewer)
-public class YLImagePreviewer: NSObject, ObservableObject, @preconcurrency URLSessionDownloadDelegate {
-    private var downloadTask: URLSessionDownloadTask?
-    private var downloadedData: Data?
+public class YLImagePreviewer: NSObject, @preconcurrency URLSessionDownloadDelegate {
+    @ObservationIgnored private var downloadSession: URLSession?
+    @ObservationIgnored private var downloadTask: URLSessionDownloadTask?
+    @ObservationIgnored private var downloadedData: Data?
     public private(set) var originalUrl: URL
     public private(set) var filename: String = "image"
-    private var tempFileURL: URL?
+    @ObservationIgnored private var tempFileURL: URL?
     
-    @Published public var downloadProgress: Double = 0.0
-    @Published public var isDownloading: Bool = true
-    @Published public var image: NSImage? = nil
-    @Published public var title: String = "Loading..."
-    @Published public var imageSizeText: String = ""
-    @Published public var formatName: String = ""
-    @Published public var zoomScale: CGFloat = 1.0
-    @Published public var panOffset: CGSize = .zero
+    public var downloadProgress: Double = 0.0
+    public var isDownloading: Bool = true
+    public var image: NSImage? = nil
+    public var title: String = "Loading..."
+    public var imageSizeText: String = ""
+    public var formatName: String = ""
+    public var zoomScale: CGFloat = 1.0
+    public var panOffset: CGSize = .zero
     
-    private var window: NSPanel?
-    private var popover: NSPopover?
-    private var exifData: [String: Any]?
-    private var tiffData: [String: Any]?
+    @ObservationIgnored private var window: NSPanel?
+    @ObservationIgnored private var popover: NSPopover?
+    @ObservationIgnored private var exifData: [String: Any]?
+    @ObservationIgnored private var tiffData: [String: Any]?
     
     @objc(initWithURL:)
     public init(url: URL) {
@@ -47,6 +50,7 @@ public class YLImagePreviewer: NSObject, ObservableObject, @preconcurrency URLSe
         // Start downloading using URLSession
         let config = URLSessionConfiguration.default
         let session = URLSession(configuration: config, delegate: self, delegateQueue: OperationQueue.main)
+        self.downloadSession = session
         let task = session.downloadTask(with: url)
         self.downloadTask = task
         task.resume()
@@ -98,6 +102,9 @@ public class YLImagePreviewer: NSObject, ObservableObject, @preconcurrency URLSe
         window?.close()
         window = nil
         downloadTask?.cancel()
+        downloadTask = nil
+        downloadSession?.invalidateAndCancel()
+        downloadSession = nil
         
         if let temp = tempFileURL {
             try? FileManager.default.removeItem(at: temp)
@@ -285,6 +292,8 @@ public class YLImagePreviewer: NSObject, ObservableObject, @preconcurrency URLSe
     }
     
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        downloadSession?.finishTasksAndInvalidate()
+        downloadSession = nil
         if let error = error {
             NSLog("[Nally] Download failed: \(error.localizedDescription)")
             fallbackToBrowser()

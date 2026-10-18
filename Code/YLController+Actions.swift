@@ -4,7 +4,7 @@ import SwiftUI
 extension YLController {
     // MARK: - Actions
     public func setDetectDoubleByte(_ ddb: Bool) {
-        ((_telnetView?.frontMostConnection() as? YLConnection)?.site as? YLSite)?.detectDoubleByte = ddb
+        _telnetView?.frontMostConnection()?.site?.detectDoubleByte = ddb
     }
     
     @IBAction public func setDetectDoubleByteAction(_ sender: Any?) {
@@ -64,7 +64,8 @@ extension YLController {
             window.makeKeyAndOrderFront(self)
         }
         _telnetView?.resignFirstResponder()
-        _addressBar?.becomeFirstResponder()
+        AppState.shared.addressText = ""
+        AppState.shared.focusAddressBar = true
     }
     
     @objc(connectToAddressString:)
@@ -147,16 +148,8 @@ extension YLController {
     @IBAction public func openLocation(_ sender: Any?) {
         if let window = _mainWindow {
             window.makeKeyAndOrderFront(self)
-            if let superview = window.contentView?.superview, let tf = findAddressBar(in: superview) {
-                let success = window.makeFirstResponder(tf)
-                if success {
-                    tf.selectText(self)
-                }
-                NSLog("[Nally] openLocation focus success: \(success)")
-            } else {
-                NSLog("[Nally] openLocation could not find address bar")
-            }
         }
+        AppState.shared.focusAddressBar = true
     }
     
     @IBAction public func selectNextTab(_ sender: Any?) {
@@ -193,7 +186,7 @@ extension YLController {
     
     @objc public func closeTabViewItem(_ tabItem: NSTabViewItem) {
         guard _telnetView != nil else { return }
-        guard let connection = tabItem.identifier as? YLConnection else {
+        guard let connection = tabItem.connection else {
             performCloseTabViewItem(tabItem)
             return
         }
@@ -223,7 +216,7 @@ extension YLController {
     private func performCloseTabViewItem(_ tabItem: NSTabViewItem) {
         guard let tv = _telnetView else { return }
         tabView(tv, willClose: tabItem)
-        if let connection = tabItem.identifier as? YLConnection {
+        if let connection = tabItem.connection {
             connection.terminal?.hasMessage = false
             connection.close()
         }
@@ -270,7 +263,7 @@ extension YLController {
     }
     
     @IBAction public func autoLogin(_ sender: Any?) {
-        guard let conn = _telnetView?.frontMostConnection() as? YLConnection else { return }
+        guard let conn = _telnetView?.frontMostConnection() else { return }
         guard let site = conn.site?.copySite() else { return }
         
         if conn.connected {

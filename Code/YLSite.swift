@@ -7,7 +7,7 @@ public final class YLSite: Identifiable, Codable {
     public var name: String = "Site Name"
     public var address: String = "(your.site.org)"
     public var account: String = ""
-    public var password: String = ""
+    @Transient public var password: String = ""
     public var encoding: YLEncoding = YLEncoding.YLBig5Encoding
     public var ansiColorKey: YLANSIColorKey = YLANSIColorKey.YLCtrlUANSIColorKey
     public var detectDoubleByte: Bool = true
@@ -17,7 +17,6 @@ public final class YLSite: Identifiable, Codable {
         case name
         case address
         case account
-        case password
         case encoding
         case ansiColorKey
         case detectDoubleByte
@@ -49,7 +48,7 @@ public final class YLSite: Identifiable, Codable {
         self.name = try container.decode(String.self, forKey: .name)
         self.address = try container.decode(String.self, forKey: .address)
         self.account = try container.decodeIfPresent(String.self, forKey: .account) ?? ""
-        self.password = try container.decodeIfPresent(String.self, forKey: .password) ?? ""
+        self.password = ""
         self.encoding = try container.decode(YLEncoding.self, forKey: .encoding)
         self.ansiColorKey = try container.decode(YLANSIColorKey.self, forKey: .ansiColorKey)
         self.detectDoubleByte = try container.decode(Bool.self, forKey: .detectDoubleByte)
@@ -61,7 +60,6 @@ public final class YLSite: Identifiable, Codable {
         try container.encode(name, forKey: .name)
         try container.encode(address, forKey: .address)
         try container.encode(account, forKey: .account)
-        try container.encode(password, forKey: .password)
         try container.encode(encoding, forKey: .encoding)
         try container.encode(ansiColorKey, forKey: .ansiColorKey)
         try container.encode(detectDoubleByte, forKey: .detectDoubleByte)

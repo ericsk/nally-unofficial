@@ -2,6 +2,7 @@ import Cocoa
 import SwiftUI
 
 
+@MainActor
 @objc(NallyAppDelegate)
 public class NallyAppDelegate: NSObject, NSApplicationDelegate {
     public static var shared: NallyAppDelegate!
@@ -22,6 +23,6 @@ public class NallyAppDelegate: NSObject, NSApplicationDelegate {
         if let ylApp = NSApp as? YLApplication {
             ylApp._controller = mainController
         }
-        NSApp.activate(ignoringOtherApps: true)
+        NSApp.activate()
     }
 }

@@ -5,28 +5,31 @@ import Cocoa
 @MainActor
 @Observable
 @objc(YLLGlobalConfig)
-@objcMembers
 public class YLLGlobalConfig: NSObject {
     private static var sSharedInstance: YLLGlobalConfig?
     
-    public class func sharedInstance() -> YLLGlobalConfig {
+    @objc public class func sharedInstance() -> YLLGlobalConfig {
         if sSharedInstance == nil {
             sSharedInstance = YLLGlobalConfig()
         }
         return sSharedInstance!
     }
     
+    @ObservationIgnored private var isInitializing = true
+    @ObservationIgnored public var onAppearanceChange: (() -> Void)?
+    @ObservationIgnored public var onLayoutChange: (() -> Void)?
+    @ObservationIgnored public var onMessageCountChange: ((Int32) -> Void)?
+    
     // Store 2x10 color tables
     // 0 is normal, 1 is hilite
     private var colorTable: [[NSColor]] = Array(repeating: Array(repeating: NSColor.black, count: 10), count: 2)
     
     // Store 2x10 CoreText attributes
-    private var cCTAttribute: [[CFDictionary?]] = Array(repeating: Array(repeating: nil, count: 10), count: 2)
-    private var eCTAttribute: [[CFDictionary?]] = Array(repeating: Array(repeating: nil, count: 10), count: 2)
+    @ObservationIgnored private var cCTAttribute: [[CFDictionary?]] = Array(repeating: Array(repeating: nil, count: 10), count: 2)
+    @ObservationIgnored private var eCTAttribute: [[CFDictionary?]] = Array(repeating: Array(repeating: nil, count: 10), count: 2)
     
-    // Helper properties for Objective-C++ direct member access:
-    @objc public dynamic var chineseCTFont: CTFont?
-    @objc public dynamic var englishCTFont: CTFont?
+    public var chineseCTFont: CTFont?
+    public var englishCTFont: CTFont?
     
     public func chineseAttribute(withHilite hilite: Int, index: Int) -> CFDictionary? {
         guard index >= 0 && index < 10 && hilite >= 0 && hilite < 2 else { return nil }
@@ -38,102 +41,140 @@ public class YLLGlobalConfig: NSObject {
         return eCTAttribute[hilite][index]
     }
     
-    // Modern Observable & KVO Properties
-    @objc public dynamic var messageCount: Int32 = 0
-    @objc public dynamic var row: Int32 = 24
-    @objc public dynamic var column: Int32 = 80
-    @objc public dynamic var cellWidth: CGFloat = 12.0 {
+    // Modern Observable Properties
+    public var messageCount: Int32 = 0 {
         didSet {
+            guard !isInitializing else { return }
+            onMessageCountChange?(messageCount)
+        }
+    }
+    public var row: Int32 = 24
+    public var column: Int32 = 80
+    public var cellWidth: CGFloat = 12.0 {
+        didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(Float(cellWidth), forKey: "CellWidth")
+            onLayoutChange?()
         }
     }
-    @objc public dynamic var cellHeight: CGFloat = 24.0 {
+    public var cellHeight: CGFloat = 24.0 {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(Float(cellHeight), forKey: "CellHeight")
+            onLayoutChange?()
         }
     }
-    @objc public dynamic var showHiddenText: Bool = false {
+    public var showHiddenText: Bool = false {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(showHiddenText, forKey: "ShowHiddenText")
         }
     }
-    @objc public dynamic var shouldSmoothFonts: Bool = false {
+    public var shouldSmoothFonts: Bool = false {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(shouldSmoothFonts, forKey: "ShouldSmoothFonts")
+            onAppearanceChange?()
         }
     }
-    @objc public dynamic var repeatBounce: Bool = false {
+    public var repeatBounce: Bool = false {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(repeatBounce, forKey: "RepeatBounce")
         }
     }
-    @objc public dynamic var detectDoubleByte: Bool = false {
+    public var detectDoubleByte: Bool = false {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(detectDoubleByte, forKey: "DetectDoubleByte")
         }
     }
-    @objc public dynamic var shouldPreferImagePreviewer: Bool = true {
+    public var shouldPreferImagePreviewer: Bool = true {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(shouldPreferImagePreviewer, forKey: "ShouldPreferImagePreviewer")
         }
     }
-    @objc public dynamic var defaultEncoding: YLEncoding = .YLBig5Encoding {
+    public var defaultEncoding: YLEncoding = .YLBig5Encoding {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(Int(defaultEncoding.rawValue), forKey: "DefaultEncoding")
         }
     }
-    @objc public dynamic var defaultANSIColorKey: YLANSIColorKey = .YLCtrlUANSIColorKey {
+    public var defaultANSIColorKey: YLANSIColorKey = .YLCtrlUANSIColorKey {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(Int(defaultANSIColorKey.rawValue), forKey: "DefaultANSIColorKey")
         }
     }
-    @objc public dynamic var blinkTicker: Bool = false
+    public var blinkTicker: Bool = false
     
-    @objc public dynamic var chineseFontSize: CGFloat = 22.0 {
+    public var chineseFontSize: CGFloat = 22.0 {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(Float(chineseFontSize), forKey: "ChineseFontSize")
+            refreshFont()
+            onAppearanceChange?()
         }
     }
-    @objc public dynamic var englishFontSize: CGFloat = 18.0 {
+    public var englishFontSize: CGFloat = 18.0 {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(Float(englishFontSize), forKey: "EnglishFontSize")
+            refreshFont()
+            onAppearanceChange?()
         }
     }
-    @objc public dynamic var chineseFontPaddingLeft: CGFloat = 1.0 {
+    public var chineseFontPaddingLeft: CGFloat = 1.0 {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(Float(chineseFontPaddingLeft), forKey: "ChinesePaddingLeft")
+            onAppearanceChange?()
         }
     }
-    @objc public dynamic var englishFontPaddingLeft: CGFloat = 1.0 {
+    public var englishFontPaddingLeft: CGFloat = 1.0 {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(Float(englishFontPaddingLeft), forKey: "EnglishPaddingLeft")
+            onAppearanceChange?()
         }
     }
-    @objc public dynamic var chineseFontPaddingBottom: CGFloat = 1.0 {
+    public var chineseFontPaddingBottom: CGFloat = 1.0 {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(Float(chineseFontPaddingBottom), forKey: "ChinesePaddingBottom")
+            onAppearanceChange?()
         }
     }
-    @objc public dynamic var englishFontPaddingBottom: CGFloat = 2.0 {
+    public var englishFontPaddingBottom: CGFloat = 2.0 {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(Float(englishFontPaddingBottom), forKey: "EnglishPaddingBottom")
+            onAppearanceChange?()
         }
     }
-    @objc public dynamic var chineseFontName: String = "HiraKakuPro-W3" {
+    public var chineseFontName: String = "HiraKakuPro-W3" {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(chineseFontName, forKey: "ChineseFontName")
+            refreshFont()
+            onAppearanceChange?()
         }
     }
-    @objc public dynamic var englishFontName: String = "Monaco" {
+    public var englishFontName: String = "Monaco" {
         didSet {
+            guard !isInitializing else { return }
             UserDefaults.standard.set(englishFontName, forKey: "EnglishFontName")
+            refreshFont()
+            onAppearanceChange?()
         }
     }
-    @objc public dynamic var bgColorIndex: Int32 = 9
-    @objc public dynamic var fgColorIndex: Int32 = 7
+    public var bgColorIndex: Int32 = 9
+    public var fgColorIndex: Int32 = 7
     
     public override init() {
         super.init()
+        defer { isInitializing = false }
         let defaults = UserDefaults.standard
         
         showHiddenText = defaults.bool(forKey: "ShowHiddenText")
@@ -218,7 +259,6 @@ public class YLLGlobalConfig: NSObject {
         bgColorIndex = 9
         fgColorIndex = 7
         
-        defaults.synchronize()
         refreshFont()
     }
     
@@ -236,6 +276,10 @@ public class YLLGlobalConfig: NSObject {
         let c = color ?? NSColor.black
         colorTable[h][index] = c.usingColorSpace(.sRGB) ?? c
         UserDefaults.standard.setMyColor(c, forKey: key)
+        if !isInitializing {
+            refreshFont()
+            onAppearanceChange?()
+        }
     }
     
     public func refreshFont() {
@@ -281,80 +325,124 @@ public class YLLGlobalConfig: NSObject {
         if i >= 0 && i < 10 {
             let color = c ?? NSColor.black
             colorTable[hIdx][Int(i)] = color.usingColorSpace(.sRGB) ?? color
+            if !isInitializing {
+                refreshFont()
+                onAppearanceChange?()
+            }
         }
     }
     
     // Color Properties
-    public dynamic var colorBlack: NSColor? {
+    public var colorBlack: NSColor? {
         get { return colorTable[0][0] }
         set { saveColor(index: 0, key: "ColorBlack", color: newValue) }
     }
-    public dynamic var colorBlackHilite: NSColor? {
+    public var colorBlackHilite: NSColor? {
         get { return colorTable[1][0] }
         set { saveColor(index: 0, key: "ColorBlackHilite", hilite: true, color: newValue) }
     }
-    public dynamic var colorRed: NSColor? {
+    public var colorRed: NSColor? {
         get { return colorTable[0][1] }
         set { saveColor(index: 1, key: "ColorRed", color: newValue) }
     }
-    public dynamic var colorRedHilite: NSColor? {
+    public var colorRedHilite: NSColor? {
         get { return colorTable[1][1] }
         set { saveColor(index: 1, key: "ColorRedHilite", hilite: true, color: newValue) }
     }
-    public dynamic var colorGreen: NSColor? {
+    public var colorGreen: NSColor? {
         get { return colorTable[0][2] }
         set { saveColor(index: 2, key: "ColorGreen", color: newValue) }
     }
-    public dynamic var colorGreenHilite: NSColor? {
+    public var colorGreenHilite: NSColor? {
         get { return colorTable[1][2] }
         set { saveColor(index: 2, key: "ColorGreenHilite", hilite: true, color: newValue) }
     }
-    public dynamic var colorYellow: NSColor? {
+    public var colorYellow: NSColor? {
         get { return colorTable[0][3] }
         set { saveColor(index: 3, key: "ColorYellow", color: newValue) }
     }
-    public dynamic var colorYellowHilite: NSColor? {
+    public var colorYellowHilite: NSColor? {
         get { return colorTable[1][3] }
         set { saveColor(index: 3, key: "ColorYellowHilite", hilite: true, color: newValue) }
     }
-    public dynamic var colorBlue: NSColor? {
+    public var colorBlue: NSColor? {
         get { return colorTable[0][4] }
         set { saveColor(index: 4, key: "ColorBlue", color: newValue) }
     }
-    public dynamic var colorBlueHilite: NSColor? {
+    public var colorBlueHilite: NSColor? {
         get { return colorTable[1][4] }
         set { saveColor(index: 4, key: "ColorBlueHilite", hilite: true, color: newValue) }
     }
-    public dynamic var colorMagenta: NSColor? {
+    public var colorMagenta: NSColor? {
         get { return colorTable[0][5] }
         set { saveColor(index: 5, key: "ColorMagenta", color: newValue) }
     }
-    public dynamic var colorMagentaHilite: NSColor? {
+    public var colorMagentaHilite: NSColor? {
         get { return colorTable[1][5] }
         set { saveColor(index: 5, key: "ColorMagentaHilite", hilite: true, color: newValue) }
     }
-    public dynamic var colorCyan: NSColor? {
+    public var colorCyan: NSColor? {
         get { return colorTable[0][6] }
         set { saveColor(index: 6, key: "ColorCyan", color: newValue) }
     }
-    public dynamic var colorCyanHilite: NSColor? {
+    public var colorCyanHilite: NSColor? {
         get { return colorTable[1][6] }
         set { saveColor(index: 6, key: "ColorCyanHilite", hilite: true, color: newValue) }
     }
-    public dynamic var colorWhite: NSColor? {
+    public var colorWhite: NSColor? {
         get { return colorTable[0][7] }
         set { saveColor(index: 7, key: "ColorWhite", color: newValue) }
     }
-    public dynamic var colorWhiteHilite: NSColor? {
+    public var colorWhiteHilite: NSColor? {
         get { return colorTable[1][7] }
         set { saveColor(index: 7, key: "ColorWhiteHilite", hilite: true, color: newValue) }
     }
-    public dynamic var colorBG: NSColor? {
+    public var colorBG: NSColor? {
         get { return colorTable[0][9] }
         set { saveColor(index: 9, key: "ColorBG", color: newValue) }
     }
-    public dynamic var colorBGHilite: NSColor? {
+    public var colorBGHilite: NSColor? {
         get { return colorTable[1][9] }
         set { saveColor(index: 9, key: "ColorBGHilite", hilite: true, color: newValue) }
+    }
+    
+    // MARK: - Dynamic Scaling & Zoom
+    @MainActor
+    public func applyCellSize(width: CGFloat, height: CGFloat) {
+        let clampedWidth = max(6.0, min(30.0, (width * 2.0).rounded() / 2.0))
+        let clampedHeight = max(12.0, min(60.0, (height * 2.0).rounded() / 2.0))
+        guard clampedWidth != cellWidth || clampedHeight != cellHeight else { return }
+        
+        let scale = clampedHeight / 24.0
+        isInitializing = true
+        cellWidth = clampedWidth
+        cellHeight = clampedHeight
+        chineseFontSize = max(10.0, (22.0 * scale).rounded())
+        englishFontSize = max(9.0, (18.0 * scale).rounded())
+        isInitializing = false
+        
+        let defaults = UserDefaults.standard
+        defaults.set(Float(cellWidth), forKey: "CellWidth")
+        defaults.set(Float(cellHeight), forKey: "CellHeight")
+        defaults.set(Float(chineseFontSize), forKey: "ChineseFontSize")
+        defaults.set(Float(englishFontSize), forKey: "EnglishFontSize")
+        
+        refreshFont()
+        onLayoutChange?()
+    }
+    
+    @MainActor
+    public func zoomIn() {
+        applyCellSize(width: cellWidth + 1.0, height: cellHeight + 2.0)
+    }
+    
+    @MainActor
+    public func zoomOut() {
+        applyCellSize(width: cellWidth - 1.0, height: cellHeight - 2.0)
+    }
+    
+    @MainActor
+    public func resetZoom() {
+        applyCellSize(width: 12.0, height: 24.0)
     }
 }

@@ -16,7 +16,6 @@
 		07B73DA20E581E2C00CC97D3 /* YLEncodingTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73DA10E581E2C00CC97D3 /* YLEncodingTable.swift */; };
 		07B73DA50E581E2C00CC97D3 /* g2u.bin in Resources */ = {isa = PBXBuildFile; fileRef = 07B73DA30E581E2C00CC97D3 /* g2u.bin */; };
 		07B73DA60E581E2C00CC97D3 /* b2u.bin in Resources */ = {isa = PBXBuildFile; fileRef = 07B73DA40E581E2C00CC97D3 /* b2u.bin */; };
-		GG11223344556677889900AA /* AppTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG11223344556677889900BB /* AppTheme.swift */; };
 		07B73DA80E581E2C00CC97D3 /* TextSuiteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73DA70E581E2C00CC97D3 /* TextSuiteTests.swift */; };
 		GG88344122119933004455AA /* TerminalPerformanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG88344122119933004455BB /* TerminalPerformanceTests.swift */; };
 		GG99455233220044005566AA /* PTTAIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG99455233220044005566BB /* PTTAIDTests.swift */; };
@@ -43,7 +42,6 @@
 		CF077DECCA3246279792BA50 /* YLImagePreviewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF3B7EEA050E444887AB782D /* YLImagePreviewer.swift */; };
 		C54B4B3F2B60495FAD09F58A /* YLViewDrawing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E066B4D1A8E4543BDC3006C /* YLViewDrawing.swift */; };
 		9E9A1D34D2954474A29D890D /* MainContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07865512AF61492F98C0DAC8 /* MainContentView.swift */; };
-		6ABBEE0D97F646E68759628D /* TabBarRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29AE3BC084E14F4EB69EE672 /* TabBarRepresentable.swift */; };
 		E5A600F899A24A63B0AE81C0 /* TerminalViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9EE1511238C74DF7885CF963 /* TerminalViewRepresentable.swift */; };
 		E32052940E5B45E095566BDA /* YLMarkedTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A609D0540DF044A0AF45A8F0 /* YLMarkedTextView.swift */; };
 		721248E781FC4EE79CF48A58 /* YLExifController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DED64F2661F241159554F130 /* YLExifController.swift */; };
@@ -142,7 +140,6 @@
 		DF3B7EEA050E444887AB782D /* YLImagePreviewer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLImagePreviewer.swift; sourceTree = "<group>"; };
 		3E066B4D1A8E4543BDC3006C /* YLViewDrawing.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLViewDrawing.swift; sourceTree = "<group>"; };
 		07865512AF61492F98C0DAC8 /* MainContentView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainContentView.swift; sourceTree = "<group>"; };
-		29AE3BC084E14F4EB69EE672 /* TabBarRepresentable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TabBarRepresentable.swift; sourceTree = "<group>"; };
 		9EE1511238C74DF7885CF963 /* TerminalViewRepresentable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TerminalViewRepresentable.swift; sourceTree = "<group>"; };
 		A609D0540DF044A0AF45A8F0 /* YLMarkedTextView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLMarkedTextView.swift; sourceTree = "<group>"; };
 		DED64F2661F241159554F130 /* YLExifController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLExifController.swift; sourceTree = "<group>"; };
@@ -234,7 +231,6 @@
 				GG778899001122334455BB01 /* YLQuickLookHelper.swift */,
 				3E066B4D1A8E4543BDC3006C /* YLViewDrawing.swift */,
 				07865512AF61492F98C0DAC8 /* MainContentView.swift */,
-				29AE3BC084E14F4EB69EE672 /* TabBarRepresentable.swift */,
 				9EE1511238C74DF7885CF963 /* TerminalViewRepresentable.swift */,
 				A609D0540DF044A0AF45A8F0 /* YLMarkedTextView.swift */,
 				DED64F2661F241159554F130 /* YLExifController.swift */,
@@ -571,10 +567,8 @@
 				DAE10B3BED2F493E815B0126 /* ImagePreviewerView.swift in Sources */,
 				CF077DECCA3246279792BA50 /* YLImagePreviewer.swift in Sources */,
 				GG778899001122334455AA01 /* YLQuickLookHelper.swift in Sources */,
-				GG11223344556677889900AA /* AppTheme.swift in Sources */,
 				C54B4B3F2B60495FAD09F58A /* YLViewDrawing.swift in Sources */,
 				9E9A1D34D2954474A29D890D /* MainContentView.swift in Sources */,
-				6ABBEE0D97F646E68759628D /* TabBarRepresentable.swift in Sources */,
 				E5A600F899A24A63B0AE81C0 /* TerminalViewRepresentable.swift in Sources */,
 				E32052940E5B45E095566BDA /* YLMarkedTextView.swift in Sources */,
 				721248E781FC4EE79CF48A58 /* YLExifController.swift in Sources */,
@@ -649,6 +643,7 @@
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Nally.app/Contents/MacOS/Nally";
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -681,6 +676,7 @@
 				ENABLE_TESTING_SEARCH_PATHS = YES;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Nally.app/Contents/MacOS/Nally";
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 				ZERO_LINK = NO;
 			};
@@ -710,6 +706,7 @@
 				WRAPPER_EXTENSION = app;
 				DEFINES_MODULE = YES;
 				ENABLE_TESTABILITY = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -737,6 +734,7 @@
 				WRAPPER_EXTENSION = app;
 				DEFINES_MODULE = YES;
 				ENABLE_TESTABILITY = YES;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
@@ -754,6 +752,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				PRODUCT_NAME = Nally;
 				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
@@ -771,6 +770,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				PRODUCT_NAME = Nally;
 				SDKROOT = macosx;
+				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = 5.0;
 			};
 			name = Release;

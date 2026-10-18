@@ -139,6 +139,23 @@ struct ViewMenuCommands: View {
     var body: some View {
         Toggle("Show Hidden Text", isOn: $config.showHiddenText)
         Toggle("Detect Double Byte", isOn: $config.detectDoubleByte)
+        
+        Divider()
+        
+        Button("Zoom In") {
+            config.zoomIn()
+        }
+        .keyboardShortcut("=", modifiers: .command)
+        
+        Button("Zoom Out") {
+            config.zoomOut()
+        }
+        .keyboardShortcut("-", modifiers: .command)
+        
+        Button("Actual Size") {
+            config.resetZoom()
+        }
+        .keyboardShortcut("0", modifiers: .command)
     }
 }
 
@@ -183,26 +200,18 @@ struct EncodingPicker: View {
 }
 
 struct DynamicSitesMenu: View {
-    @State private var reloadTrigger = false
+    @Bindable var controller = AppState.shared.controller
     
     var body: some View {
-        Group {
-            if let controller = NallyAppDelegate.shared.controller {
-                let sites = controller.sitesList
-                ForEach(sites, id: \.self) { site in
-                    Button(action: {
-                        controller.newConnection(with: site)
-                    }) {
-                        Label(
-                            site.name.isEmpty ? site.address : site.name,
-                            systemImage: site.address.lowercased().hasPrefix("ssh://") ? "lock.shield.fill" : "network"
-                        )
-                    }
-                }
+        ForEach(controller.sitesList) { site in
+            Button(action: {
+                controller.newConnection(with: site)
+            }) {
+                Label(
+                    site.name.isEmpty ? site.address : site.name,
+                    systemImage: site.address.lowercased().hasPrefix("ssh://") ? "lock.shield.fill" : "network"
+                )
             }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
-            reloadTrigger.toggle()
         }
     }
 }

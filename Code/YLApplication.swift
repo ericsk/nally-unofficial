@@ -78,23 +78,6 @@ public class YLApplication: NSApplication {
                     return
                 }
             }
-            
-            // Cmd + Number (1-9) -> Select Tab
-            if flags == .command {
-                if let chars = event.charactersIgnoringModifiers, let val = Int(chars), val > 0 && val < 10 {
-                    NSLog("[YLApplication] Cmd + \(val) detected. Selector targeting: \(_controller != nil ? "valid" : "nil")")
-                    _controller?.selectTabNumber(Int32(val))
-                    return
-                }
-            }
-            
-            // Cmd + N -> Edit Sites
-            if flags == .command {
-                if event.characters == "n" {
-                    _controller?.editSites(self)
-                    return
-                }
-            }
         }
         
         super.sendEvent(event)

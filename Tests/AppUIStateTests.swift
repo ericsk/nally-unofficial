@@ -175,4 +175,119 @@ struct AppUIStateTests {
         view.doCommand(by: #selector(NSResponder.cancelOperation(_:)))
         #expect(view.activePasteTask == nil)
     }
+    
+    @Test("YLView Backing Properties Change & Disconnection Preserve Screen Content")
+    func testBackingPropertiesAndDisconnectRedrawPreservesContent() {
+        let view = YLView(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
+        let conn = YLConnection()
+        let term = YLTerminal()
+        conn.terminal = term
+        conn.connected = true
+        
+        let tabItem = NSTabViewItem(identifier: conn)
+        view.addTabViewItem(tabItem)
+        view.selectTabViewItem(tabItem)
+        
+        // Feed some text into terminal and render initial image
+        let sample = "Hello Nally Terminal".data(using: .ascii)!
+        term.feedData(sample, connection: conn)
+        view.updateBackedImage()
+        
+        // After updateBackedImage(), all dirty flags are cleared
+        #expect(term.isRowDirty(0) == false)
+        #expect(view._backedImageCG != nil)
+        
+        // Simulate unfocus / backing properties change (e.g. True Tone, sleep/wake, WindowServer)
+        view.viewDidChangeBackingProperties()
+        
+        // Backing image must be regenerated and rows cleaned after full redraw
+        #expect(view._backedImageCG != nil)
+        #expect(term.isRowDirty(0) == false)
+        
+        // Simulate idle disconnect while unfocused
+        conn.connected = false
+        view.selectAll(nil)
+        #expect(view._selectionLength > 0)
+        #expect(view.selectedPlainString()?.contains("Hello Nally Terminal") == true)
+    }
+    
+    @Test("Address Bar Focus Triggered by OpenLocation and NewTab")
+    func testAddressBarFocusFromControllerActions() {
+        let appState = AppState.shared
+        let controller = YLController()
+        let view = YLView(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
+        controller._telnetView = view
+        
+        appState.focusAddressBar = false
+        controller.openLocation(nil)
+        #expect(appState.focusAddressBar == true)
+        
+        appState.focusAddressBar = false
+        appState.addressText = "ptt.cc"
+        controller.newTab(nil)
+        #expect(appState.focusAddressBar == true)
+        #expect(appState.addressText == "")
+        appState.focusAddressBar = false
+    }
+    
+    @Test("Type-Safe NSTabViewItem and TabInfo Connection Accessors")
+    func testTypeSafeTabViewItemConnectionAndTerminal() {
+        let conn = YLConnection()
+        let term = YLTerminal()
+        conn.terminal = term
+        
+        let item = NSTabViewItem()
+        item.connection = conn
+        #expect(item.connection === conn)
+        #expect(item.terminal === term)
+        
+        let tabInfo = TabInfo(label: "1. PTT", icon: nil, isSelected: true, tabItem: item)
+        #expect(tabInfo.connection === conn)
+        #expect(tabInfo.terminal === term)
+    }
+    
+    @Test("YLLGlobalConfig Color Change Refreshes CoreText Attributes and Appearance Callback")
+    func testGlobalConfigColorChangeRefreshesCoreTextAttributes() {
+        let config = YLLGlobalConfig.sharedInstance()
+        let originalRed = config.colorRed
+        defer { config.colorRed = originalRed }
+        
+        var appearanceCallbackCount = 0
+        let prevCallback = config.onAppearanceChange
+        config.onAppearanceChange = {
+            appearanceCallbackCount += 1
+            prevCallback?()
+        }
+        defer { config.onAppearanceChange = prevCallback }
+        
+        let customRed = NSColor(calibratedRed: 0.91, green: 0.12, blue: 0.23, alpha: 1.0)
+        config.colorRed = customRed
+        #expect(appearanceCallbackCount == 1)
+        
+        let dict = config.chineseAttribute(withHilite: 0, index: 1) as? [String: Any]
+        let attrColor = dict?[kCTForegroundColorAttributeName as String] as? NSColor
+        #expect(attrColor == config.colorAtIndex(1, hilite: false))
+    }
+    
+    @Test("YLLGlobalConfig Dynamic Zoom and Reset")
+    func testGlobalConfigZoomAndReset() {
+        let config = YLLGlobalConfig.sharedInstance()
+        config.resetZoom()
+        #expect(config.cellWidth == 12.0)
+        #expect(config.cellHeight == 24.0)
+        #expect(config.chineseFontSize == 22.0)
+        #expect(config.englishFontSize == 18.0)
+        
+        config.zoomIn()
+        #expect(config.cellWidth == 13.0)
+        #expect(config.cellHeight == 26.0)
+        #expect(config.chineseFontSize > 22.0)
+        #expect(config.englishFontSize > 18.0)
+        
+        config.zoomOut()
+        #expect(config.cellWidth == 12.0)
+        #expect(config.cellHeight == 24.0)
+        
+        config.resetZoom()
+    }
 }

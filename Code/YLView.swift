@@ -16,7 +16,6 @@ public class YLView: NSView {
     
     public var _bitmapContext: CGContext?
     public var _backedImageCG: CGImage?
-    public var _timer: Timer?
     public var _x: Int32 = 0
     public var _y: Int32 = 0
     
@@ -51,24 +50,7 @@ public class YLView: NSView {
         activePasteTask = nil
     }
     
-    // Globals converted to static class variables or instance variables:
-    private static var gLeftImage: NSImage?
-    
     static let ANSIColorPBoardType = NSPasteboard.PasteboardType("ANSIColorPBoardType")
-    
-    // Symbol paths used in drawing
-    public var gSymbolBlackSquareRect = NSRect.zero
-    public var gSymbolBlackSquareRect1 = NSRect.zero
-    public var gSymbolBlackSquareRect2 = NSRect.zero
-    public var gSymbolLowerBlockRect = [NSRect](repeating: .zero, count: 8)
-    public var gSymbolLowerBlockRect1 = [NSRect](repeating: .zero, count: 8)
-    public var gSymbolLowerBlockRect2 = [NSRect](repeating: .zero, count: 8)
-    public var gSymbolLeftBlockRect = [NSRect](repeating: .zero, count: 7)
-    public var gSymbolLeftBlockRect1 = [NSRect](repeating: .zero, count: 7)
-    public var gSymbolLeftBlockRect2 = [NSRect](repeating: .zero, count: 7)
-    public var gSymbolTrianglePath = [NSBezierPath?](repeating: nil, count: 4)
-    public var gSymbolTrianglePath1 = [NSBezierPath?](repeating: nil, count: 4)
-    public var gSymbolTrianglePath2 = [NSBezierPath?](repeating: nil, count: 4)
     
     public var fontWidth: CGFloat { return _fontWidth }
     public var fontHeight: CGFloat { return _fontHeight }
@@ -82,33 +64,33 @@ public class YLView: NSView {
     }
     
     static let initializeCursor: NSCursor = {
-        let cursorImage = NSImage(size: NSMakeSize(11.0, 20.0))
-        cursorImage.lockFocus()
-        NSColor.clear.set()
-        NSMakeRect(0, 0, 11, 20).fill()
-        NSColor.white.set()
-        let path = NSBezierPath()
-        path.lineCapStyle = .round
-        path.move(to: NSMakePoint(1.5, 1.5))
-        path.line(to: NSMakePoint(2.5, 1.5))
-        path.line(to: NSMakePoint(5.5, 4.5))
-        path.line(to: NSMakePoint(8.5, 1.5))
-        path.line(to: NSMakePoint(9.5, 1.5))
-        path.move(to: NSMakePoint(5.5, 4.5))
-        path.line(to: NSMakePoint(5.5, 15.5))
-        path.line(to: NSMakePoint(2.5, 18.5))
-        path.line(to: NSMakePoint(1.5, 18.5))
-        path.move(to: NSMakePoint(5.5, 15.5))
-        path.line(to: NSMakePoint(8.5, 18.5))
-        path.line(to: NSMakePoint(9.5, 18.5))
-        path.move(to: NSMakePoint(3.5, 9.5))
-        path.line(to: NSMakePoint(7.5, 9.5))
-        path.lineWidth = 3
-        path.stroke()
-        path.lineWidth = 1
-        NSColor.black.set()
-        path.stroke()
-        cursorImage.unlockFocus()
+        let cursorImage = NSImage(size: NSMakeSize(11.0, 20.0), flipped: false) { _ in
+            NSColor.clear.set()
+            NSMakeRect(0, 0, 11, 20).fill()
+            NSColor.white.set()
+            let path = NSBezierPath()
+            path.lineCapStyle = .round
+            path.move(to: NSMakePoint(1.5, 1.5))
+            path.line(to: NSMakePoint(2.5, 1.5))
+            path.line(to: NSMakePoint(5.5, 4.5))
+            path.line(to: NSMakePoint(8.5, 1.5))
+            path.line(to: NSMakePoint(9.5, 1.5))
+            path.move(to: NSMakePoint(5.5, 4.5))
+            path.line(to: NSMakePoint(5.5, 15.5))
+            path.line(to: NSMakePoint(2.5, 18.5))
+            path.line(to: NSMakePoint(1.5, 18.5))
+            path.move(to: NSMakePoint(5.5, 15.5))
+            path.line(to: NSMakePoint(8.5, 18.5))
+            path.line(to: NSMakePoint(9.5, 18.5))
+            path.move(to: NSMakePoint(3.5, 9.5))
+            path.line(to: NSMakePoint(7.5, 9.5))
+            path.lineWidth = 3
+            path.stroke()
+            path.lineWidth = 1
+            NSColor.black.set()
+            path.stroke()
+            return true
+        }
         return NSCursor(image: cursorImage, hotSpot: NSMakePoint(5.5, 9.5))
     }()
     
@@ -125,7 +107,7 @@ public class YLView: NSView {
     
     private func setup() {
         self.wantsLayer = true
-        self.layerContentsRedrawPolicy = .duringViewResize
+        self.layerContentsRedrawPolicy = .onSetNeedsDisplay
         setupLayers()
         configure()
         _selectionLength = 0
@@ -164,7 +146,7 @@ public class YLView: NSView {
             let nextItem = nextIndex >= 0 ? tabViewItems[nextIndex] : nil
             selectTabViewItem(nextItem)
         } else {
-            if let current = selectedTabViewItem, let conn = current.identifier as? YLConnection {
+            if let current = selectedTabViewItem, let conn = current.connection {
                 conn.terminal?.setAllDirty()
                 updateBackedImage()
                 needsDisplay = true
@@ -201,7 +183,7 @@ public class YLView: NSView {
         } else {
             selectedTabViewItem = item
         }
-        (item.identifier as? YLConnection)?.terminal?.setAllDirty()
+        item.terminal?.setAllDirty()
         updateBackedImage()
         needsDisplay = true
         NotificationCenter.default.post(name: YLView.tabSelectionDidChangeNotification, object: self)
@@ -254,74 +236,7 @@ public class YLView: NSView {
         }
     }
     
-    deinit {
-        _timer?.invalidate()
-    }
-    
     // MARK: - Configuration
-    private func createSymbolPath() {
-        gSymbolBlackSquareRect = NSMakeRect(1.0, 1.0, _fontWidth * 2 - 2, _fontHeight - 2)
-        gSymbolBlackSquareRect1 = NSMakeRect(1.0, 1.0, _fontWidth - 1, _fontHeight - 2)
-        gSymbolBlackSquareRect2 = NSMakeRect(_fontWidth, 1.0, _fontWidth - 1, _fontHeight - 2)
-        
-        for i in 0..<8 {
-            gSymbolLowerBlockRect[i] = NSMakeRect(0.0, 0.0, _fontWidth * 2, _fontHeight * CGFloat(i + 1) / 8.0)
-            gSymbolLowerBlockRect1[i] = NSMakeRect(0.0, 0.0, _fontWidth, _fontHeight * CGFloat(i + 1) / 8.0)
-            gSymbolLowerBlockRect2[i] = NSMakeRect(_fontWidth, 0.0, _fontWidth, _fontHeight * CGFloat(i + 1) / 8.0)
-        }
-        
-        for i in 0..<7 {
-            gSymbolLeftBlockRect[i] = NSMakeRect(0.0, 0.0, _fontWidth * CGFloat(7 - i) / 4.0, _fontHeight)
-            gSymbolLeftBlockRect1[i] = NSMakeRect(0.0, 0.0, (7 - i >= 4) ? _fontWidth : (_fontWidth * CGFloat(7 - i) / 4.0), _fontHeight)
-            gSymbolLeftBlockRect2[i] = NSMakeRect(_fontWidth, 0.0, (7 - i <= 4) ? 0.0 : (_fontWidth * CGFloat(3 - i) / 4.0), _fontHeight)
-        }
-        
-        let pts = [
-            NSMakePoint(_fontWidth, 0.0),
-            NSMakePoint(0.0, 0.0),
-            NSMakePoint(0.0, _fontHeight),
-            NSMakePoint(_fontWidth, _fontHeight),
-            NSMakePoint(_fontWidth * 2, _fontHeight),
-            NSMakePoint(_fontWidth * 2, 0.0)
-        ]
-        
-        let triangleIndex = [ [1, 4, 5], [1, 2, 5], [1, 2, 4], [2, 4, 5] ]
-        let triangleIndex1 = [ [0, 1, -1], [0, 1, 2], [1, 2, 3], [2, 3, -1] ]
-        let triangleIndex2 = [ [4, 5, 0], [5, 0, -1], [3, 4, -1], [3, 4, 5] ]
-        
-        for base in 0..<4 {
-            let path = NSBezierPath()
-            path.move(to: pts[triangleIndex[base][0]])
-            for i in 1..<3 {
-                path.line(to: pts[triangleIndex[base][i]])
-            }
-            path.close()
-            gSymbolTrianglePath[base] = path
-            
-            let path1 = NSBezierPath()
-            path1.move(to: NSMakePoint(_fontWidth, _fontHeight / 2))
-            for i in 0..<3 {
-                let idx = triangleIndex1[base][i]
-                if idx >= 0 {
-                    path1.line(to: pts[idx])
-                }
-            }
-            path1.close()
-            gSymbolTrianglePath1[base] = path1
-            
-            let path2 = NSBezierPath()
-            path2.move(to: NSMakePoint(_fontWidth, _fontHeight / 2))
-            for i in 0..<3 {
-                let idx = triangleIndex2[base][i]
-                if idx >= 0 {
-                    path2.line(to: pts[idx])
-                }
-            }
-            path2.close()
-            gSymbolTrianglePath2[base] = path2
-        }
-    }
-    
     public func configure() {
         let config = YLLGlobalConfig.sharedInstance()
         let gColumn = Int(config.column)
@@ -334,11 +249,7 @@ public class YLView: NSView {
         frame.origin = NSZeroPoint
         self.frame = frame
         
-        createSymbolPath()
-        
         recreateBitmapContext(width: Int(frame.size.width), height: Int(frame.size.height))
-        
-        YLView.gLeftImage = NSImage(size: NSMakeSize(_fontWidth, _fontHeight))
         
         _markedText = nil
         _selectedRange = NSRange(location: NSNotFound, length: 0)
@@ -349,6 +260,12 @@ public class YLView: NSView {
         selectionLayer.frame = bounds
         updateCursorLayer()
         updateSelectionLayer()
+        
+        if let terminal = frontMostTerminal() {
+            terminal.setAllDirty()
+            updateBackedImage()
+        }
+        needsDisplay = true
     }
     
     private func recreateBitmapContext(width: Int, height: Int) {
@@ -387,25 +304,23 @@ public class YLView: NSView {
     
     public func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         let action = menuItem.action
-        if action == #selector(copy(_:)) && (!connected() || _selectionLength == 0) {
+        if action == #selector(copy(_:)) && (frontMostTerminal() == nil || _selectionLength == 0) {
             return false
         } else if (action == #selector(paste(_:)) ||
                     action == #selector(pasteWrap(_:)) ||
                     action == #selector(pasteColor(_:))) && !connected() {
             return false
-        } else if action == #selector(selectAll(_:)) && !connected() {
+        } else if action == #selector(selectAll(_:)) && frontMostTerminal() == nil {
             return false
         }
         return true
     }
     
     @objc public func refreshHiddenRegion() {
-        guard connected() else { return }
+        guard let ds = frontMostTerminal() else { return }
         let config = YLLGlobalConfig.sharedInstance()
         let gRow = Int(config.row)
         let gColumn = Int(config.column)
-        
-        guard let ds = frontMostTerminal() else { return }
         
         for r in 0..<gRow {
             guard let currRow = ds.cells(ofRow: Int32(r)) else { continue }
@@ -444,6 +359,7 @@ public class YLView: NSView {
         let session = URLSession(configuration: .default, delegate: URLSessionRedirectDelegate(owner: self), delegateQueue: .main)
         let task = session.dataTask(with: url)
         task.resume()
+        session.finishTasksAndInvalidate()
     }
     
     // MARK: - Conversion
@@ -493,7 +409,11 @@ public class YLView: NSView {
             let gRow = Int(config.row)
             let gColumn = Int(config.column)
             
-            if connected() {
+            if let ds = frontMostTerminal() {
+                if _backedImageCG == nil {
+                    ds.setAllDirty()
+                    updateBackedImage()
+                }
                 if let img = _backedImageCG {
                     context.draw(img, in: bounds)
                 }
@@ -501,30 +421,28 @@ public class YLView: NSView {
                 drawBlink(in: context)
                 
                 // Draw the url underline
-                if let ds = frontMostTerminal() {
-                    context.setStrokeColor(NSColor.orange.cgColor)
-                    context.setLineWidth(1.0)
-                    for r in 0..<gRow {
-                        guard let currRow = ds.cells(ofRow: Int32(r)) else { continue }
-                        var c = 0
-                        while c < gColumn {
-                            let start = c
-                            while c < gColumn && currRow[c].attr.terminalAttribute.url {
-                                c += 1
-                            }
-                            if c != start {
-                                context.beginPath()
-                                context.move(to: CGPoint(x: CGFloat(start) * _fontWidth, y: CGFloat(gRow - r - 1) * _fontHeight + 0.5))
-                                context.addLine(to: CGPoint(x: CGFloat(c) * _fontWidth, y: CGFloat(gRow - r - 1) * _fontHeight + 0.5))
-                                context.strokePath()
-                            }
+                context.setStrokeColor(NSColor.orange.cgColor)
+                context.setLineWidth(1.0)
+                for r in 0..<gRow {
+                    guard let currRow = ds.cells(ofRow: Int32(r)) else { continue }
+                    var c = 0
+                    while c < gColumn {
+                        let start = c
+                        while c < gColumn && currRow[c].attr.terminalAttribute.url {
                             c += 1
                         }
+                        if c != start {
+                            context.beginPath()
+                            context.move(to: CGPoint(x: CGFloat(start) * _fontWidth, y: CGFloat(gRow - r - 1) * _fontHeight + 0.5))
+                            context.addLine(to: CGPoint(x: CGFloat(c) * _fontWidth, y: CGFloat(gRow - r - 1) * _fontHeight + 0.5))
+                            context.strokePath()
+                        }
+                        c += 1
                     }
-                    
-                    _x = ds.cursorColumn
-                    _y = ds.cursorRow
                 }
+                
+                _x = ds.cursorColumn
+                _y = ds.cursorRow
             } else {
                 let bgColor = config.colorBG ?? NSColor.black
                 context.setFillColor(bgColor.cgColor)
@@ -576,9 +494,10 @@ public class YLView: NSView {
             return
         }
         
-
+        let previousContext = NSGraphicsContext.current
         let graphicsContext = NSGraphicsContext(cgContext: context, flipped: false)
         NSGraphicsContext.current = graphicsContext
+        defer { NSGraphicsContext.current = previousContext }
         
         if let activeCtx = NSGraphicsContext.current?.cgContext {
             /* Draw Background */
@@ -631,7 +550,10 @@ public class YLView: NSView {
     
     public override func viewDidChangeBackingProperties() {
         super.viewDidChangeBackingProperties()
-        configure()
+        recreateBitmapContext(width: Int(frame.size.width), height: Int(frame.size.height))
+        frontMostTerminal()?.setAllDirty()
+        updateBackedImage()
+        needsDisplay = true
     }
     
     public override var canBecomeKeyView: Bool {
@@ -660,8 +582,7 @@ public class YLView: NSView {
     }
     
     @objc public func frontMostConnection() -> YLConnection? {
-        guard let item = selectedTabViewItem else { return nil }
-        return item.identifier as? YLConnection
+        return selectedTabViewItem?.connection
     }
     
     @objc public func selectedPlainString() -> String? {
@@ -830,7 +751,7 @@ public class YLView: NSView {
 }
 
 // MARK: - URLSessionRedirectDelegate
-private class URLSessionRedirectDelegate: NSObject, URLSessionTaskDelegate {
+private final class URLSessionRedirectDelegate: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
     private weak var owner: YLView?
     
     init(owner: YLView) {
@@ -838,15 +759,19 @@ private class URLSessionRedirectDelegate: NSObject, URLSessionTaskDelegate {
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
-        if let newUrl = request.url {
-            owner?.loadUrl(of: newUrl.absoluteString)
+        if let newUrlString = request.url?.absoluteString {
+            Task { @MainActor [weak owner] in
+                owner?.loadUrl(of: newUrlString)
+            }
         }
         completionHandler(nil) // Cancel redirection since we only want the final URL
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
-        if error == nil, let finalUrl = task.response?.url {
-            owner?.loadUrl(of: finalUrl.absoluteString)
+        if error == nil, let finalUrlString = task.response?.url?.absoluteString {
+            Task { @MainActor [weak owner] in
+                owner?.loadUrl(of: finalUrlString)
+            }
         }
     }
 }

@@ -8,44 +8,42 @@
 
 import Foundation
 
+@MainActor
 @objc(YLPluginLoader)
 public class YLPluginLoader: NSObject {
-    @objc public var bundleInstanceList = NSMutableArray()
+    public var bundleInstanceList: [AnyObject] = []
     
     @objc override public init() {
         super.init()
-        Thread.detachNewThreadSelector(#selector(startSearch), toTarget: self, with: nil)
+        Task { @MainActor [weak self] in
+            self?.startSearch()
+        }
     }
     
     @objc public func startSearch() {
-        autoreleasepool {
-            var bundleSearchPaths = [String]()
+        var bundleSearchPaths = [String]()
+        
+        if let builtInPlugInsPath = Bundle.main.builtInPlugInsPath {
+            bundleSearchPaths.append(builtInPlugInsPath)
+        }
+        
+        let librarySearchPaths = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
+        for url in librarySearchPaths {
+            let processName = ProcessInfo.processInfo.processName
+            let pluginPath = url.appendingPathComponent("\(processName)/PlugIns").path
+            bundleSearchPaths.append(pluginPath)
+        }
+        
+        let fileManager = FileManager.default
+        for currPath in bundleSearchPaths {
+            guard fileManager.fileExists(atPath: currPath) else { continue }
             
-            // our built bundles are found inside the app's "PlugIns" folder
-            if let builtInPlugInsPath = Bundle.main.builtInPlugInsPath {
-                bundleSearchPaths.append(builtInPlugInsPath)
-            }
-            
-            // Search other locations for bundles
-            // (i.e. $(HOME)/Library/Application Support/Nally/PlugIns)
-            let librarySearchPaths = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
-            for url in librarySearchPaths {
-                let processName = ProcessInfo.processInfo.processName
-                let pluginPath = url.appendingPathComponent("\(processName)/PlugIns").path
-                bundleSearchPaths.append(pluginPath)
-            }
-            
-            let fileManager = FileManager.default
-            for currPath in bundleSearchPaths {
-                guard fileManager.fileExists(atPath: currPath) else { continue }
-                
-                if let bundleEnum = fileManager.enumerator(atPath: currPath) {
-                    while let currBundlePath = bundleEnum.nextObject() as? String {
-                        if currBundlePath.hasSuffix(".bundle") {
-                            let fullPath = (currPath as NSString).appendingPathComponent(currBundlePath)
-                            if let bundleInstance = self.loadBundle(atPath: fullPath) {
-                                self.bundleInstanceList.add(bundleInstance)
-                            }
+            if let bundleEnum = fileManager.enumerator(atPath: currPath) {
+                while let currBundlePath = bundleEnum.nextObject() as? String {
+                    if currBundlePath.hasSuffix(".bundle") {
+                        let fullPath = (currPath as NSString).appendingPathComponent(currBundlePath)
+                        if let bundleInstance = self.loadBundle(atPath: fullPath) {
+                            self.bundleInstanceList.append(bundleInstance)
                         }
                     }
                 }

@@ -4,6 +4,7 @@ import SwiftData
 struct SitesView: View {
     @Bindable var controller: YLController
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     @Query(sort: \YLSite.name) private var sites: [YLSite]
     
     @State private var selectedSite: YLSite?
@@ -124,6 +125,7 @@ struct SitesView: View {
                 Button("Done") {
                     saveChanges()
                     onClose()
+                    dismiss()
                 }
                 .keyboardShortcut(.escape, modifiers: [])
             }
@@ -166,7 +168,12 @@ struct SitesView: View {
     
     private func saveChanges() {
         try? modelContext.save()
-        controller.sitesList = sites
+        if let selected = selectedSite,
+           !selected.password.isEmpty,
+           !selected.address.isEmpty,
+           !selected.account.isEmpty {
+            try? YLKeychain.setPassword(selected.password, forService: selected.address, account: selected.account)
+        }
         controller.saveSites()
     }
 }

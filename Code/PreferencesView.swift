@@ -1,5 +1,5 @@
 import SwiftUI
-import CoreServices
+import AppKit
 
 struct PreferencesView: View {
     @Bindable var config = YLLGlobalConfig.sharedInstance()
@@ -188,7 +188,7 @@ struct ColorPreferencesView: View {
 
 struct AppPicker: View {
     let scheme: String
-    @State private var apps: [(id: String, name: String)] = []
+    @State private var apps: [(id: String, name: String, url: URL)] = []
     @State private var selectedAppId: String = ""
     
     var body: some View {
@@ -199,8 +199,13 @@ struct AppPicker: View {
         } label: {
             Text("\(scheme.uppercased()) Client:")
         }
-        .onChange(of: selectedAppId) { oldValue, newValue in
-            LSSetDefaultHandlerForURLScheme(scheme as CFString, newValue as CFString)
+        .onChange(of: selectedAppId) { _, newValue in
+            guard let appURL = apps.first(where: { $0.id == newValue })?.url else { return }
+            NSWorkspace.shared.setDefaultApplication(at: appURL, toOpenURLsWithScheme: scheme) { error in
+                if let error = error {
+                    NSLog("[Nally] Failed to set default handler for \(scheme): \(error)")
+                }
+            }
         }
         .onAppear {
             loadApps()
@@ -208,21 +213,21 @@ struct AppPicker: View {
     }
     
     private func loadApps() {
-        var list: [(id: String, name: String)] = []
+        var list: [(id: String, name: String, url: URL)] = []
         let ws = NSWorkspace.shared
         if let dummyURL = URL(string: "\(scheme)://") {
             let appURLs = ws.urlsForApplications(toOpen: dummyURL)
             for appURL in appURLs {
                 if let bundleId = Bundle(url: appURL)?.bundleIdentifier {
                     let name = (try? appURL.resourceValues(forKeys: [.localizedNameKey]).localizedName) ?? appURL.deletingPathExtension().lastPathComponent
-                    list.append((id: bundleId, name: name))
+                    list.append((id: bundleId, name: name, url: appURL))
                 }
             }
         }
         
         let nallyId = Bundle.main.bundleIdentifier ?? ""
         if !list.contains(where: { $0.id.lowercased() == nallyId.lowercased() }) {
-            list.append((id: nallyId, name: "Nally"))
+            list.append((id: nallyId, name: "Nally", url: Bundle.main.bundleURL))
         }
         
         self.apps = list

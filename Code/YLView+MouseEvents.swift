@@ -6,7 +6,7 @@ extension YLView {
     public override func mouseDown(with event: NSEvent) {
         frontMostTerminal()?.hasMessage = false
         window?.makeFirstResponder(self)
-        guard connected() else { return }
+        guard frontMostTerminal() != nil else { return }
         
         var p = event.locationInWindow
         p = convert(p, from: nil)
@@ -66,7 +66,7 @@ extension YLView {
         needsDisplay = true
         
         // Click to move cursor
-        if isCmdPressed {
+        if isCmdPressed && connected() {
             let config = YLLGlobalConfig.sharedInstance()
             let gColumn = Int(config.column)
             var cmd = [UInt8]()
@@ -130,7 +130,7 @@ extension YLView {
     }
     
     public override func mouseDragged(with event: NSEvent) {
-        guard connected() else { return }
+        guard frontMostTerminal() != nil else { return }
         var p = event.locationInWindow
         p = convert(p, from: nil)
         let index = convertIndex(from: p)
@@ -145,7 +145,7 @@ extension YLView {
     }
     
     public override func mouseUp(with event: NSEvent) {
-        guard connected() else { return }
+        guard frontMostTerminal() != nil else { return }
         if _selectionLength == 0 {
             var p = event.locationInWindow
             p = convert(p, from: nil)
@@ -185,7 +185,7 @@ extension YLView {
     
     public override func menu(for event: NSEvent) -> NSMenu? {
         let menu = YLView.defaultMenu ?? NSMenu()
-        guard connected() else { return menu }
+        guard frontMostTerminal() != nil else { return menu }
         
         if let s = selectedPlainString() {
             let a = YLContextualMenuManager.sharedInstance.availableMenuItemForSelectionString(s)

@@ -12,6 +12,19 @@ import Combine
 import SwiftData
 import UniformTypeIdentifiers
 
+extension NSTabViewItem {
+    @MainActor
+    public var connection: YLConnection? {
+        get { identifier as? YLConnection }
+        set { identifier = newValue }
+    }
+    
+    @MainActor
+    public var terminal: YLTerminal? {
+        connection?.terminal
+    }
+}
+
 public struct TabInfo: Hashable, Identifiable {
     public var id: ObjectIdentifier {
         ObjectIdentifier(tabItem)
@@ -20,6 +33,16 @@ public struct TabInfo: Hashable, Identifiable {
     public let icon: NSImage?
     public let isSelected: Bool
     public let tabItem: NSTabViewItem
+    
+    @MainActor
+    public var connection: YLConnection? {
+        tabItem.connection
+    }
+    
+    @MainActor
+    public var terminal: YLTerminal? {
+        tabItem.terminal
+    }
     
     public static func == (lhs: TabInfo, rhs: TabInfo) -> Bool {
         return lhs.tabItem == rhs.tabItem &&
@@ -112,7 +135,7 @@ public class AppState: NSObject {
         let selected = telnetView.selectedTabViewItem
         
         self.tabs = items.map { item in
-            let conn = item.identifier as? YLConnection
+            let conn = item.connection
             return TabInfo(
                 label: item.label,
                 icon: conn?.icon,
@@ -122,7 +145,7 @@ public class AppState: NSObject {
         }
         self.selectedTab = selected
         
-        if let conn = selected?.identifier as? YLConnection {
+        if let conn = selected?.connection {
             self.addressText = conn.connectionAddress ?? ""
         }
         
@@ -140,25 +163,43 @@ struct NallyApp: App {
     
     var body: some Scene {
         Window("Nally", id: "main") {
-            MainSwiftUIWindowView(appState: appState)
-                .preferredColorScheme(AppTheme(rawValue: appThemeRaw)?.colorScheme)
+            Group {
+                if let container = appState.controller.modelContainer {
+                    MainSwiftUIWindowView(appState: appState)
+                        .modelContainer(container)
+                } else {
+                    MainSwiftUIWindowView(appState: appState)
+                }
+            }
+            .preferredColorScheme(AppTheme(rawValue: appThemeRaw)?.colorScheme)
         }
-        .modelContainer(for: YLSite.self)
         .commands {
             NallyCommands()
         }
         
         Window("Bookmarks", id: "sites") {
-            SitesView(
-                controller: appState.controller,
-                onConnect: { site in
-                    appState.controller.newConnection(with: site)
-                },
-                onClose: {}
-            )
+            Group {
+                if let container = appState.controller.modelContainer {
+                    SitesView(
+                        controller: appState.controller,
+                        onConnect: { site in
+                            appState.controller.newConnection(with: site)
+                        },
+                        onClose: {}
+                    )
+                    .modelContainer(container)
+                } else {
+                    SitesView(
+                        controller: appState.controller,
+                        onConnect: { site in
+                            appState.controller.newConnection(with: site)
+                        },
+                        onClose: {}
+                    )
+                }
+            }
             .preferredColorScheme(AppTheme(rawValue: appThemeRaw)?.colorScheme)
         }
-        .modelContainer(for: YLSite.self)
         .windowResizability(.contentSize)
         
         Settings {
@@ -189,7 +230,7 @@ struct MenuBarQuickConnectView: View {
             
             ForEach(appState.controller.sitesList) { site in
                 Button(action: {
-                    NSApp.activate(ignoringOtherApps: true)
+                    NSApp.activate()
                     appState.controller.newConnection(with: site)
                 }) {
                     HStack {
@@ -202,7 +243,7 @@ struct MenuBarQuickConnectView: View {
             Divider()
             
             Button(action: {
-                NSApp.activate(ignoringOtherApps: true)
+                NSApp.activate()
                 if let window = appState.controller._mainWindow {
                     window.makeKeyAndOrderFront(nil)
                 }
@@ -211,14 +252,14 @@ struct MenuBarQuickConnectView: View {
             }
             
             Button(action: {
-                NSApp.activate(ignoringOtherApps: true)
+                NSApp.activate()
                 openWindow(id: "sites")
             }) {
                 Label("Bookmarks (Cmd+B)", systemImage: "bookmark")
             }
             
             Button(action: {
-                NSApp.activate(ignoringOtherApps: true)
+                NSApp.activate()
                 openSettings()
             }) {
                 Label("Preferences... (Cmd+,)", systemImage: "gearshape")
@@ -283,7 +324,7 @@ struct SingleTabItemView: View {
     
     var body: some View {
         let isSelected = tab.isSelected
-        let conn = tab.tabItem.identifier as? YLConnection
+        let conn = tab.connection
         let hasMessage = conn?.terminal?.hasMessage ?? false
         
         HStack(spacing: 4) {

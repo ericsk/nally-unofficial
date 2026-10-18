@@ -6,14 +6,15 @@
 //
 
 import Cocoa
-import QuickLookUI
+@preconcurrency import QuickLookUI
 
-public class YLQuickLookHelper: NSObject, QLPreviewPanelDataSource, QLPreviewPanelDelegate {
-    @MainActor public static let shared = YLQuickLookHelper()
+@MainActor
+public class YLQuickLookHelper: NSObject, @preconcurrency QLPreviewPanelDataSource, @preconcurrency QLPreviewPanelDelegate {
+    public static let shared = YLQuickLookHelper()
     
     private var previewURL: URL?
     
-    @MainActor public func preview(fileURL: URL) {
+    public func preview(fileURL: URL) {
         self.previewURL = fileURL
         if let panel = QLPreviewPanel.shared() {
             panel.dataSource = self

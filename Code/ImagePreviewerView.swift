@@ -9,8 +9,8 @@ import SwiftUI
 import Cocoa
 
 struct ImagePreviewerView: View {
-    @ObservedObject var previewer: YLImagePreviewer
-    @State private var isHoveringControls = false
+    var previewer: YLImagePreviewer
+    @FocusState private var isFocused: Bool
     @State private var currentMagnification: CGFloat = 1.0
     @State private var currentOffset: CGSize = .zero
     
@@ -106,6 +106,7 @@ struct ImagePreviewerView: View {
                     Button(action: { previewer.copyImageToClipboard() }) {
                         Label("Copy", systemImage: "doc.on.doc")
                     }
+                    .keyboardShortcut("c", modifiers: .command)
                     .help("Copy Image (Cmd+C)")
                     
                     Button(action: { previewer.saveImage() }) {
@@ -145,51 +146,25 @@ struct ImagePreviewerView: View {
                 }
                 .padding(32)
             }
-            
-            // Key event listener helper
-            KeyEventHelper { event in
-                if event.keyCode == 49 { // Spacebar -> Quick Look
-                    previewer.showQuickLook()
-                } else if event.characters == "i" || event.characters == "I" {
-                    previewer.showExifData()
-                } else if event.modifierFlags.contains(.command) && (event.characters == "c" || event.characters == "C") {
-                    previewer.copyImageToClipboard()
-                } else if event.keyCode == 53 { // ESC
-                    previewer.closePreview()
-                }
-            }
-            .frame(width: 0, height: 0)
         }
         .frame(minWidth: 540, minHeight: 400)
-    }
-}
-
-// NSViewRepresentable to intercept key events in SwiftUI
-struct KeyEventHelper: NSViewRepresentable {
-    let onKeyPress: (NSEvent) -> Void
-    
-    func makeNSView(context: Context) -> NSView {
-        let view = KeyView()
-        view.onKeyPress = onKeyPress
-        DispatchQueue.main.async {
-            view.window?.makeFirstResponder(view)
+        .focusable()
+        .focused($isFocused)
+        .focusEffectDisabled()
+        .onAppear {
+            isFocused = true
         }
-        return view
-    }
-    
-    func updateNSView(_ nsView: NSView, context: Context) {
-        DispatchQueue.main.async {
-            nsView.window?.makeFirstResponder(nsView)
+        .onKeyPress(.space) {
+            previewer.showQuickLook()
+            return .handled
         }
-    }
-    
-    class KeyView: NSView {
-        var onKeyPress: ((NSEvent) -> Void)?
-        
-        override var acceptsFirstResponder: Bool { true }
-        
-        override func keyDown(with event: NSEvent) {
-            onKeyPress?(event)
+        .onKeyPress(.escape) {
+            previewer.closePreview()
+            return .handled
+        }
+        .onKeyPress(characters: CharacterSet(charactersIn: "iI")) { _ in
+            previewer.showExifData()
+            return .handled
         }
     }
 }

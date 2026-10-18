@@ -126,25 +126,25 @@ public class YLTelnet: YLConnection {
         self.connection = conn
         
         conn.stateUpdateHandler = { [weak self] state in
-            guard let self = self else { return }
             switch state {
             case .ready:
                 NSLog("YLTelnet: NWConnection connected (ready)")
-                DispatchQueue.main.async {
+                Task { @MainActor [weak self] in
+                    guard let self = self else { return }
                     self.connected = true
                     self.isProcessing = false
                     self.terminal?.startConnection()
+                    self.startReceiveStream()
                 }
-                self.startReceiveStream()
             case .failed(let error):
                 NSLog("YLTelnet: NWConnection failed: \(error.localizedDescription)")
-                DispatchQueue.main.async {
-                    self.close()
+                Task { @MainActor [weak self] in
+                    self?.close()
                 }
             case .cancelled:
                 NSLog("YLTelnet: NWConnection cancelled")
-                DispatchQueue.main.async {
-                    self.close()
+                Task { @MainActor [weak self] in
+                    self?.close()
                 }
             case .waiting(let error):
                 NSLog("YLTelnet: NWConnection waiting: \(error.localizedDescription)")
@@ -161,7 +161,7 @@ public class YLTelnet: YLConnection {
         guard let conn = connection else { return }
         
         let dataStream = AsyncStream<Data> { continuation in
-            func receiveNext() {
+            @Sendable func receiveNext() {
                 conn.receive(minimumIncompleteLength: 1, maximumLength: 4096) { data, _, isComplete, error in
                     if let data = data, !data.isEmpty {
                         continuation.yield(data)

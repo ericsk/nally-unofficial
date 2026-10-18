@@ -6,6 +6,7 @@
 //  Copyright 2007-2026 yllan.org. All rights reserved.
 //
 
+@preconcurrency import Foundation
 import Cocoa
 import Combine
 import Observation
@@ -16,20 +17,16 @@ import SwiftData
 @objc(YLController)
 @objcMembers
 public class YLController: NSObject, NSWindowDelegate {
-    @objc public dynamic weak var _mainWindow: NSWindow?
-    @objc public dynamic var _telnetView: YLView?
-    @objc public dynamic weak var _addressBar: NSTextField?
+    public weak var _mainWindow: NSWindow?
+    public var _telnetView: YLView?
     public static let encodingDidChangeNotification = Notification.Name("YLEncodingDidChangeNotification")
     
     public var sitesList: [YLSite] = []
     public var modelContainer: ModelContainer?
-    private var cancellables = Set<AnyCancellable>()
     private var lastConnectionTime = Date.distantPast
     private var lastConnectionAddress = ""
-    @objc public dynamic var _pluginLoader: YLPluginLoader?
-    @objc public dynamic weak var _exifController: YLExifController?
-    
-
+    public var _pluginLoader: YLPluginLoader?
+    public weak var _exifController: YLExifController?
     
     // MARK: - Initializer & Lifecycle
     @MainActor
@@ -50,53 +47,23 @@ public class YLController: NSObject, NSWindowDelegate {
         
         let globalConfig = YLLGlobalConfig.sharedInstance()
         
-        globalConfig.publisher(for: \.messageCount)
-            .sink { count in
-                let dockTile = NSApp.dockTile
-                if count == 0 {
-                    dockTile.badgeLabel = nil
-                } else {
-                    dockTile.badgeLabel = "\(count)"
-                }
-                dockTile.display()
+        globalConfig.onMessageCountChange = { count in
+            let dockTile = NSApp.dockTile
+            if count == 0 {
+                dockTile.badgeLabel = nil
+            } else {
+                dockTile.badgeLabel = "\(count)"
             }
-            .store(in: &cancellables)
-            
-        globalConfig.publisher(for: \.shouldSmoothFonts)
-            .sink { [weak self] _ in
-                self?.refreshTerminalState()
-            }
-            .store(in: &cancellables)
-            
-        Publishers.Merge(
-            globalConfig.publisher(for: \.cellWidth).map { _ in () },
-            globalConfig.publisher(for: \.cellHeight).map { _ in () }
-        )
-        .sink { [weak self] _ in
+            dockTile.display()
+        }
+        
+        globalConfig.onAppearanceChange = { [weak self] in
+            self?.refreshTerminalState()
+        }
+        
+        globalConfig.onLayoutChange = { [weak self] in
             self?.updateWindowAndTerminalLayout()
         }
-        .store(in: &cancellables)
-            
-        let fontAndColorPublishers: [AnyPublisher<Void, Never>] = [
-            globalConfig.publisher(for: \.chineseFontName).map { _ in () }.eraseToAnyPublisher(),
-            globalConfig.publisher(for: \.chineseFontSize).map { _ in () }.eraseToAnyPublisher(),
-            globalConfig.publisher(for: \.englishFontName).map { _ in () }.eraseToAnyPublisher(),
-            globalConfig.publisher(for: \.englishFontSize).map { _ in () }.eraseToAnyPublisher(),
-            globalConfig.publisher(for: \.chineseFontPaddingLeft).map { _ in () }.eraseToAnyPublisher(),
-            globalConfig.publisher(for: \.chineseFontPaddingBottom).map { _ in () }.eraseToAnyPublisher(),
-            globalConfig.publisher(for: \.englishFontPaddingLeft).map { _ in () }.eraseToAnyPublisher(),
-            globalConfig.publisher(for: \.englishFontPaddingBottom).map { _ in () }.eraseToAnyPublisher()
-        ]
-        
-        Publishers.MergeMany(fontAndColorPublishers)
-            .sink { [weak self] _ in
-                globalConfig.refreshFont()
-                self?.refreshTerminalState()
-            }
-            .store(in: &cancellables)
-            
-        globalConfig.showHiddenText = globalConfig.showHiddenText
-        globalConfig.cellWidth = globalConfig.cellWidth
         
         initSwiftData()
         updateSitesMenu()
@@ -114,18 +81,6 @@ public class YLController: NSObject, NSWindowDelegate {
     
     private var isWindowSetupDone = false
     
-    func findAddressBar(in view: NSView) -> NSTextField? {
-        if let tf = view as? NSTextField, tf.placeholderString == "Go to this address" {
-            return tf
-        }
-        for subview in view.subviews {
-            if let tf = findAddressBar(in: subview) {
-                return tf
-            }
-        }
-        return nil
-    }
-    
     @objc(setupWindow:)
     public func setupWindow(_ window: NSWindow) {
         self._mainWindow = window
@@ -135,11 +90,9 @@ public class YLController: NSObject, NSWindowDelegate {
         if isWindowSetupDone { return }
         isWindowSetupDone = true
         
-        window.hasShadow = false
-        window.isOpaque = false
-        if #available(macOS 11.0, *) {
-            window.toolbarStyle = .expanded
-        }
+        window.hasShadow = true
+        window.isOpaque = true
+        window.toolbarStyle = .expanded
         window.setFrameAutosaveName("nallyMainWindowFrame")
         
         let globalConfig = YLLGlobalConfig.sharedInstance()
@@ -243,15 +196,16 @@ public class YLController: NSObject, NSWindowDelegate {
         }
     }
     
-    // MARK: - KVO Observers Helpers
+    // MARK: - Appearance & Layout Refresh Helpers
     private func refreshTerminalState() {
-        (_telnetView?.selectedTabViewItem?.identifier as? YLConnection)?.terminal?.setAllDirty()
+        _telnetView?.selectedTabViewItem?.terminal?.setAllDirty()
         _telnetView?.updateBackedImage()
         _telnetView?.needsDisplay = true
     }
     
     private func updateWindowAndTerminalLayout() {
         let globalConfig = YLLGlobalConfig.sharedInstance()
+        AppState.shared.updateDimensions()
         if let window = _mainWindow {
             let shift = window.frame.height - (window.contentView?.frame.height ?? 0) + 22
             var r = window.frame
@@ -262,10 +216,9 @@ public class YLController: NSObject, NSWindowDelegate {
             window.setFrame(r, display: true, animate: false)
             
             _telnetView?.configure()
-            (_telnetView?.selectedTabViewItem?.identifier as? YLConnection)?.terminal?.setAllDirty()
+            _telnetView?.selectedTabViewItem?.terminal?.setAllDirty()
             _telnetView?.updateBackedImage()
             _telnetView?.needsDisplay = true
-            
         }
     }
     
@@ -273,12 +226,29 @@ public class YLController: NSObject, NSWindowDelegate {
     @MainActor
     public func initSwiftData() {
         do {
-            let container = try ModelContainer(for: YLSite.self)
+            let isRunningTests = NSClassFromString("XCTestCase") != nil ||
+                ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+            let config = ModelConfiguration(isStoredInMemoryOnly: isRunningTests)
+            let container = try ModelContainer(for: YLSite.self, configurations: config)
             self.modelContainer = container
             syncSitesWithSwiftData()
         } catch {
             NSLog("Failed to initialize SwiftData ModelContainer: \(error)")
             loadSites()
+        }
+    }
+    
+    @MainActor
+    private func populateCredentialsFromKeychain(for site: YLSite) {
+        guard !site.address.isEmpty else { return }
+        if !site.account.isEmpty,
+           let password = YLKeychain.password(forService: site.address, account: site.account) {
+            site.password = password
+        } else if let accounts = YLKeychain.accounts(forService: site.address),
+                  let account = accounts.last?["acct"] as? String,
+                  let password = YLKeychain.password(forService: site.address, account: account) {
+            site.account = account
+            site.password = password
         }
     }
     
@@ -318,13 +288,7 @@ public class YLController: NSObject, NSWindowDelegate {
             }
             
             for site in fetched {
-                if let accounts = YLKeychain.accounts(forService: site.address),
-                   let account = accounts.last?["acct"] as? String {
-                    if let password = YLKeychain.password(forService: site.address, account: account) {
-                        site.account = account
-                        site.password = password
-                    }
-                }
+                populateCredentialsFromKeychain(for: site)
             }
             
             self.sitesList = fetched
@@ -343,13 +307,7 @@ public class YLController: NSObject, NSWindowDelegate {
                 let decodedSites = try JSONDecoder().decode([YLSite].self, from: data)
                 self.sitesList = decodedSites
                 for site in sitesList {
-                    if let accounts = YLKeychain.accounts(forService: site.address),
-                       let account = accounts.last?["acct"] as? String {
-                        if let password = YLKeychain.password(forService: site.address, account: account) {
-                            site.account = account
-                            site.password = password
-                        }
-                    }
+                    populateCredentialsFromKeychain(for: site)
                 }
             } catch {
                 NSLog("Failed to decode SitesCodable: \(error)")
@@ -357,7 +315,7 @@ public class YLController: NSObject, NSWindowDelegate {
         } else if let dictionaries = defaults.array(forKey: "Sites") as? [[String: Any]] {
             // Migration path
             for siteDict in dictionaries {
-                let mutableDict = NSMutableDictionary(dictionary: siteDict)
+                var mutableDict = siteDict
                 if let address = mutableDict["address"] as? String {
                     if let accounts = YLKeychain.accounts(forService: address),
                        let account = accounts.last?["acct"] as? String {
@@ -367,7 +325,7 @@ public class YLController: NSObject, NSWindowDelegate {
                         }
                     }
                 }
-                let site = YLSite.site(withDictionary: mutableDict as! [String : Any])
+                let site = YLSite.site(withDictionary: mutableDict)
                 sitesList.append(site)
             }
             saveSites()
@@ -379,7 +337,7 @@ public class YLController: NSObject, NSWindowDelegate {
         for site in sitesList {
             let password = site.password
             let address = site.address
-            if !password.isEmpty && !address.isEmpty {
+            if !password.isEmpty && !address.isEmpty && !site.account.isEmpty {
                 do {
                     try YLKeychain.setPassword(password, forService: address, account: site.account)
                 } catch {
@@ -390,11 +348,17 @@ public class YLController: NSObject, NSWindowDelegate {
         if let container = modelContainer {
             let context = container.mainContext
             try? context.save()
+            let descriptor = FetchDescriptor<YLSite>(sortBy: [SortDescriptor(\.name)])
+            if let fetched = try? context.fetch(descriptor) {
+                for site in fetched where site.password.isEmpty {
+                    populateCredentialsFromKeychain(for: site)
+                }
+                self.sitesList = fetched
+            }
         } else {
             do {
                 let encodedData = try JSONEncoder().encode(sitesList)
                 UserDefaults.standard.set(encodedData, forKey: "SitesCodable")
-                UserDefaults.standard.synchronize()
             } catch {
                 NSLog("Failed to encode SitesCodable: \(error)")
             }
@@ -408,6 +372,7 @@ public class YLController: NSObject, NSWindowDelegate {
             do {
                 let decodedSites = try JSONDecoder().decode([YLSite].self, from: data)
                 for site in decodedSites {
+                    populateCredentialsFromKeychain(for: site)
                     newConnection(with: site)
                 }
             } catch {
@@ -417,6 +382,7 @@ public class YLController: NSObject, NSWindowDelegate {
             // Migration path
             for siteDict in dictionaries {
                 let site = YLSite.site(withDictionary: siteDict)
+                populateCredentialsFromKeychain(for: site)
                 newConnection(with: site)
             }
         }
@@ -427,7 +393,7 @@ public class YLController: NSObject, NSWindowDelegate {
         let tabNumber = tv.numberOfTabViewItems
         var lastConnectedSites: [YLSite] = []
         for i in 0..<tabNumber {
-            if let connection = tv.tabViewItem(at: i).identifier as? YLConnection, connection.terminal != nil {
+            if let connection = tv.tabViewItem(at: i).connection, connection.terminal != nil {
                 if let site = connection.site {
                     lastConnectedSites.append(site)
                 }
@@ -436,7 +402,6 @@ public class YLController: NSObject, NSWindowDelegate {
         do {
             let encodedData = try JSONEncoder().encode(lastConnectedSites)
             UserDefaults.standard.set(encodedData, forKey: "LastConnectionsCodable")
-            UserDefaults.standard.synchronize()
         } catch {
             NSLog("Failed to encode LastConnectionsCodable: \(error)")
         }
@@ -449,10 +414,6 @@ public class YLController: NSObject, NSWindowDelegate {
     
     @objc public func telnetView() -> Any? {
         return _telnetView
-    }
-    
-    @objc public func setAddressBar(_ addressBar: Any?) {
-        _addressBar = addressBar as? NSTextField
     }
     
     // MARK: - MenuItem Validation

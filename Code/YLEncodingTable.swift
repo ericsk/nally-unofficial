@@ -3,12 +3,19 @@ import Foundation
 @objc(YLEncodingTable)
 @objcMembers
 public class YLEncodingTable: NSObject {
-    private static var g2uTable = [UInt16](repeating: 0, count: 32768)
-    private static var b2uTable = [UInt16](repeating: 0, count: 32768)
-    private static var u2bTable = [UInt16](repeating: 0, count: 65536)
-    private static var u2gTable = [UInt16](repeating: 0, count: 65536)
+    private struct Tables: Sendable {
+        let g2u: [UInt16]
+        let b2u: [UInt16]
+        let u2b: [UInt16]
+        let u2g: [UInt16]
+    }
     
-    private static let loadOnce: Void = {
+    private static let tables: Tables = {
+        var g2uTable = [UInt16](repeating: 0, count: 32768)
+        var b2uTable = [UInt16](repeating: 0, count: 32768)
+        var u2bTable = [UInt16](repeating: 0, count: 65536)
+        var u2gTable = [UInt16](repeating: 0, count: 65536)
+        
         loadTable(name: "g2u", into: &g2uTable)
         loadTable(name: "b2u", into: &b2uTable)
         
@@ -20,6 +27,8 @@ public class YLEncodingTable: NSObject {
             let u2gIdx = Int(g2uTable[i])
             u2gTable[u2gIdx] = UInt16(i + 0x8000)
         }
+        
+        return Tables(g2u: g2uTable, b2u: b2uTable, u2b: u2bTable, u2g: u2gTable)
     }()
     
     private static func loadTable(name: String, into table: inout [UInt16]) {
@@ -54,31 +63,31 @@ public class YLEncodingTable: NSObject {
     }
     
     public static func ensureLoaded() {
-        _ = loadOnce
+        _ = tables
     }
     
     public static func lookupBig5(_ index: UInt16) -> UInt16 {
-        ensureLoaded()
         let idx = Int(index)
-        return idx < b2uTable.count ? b2uTable[idx] : 0
+        let b2u = tables.b2u
+        return idx < b2u.count ? b2u[idx] : 0
     }
     
     public static func lookupGBK(_ index: UInt16) -> UInt16 {
-        ensureLoaded()
         let idx = Int(index)
-        return idx < g2uTable.count ? g2uTable[idx] : 0
+        let g2u = tables.g2u
+        return idx < g2u.count ? g2u[idx] : 0
     }
     
     public static func lookupU2B(_ val: UInt16) -> UInt16 {
-        ensureLoaded()
         let idx = Int(val)
-        return idx < u2bTable.count ? u2bTable[idx] : 0
+        let u2b = tables.u2b
+        return idx < u2b.count ? u2b[idx] : 0
     }
     
     public static func lookupU2G(_ val: UInt16) -> UInt16 {
-        ensureLoaded()
         let idx = Int(val)
-        return idx < u2gTable.count ? u2gTable[idx] : 0
+        let u2g = tables.u2g
+        return idx < u2g.count ? u2g[idx] : 0
     }
     
     public static func initTable() {

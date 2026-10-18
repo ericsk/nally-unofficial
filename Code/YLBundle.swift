@@ -1,21 +1,20 @@
 import Cocoa
 
+@MainActor
 @objc(YLBundle)
 @objcMembers
 open class YLBundle: NSObject {
     public var title: String = "<name undefined>"
     private var _description: String = "<description undefined>"
     
-    open override var description: String {
-        return _description
-    }
-    
     public var descriptionString: String {
         get { return _description }
         set { _description = newValue }
     }
     
-    private var pluginsMenu: NSMenu? = NSApp.mainMenu?.item(withTitle: "Plugins")?.submenu
+    private var pluginsMenu: NSMenu? {
+        NSApp.mainMenu?.item(withTitle: "Plugins")?.submenu
+    }
     
     public override init() {
         super.init()
@@ -43,7 +42,7 @@ open class YLBundle: NSObject {
         }
         
         let pluginMenuItem = NSMenuItem(title: self.title, action: nil, keyEquivalent: "")
-        pluginMenuItem.toolTip = self.description
+        pluginMenuItem.toolTip = self.descriptionString
         pluginsMenu.addItem(pluginMenuItem)
         
         let subMenu = NSMenu(title: self.title)

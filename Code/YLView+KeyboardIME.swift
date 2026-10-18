@@ -1,7 +1,7 @@
 import Cocoa
 import CoreText
 
-extension YLView: NSTextInputClient {
+extension YLView: @preconcurrency NSTextInputClient {
     public override func keyDown(with event: NSEvent) {
         clearSelection()
         

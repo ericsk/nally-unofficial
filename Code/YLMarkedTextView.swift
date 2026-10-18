@@ -54,11 +54,16 @@ public class YLMarkedTextView: NSView {
         }
     }
     
+    private static func lineHeight(for font: NSFont) -> CGFloat {
+        let ctFont = font as CTFont
+        return ceil(CTFontGetAscent(ctFont) + CTFontGetDescent(ctFont) + CTFontGetLeading(ctFont))
+    }
+
     @objc public var defaultFont: NSFont {
         get { return _defaultFont }
         set {
             _defaultFont = newValue
-            _lineHeight = NSLayoutManager().defaultLineHeight(for: newValue)
+            _lineHeight = Self.lineHeight(for: newValue)
             setNeedsDisplay(bounds)
         }
     }
@@ -84,7 +89,7 @@ public class YLMarkedTextView: NSView {
         } else {
             _defaultFont = NSFont.systemFont(ofSize: 20)
         }
-        _lineHeight = NSLayoutManager().defaultLineHeight(for: _defaultFont)
+        _lineHeight = Self.lineHeight(for: _defaultFont)
     }
     
     public override var isOpaque: Bool {
@@ -170,9 +175,11 @@ public class YLMarkedTextView: NSView {
             
             let line = CTLineCreateWithAttributedString(str)
             let offset = CTLineGetOffsetForStringIndex(line, _selectedRange.location, nil)
-            NSColor.white.set()
-            NSBezierPath.defaultLineWidth = 1.0
-            NSBezierPath.strokeLine(from: NSPoint(x: offset, y: 0), to: NSPoint(x: offset, y: _lineHeight))
+            ctx.setStrokeColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
+            ctx.setLineWidth(1.0)
+            ctx.move(to: CGPoint(x: offset, y: 0))
+            ctx.addLine(to: CGPoint(x: offset, y: _lineHeight))
+            ctx.strokePath()
         }
         
         ctx.restoreGState()

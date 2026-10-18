@@ -4,7 +4,7 @@ import CoreText
 extension YLView {
     // MARK: - Actions (Copy, Paste, Select)
     @IBAction public func copy(_ sender: Any?) {
-        guard connected() else { return }
+        guard frontMostTerminal() != nil else { return }
         if _selectionLength == 0 { return }
         
         let config = YLLGlobalConfig.sharedInstance()
@@ -230,7 +230,7 @@ extension YLView {
     }
     
     @IBAction public override func selectAll(_ sender: Any?) {
-        guard connected() else { return }
+        guard frontMostTerminal() != nil else { return }
         let config = YLLGlobalConfig.sharedInstance()
         let gRow = Int(config.row)
         let gColumn = Int(config.column)

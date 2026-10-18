@@ -55,6 +55,7 @@ public class YLTerminal: NSObject {
     
     private var _hasMessage: Bool = false
     private var _gotWrapped: Bool = false
+    private var isTickScheduled: Bool = false
     
     private var _modeScreenReverse: Bool = false
     private var _modeOriginRelative: Bool = false
@@ -1138,13 +1139,23 @@ extension YLTerminal {
             }
             
             for rowIdx in 0..<Int(row) {
-                updateDoubleByteState(forRow: Int32(rowIdx))
+                if dirtyRows[rowIdx] {
+                    updateDoubleByteState(forRow: Int32(rowIdx))
+                }
                 updateURLState(forRow: Int32(rowIdx))
             }
             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.07) { [weak self] in
-                self?._delegate?.tick()
-            }
+            scheduleTickIfNeeded()
+        }
+    }
+    
+    private func scheduleTickIfNeeded() {
+        guard !isTickScheduled else { return }
+        isTickScheduled = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.016) { [weak self] in
+            guard let self = self else { return }
+            self.isTickScheduled = false
+            self._delegate?.tick()
         }
     }
 }

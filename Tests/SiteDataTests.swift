@@ -1,5 +1,5 @@
 import Testing
-import Foundation
+@preconcurrency import Foundation
 import SwiftData
 @testable import Nally
 
@@ -60,5 +60,26 @@ struct SiteDataTests {
         
         copy.name = "Modified Name"
         #expect(original.name == "Test Site")
+    }
+    
+    @Test("YLSite Transient Password Exclusion from Codable & Persistence")
+    func testPasswordExcludedFromSerialization() throws {
+        let site = YLSite(
+            name: "Secret BBS",
+            address: "bbs.secret.org",
+            account: "alice",
+            password: "SuperSecretPassword123!"
+        )
+        #expect(site.password == "SuperSecretPassword123!")
+        
+        let encodedData = try JSONEncoder().encode(site)
+        let jsonString = String(data: encodedData, encoding: .utf8) ?? ""
+        #expect(!jsonString.contains("SuperSecretPassword123!"))
+        #expect(!jsonString.contains("\"password\""))
+        
+        let decoded = try JSONDecoder().decode(YLSite.self, from: encodedData)
+        #expect(decoded.name == "Secret BBS")
+        #expect(decoded.account == "alice")
+        #expect(decoded.password == "")
     }
 }

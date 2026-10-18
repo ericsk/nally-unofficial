@@ -8,6 +8,7 @@ public class YLSSH: YLConnection {
     private var loginAsBBS: Bool = false
     private var usePacketMode: Bool = true
     private var ioTask: Task<Void, Never>?
+    private let writeQueue = DispatchQueue(label: "org.yllan.nally.ssh.write", qos: .userInitiated)
     
     deinit {
         ioTask?.cancel()
@@ -292,58 +293,54 @@ public class YLSSH: YLConnection {
     @objc(sendBytes:length:)
     public override func sendBytes(_ msg: UnsafePointer<UInt8>, length: Int) {
         guard masterFd >= 0, length > 0 else { return }
-        lastTouchDateValue = Date()
-        
         let data = Data(bytes: msg, count: length)
-        Task {
-            await writeAsync(data)
-        }
-    }
-    
-    private func writeAsync(_ data: Data) async {
-        guard masterFd >= 0 else { return }
-        var remaining = data.count
-        var offset = 0
-        
-        while remaining > 0 && masterFd >= 0 {
-            let written = data.withUnsafeBytes { rawBuffer -> Int in
-                guard let baseAddress = rawBuffer.baseAddress?.assumingMemoryBound(to: UInt8.self) else { return -1 }
-                let chunkPtr = baseAddress + offset
-                return Darwin.write(masterFd, chunkPtr, remaining)
-            }
-            
-            if written > 0 {
-                offset += written
-                remaining -= written
-            } else if written < 0 {
-                let err = errno
-                if err == EAGAIN || err == EWOULDBLOCK {
-                    // Yield thread control
-                    await Task.yield()
-                    continue
-                } else {
-                    NSLog("YLSSH: write error: \(err), closing")
-                    Task { @MainActor in
-                        self.close()
-                    }
-                    break
-                }
-            } else {
-                NSLog("YLSSH: write returned 0, closing")
-                Task { @MainActor in
-                    self.close()
-                }
-                break
-            }
-        }
+        enqueueWrite(data)
     }
     
     @objc(sendData:)
     public override func sendData(_ msg: Data) {
-        guard masterFd >= 0, !msg.isEmpty else { return }
+        enqueueWrite(msg)
+    }
+    
+    private func enqueueWrite(_ data: Data) {
+        let fd = self.masterFd
+        guard fd >= 0, !data.isEmpty else { return }
         lastTouchDateValue = Date()
-        Task {
-            await writeAsync(msg)
+        
+        writeQueue.async { [weak self] in
+            var remaining = data.count
+            var offset = 0
+            
+            while remaining > 0 {
+                let written = data.withUnsafeBytes { rawBuffer -> Int in
+                    guard let baseAddress = rawBuffer.baseAddress?.assumingMemoryBound(to: UInt8.self) else { return -1 }
+                    return Darwin.write(fd, baseAddress + offset, remaining)
+                }
+                
+                if written > 0 {
+                    offset += written
+                    remaining -= written
+                } else if written < 0 {
+                    let err = errno
+                    if err == EAGAIN || err == EWOULDBLOCK || err == EINTR {
+                        var pfd = pollfd(fd: fd, events: Int16(POLLOUT), revents: 0)
+                        _ = Darwin.poll(&pfd, 1, 10)
+                        continue
+                    } else {
+                        NSLog("YLSSH: write error: \(err), closing")
+                        Task { @MainActor [weak self] in
+                            self?.close()
+                        }
+                        break
+                    }
+                } else {
+                    NSLog("YLSSH: write returned 0, closing")
+                    Task { @MainActor [weak self] in
+                        self?.close()
+                    }
+                    break
+                }
+            }
         }
     }
 }
