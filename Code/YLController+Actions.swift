@@ -65,7 +65,7 @@ extension YLController {
         }
         _telnetView?.resignFirstResponder()
         AppState.shared.addressText = ""
-        AppState.shared.focusAddressBar = true
+        requestAddressFieldFocus()
     }
     
     @objc(connectToAddressString:)
@@ -149,7 +149,60 @@ extension YLController {
         if let window = _mainWindow {
             window.makeKeyAndOrderFront(self)
         }
+        requestAddressFieldFocus()
+    }
+    
+    // MARK: - Address Bar Focus
+    
+    /// Requests focus on the toolbar address bar.
+    ///
+    /// SwiftUI `@FocusState` cannot drive a `TextField` placed inside `.toolbar` on macOS,
+    /// because toolbar items are hosted in a separate hosting view in the titlebar. So in
+    /// addition to raising the SwiftUI flag, locate the backing `NSTextField` in the window
+    /// frame view and make it first responder. This is deferred to the next run-loop turn so
+    /// it wins over tab-selection code that makes the terminal view first responder.
+    public func requestAddressFieldFocus() {
         AppState.shared.focusAddressBar = true
+        DispatchQueue.main.async { [weak self] in
+            self?.focusAddressField()
+        }
+    }
+    
+    @discardableResult
+    public func focusAddressField() -> Bool {
+        guard let window = _mainWindow,
+              let frameView = window.contentView?.superview ?? window.contentView,
+              let field = YLController.findAddressField(in: frameView) else {
+            NSLog("[Nally] Could not locate address bar field")
+            return false
+        }
+        guard window.makeFirstResponder(field) else { return false }
+        field.selectText(nil)
+        return true
+    }
+    
+    /// Finds the address bar `NSTextField` in a view hierarchy. Prefers a field whose
+    /// placeholder matches the address bar prompt (English or localized), falling back to
+    /// the first editable text field found.
+    public static func findAddressField(in root: NSView) -> NSTextField? {
+        let prompt = "Go to this address"
+        let placeholders: Set<String> = [prompt, NSLocalizedString(prompt, comment: "Address bar placeholder")]
+        var fallback: NSTextField?
+        
+        func search(_ view: NSView) -> NSTextField? {
+            if let field = view as? NSTextField, field.isEditable {
+                if let placeholder = field.placeholderString, placeholders.contains(placeholder) {
+                    return field
+                }
+                if fallback == nil { fallback = field }
+            }
+            for subview in view.subviews {
+                if let found = search(subview) { return found }
+            }
+            return nil
+        }
+        
+        return search(root) ?? fallback
     }
     
     @IBAction public func selectNextTab(_ sender: Any?) {

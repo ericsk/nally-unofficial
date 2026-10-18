@@ -230,6 +230,31 @@ struct AppUIStateTests {
         appState.focusAddressBar = false
     }
     
+    @Test("Address Bar NSTextField Lookup and First Responder Focus")
+    func testAddressFieldLookupAndFocus() {
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 800, height: 600),
+                              styleMask: [.titled], backing: .buffered, defer: false)
+        let container = NSView(frame: window.contentRect(forFrameRect: window.frame))
+        
+        let otherField = NSTextField(labelWithString: "Status")
+        let addressField = NSTextField(frame: NSRect(x: 0, y: 0, width: 280, height: 22))
+        addressField.placeholderString = "Go to this address"
+        let nested = NSView(frame: container.bounds)
+        nested.addSubview(addressField)
+        container.addSubview(otherField)
+        container.addSubview(nested)
+        window.contentView = container
+        
+        // Non-editable labels are skipped; the placeholder-matched field is found.
+        #expect(YLController.findAddressField(in: container) === addressField)
+        
+        let controller = YLController()
+        controller._mainWindow = window
+        #expect(controller.focusAddressField() == true)
+        let responder = window.firstResponder
+        #expect(responder === addressField || (responder as? NSText)?.delegate === addressField)
+    }
+    
     @Test("Type-Safe NSTabViewItem and TabInfo Connection Accessors")
     func testTypeSafeTabViewItemConnectionAndTerminal() {
         let conn = YLConnection()
