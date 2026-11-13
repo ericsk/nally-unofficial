@@ -45,11 +45,12 @@ public class YLView: NSView {
     // Active asynchronous paste streaming task
     public var activePasteTask: Task<Void, Never>?
     
-    // Cmd + Hover quick URL preview state
+    // Cmd + Hover quick URL preview & trackpad scroll state
     private var hoverTrackingArea: NSTrackingArea?
     var hoveredPreviewURL: String?
     var hoverPreviewTask: Task<Void, Never>?
     weak var hoverPreviewer: YLImagePreviewer?
+    var scrollDeltaAccumulator: CGFloat = 0.0
     
     @objc public func cancelCurrentPaste() {
         activePasteTask?.cancel()

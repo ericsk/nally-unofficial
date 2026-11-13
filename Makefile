@@ -38,6 +38,6 @@ help:
 	@echo "Available make targets for Nally:"
 	@echo "  all      - Build Nally.app in Release configuration (default target)"
 	@echo "  clean    - Remove build artifacts and derived data cache"
-	@echo "  test     - Execute unit test suite (53 tests across 9 test suites)"
+	@echo "  test     - Execute unit test suite (55 tests across 9 test suites)"
 	@echo "  install  - Build and install Nally.app to /Applications"
 	@echo "  release  - Package Nally.app for distribution"

@@ -88,16 +88,6 @@ public final class YLSite: Identifiable, Codable {
         return s
     }
     
-    public func dictionaryOfSite() -> [String: Any] {
-        var dict: [String: Any] = [:]
-        dict["name"] = name
-        dict["address"] = address
-        dict["encoding"] = NSNumber(value: encoding.rawValue)
-        dict["ansicolorkey"] = NSNumber(value: ansiColorKey.rawValue)
-        dict["detectdoublebyte"] = NSNumber(value: detectDoubleByte)
-        return dict
-    }
-    
     public var description: String {
         return "\(name):\(address)"
     }

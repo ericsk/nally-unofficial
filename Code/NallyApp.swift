@@ -148,9 +148,6 @@ public class AppState: NSObject {
         if let conn = selected?.connection {
             self.addressText = conn.connectionAddress ?? ""
         }
-        
-        NSLog("[Nally] syncTabs called. Tab count: \(tabs.count), selectedTab: \(selected?.label ?? "nil")")
-
     }
 }
 

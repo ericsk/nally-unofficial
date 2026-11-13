@@ -146,15 +146,6 @@ extension YLController {
         globalConfig.applyCellSize(width: newWidth, height: newWidth * 2.0)
     }
     
-    @objc public func getUrl(_ event: NSAppleEventDescriptor, withReplyEvent replyEvent: NSAppleEventDescriptor) {
-        guard var url = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue else { return }
-        if url.lowercased().hasPrefix("bbs://") {
-            url = String(url.dropFirst(6))
-        }
-        let finalAddress = connect(toAddressString: url)
-        AppState.shared.addressText = finalAddress
-    }
-    
     // MARK: - Tab Delegate
     @objc public func tabView(_ tabView: YLView, shouldClose tabViewItem: NSTabViewItem) -> Bool {
         return true

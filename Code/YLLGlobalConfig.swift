@@ -99,6 +99,12 @@ public class YLLGlobalConfig: NSObject {
             UserDefaults.standard.set(shouldPreferImagePreviewer, forKey: "ShouldPreferImagePreviewer")
         }
     }
+    public var enableMouseWheelScroll: Bool = true {
+        didSet {
+            guard !isInitializing else { return }
+            UserDefaults.standard.set(enableMouseWheelScroll, forKey: "EnableMouseWheelScroll")
+        }
+    }
     public var defaultEncoding: YLEncoding = .YLBig5Encoding {
         didSet {
             guard !isInitializing else { return }
@@ -212,6 +218,11 @@ public class YLLGlobalConfig: NSObject {
             shouldPreferImagePreviewer = defaults.bool(forKey: "ShouldPreferImagePreviewer")
         } else {
             shouldPreferImagePreviewer = true
+        }
+        if defaults.object(forKey: "EnableMouseWheelScroll") != nil {
+            enableMouseWheelScroll = defaults.bool(forKey: "EnableMouseWheelScroll")
+        } else {
+            enableMouseWheelScroll = true
         }
         
         row = 24

@@ -78,6 +78,7 @@ struct GeneralPreferencesView: View {
                     .pickerStyle(.segmented)
                     Toggle("Enable Cmd + Hover quick url preview", isOn: $enableCmdHoverPreview)
                 }
+                Toggle("Enable trackpad / mouse wheel scrolling", isOn: $config.enableMouseWheelScroll)
                 Toggle("Repeat dock icon bounce animation", isOn: $config.repeatBounce)
             }
         }

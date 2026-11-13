@@ -85,8 +85,9 @@ extension YLView: @preconcurrency NSTextInputClient {
                     ds.cells(ofRow: ds.cursorRow)?[Int(ds.cursorColumn) - 1].attr.terminalAttribute.doubleByte == 2
                     
                 let detectDoubleByte = frontMostConnection()?.site?.detectDoubleByte ?? YLLGlobalConfig.sharedInstance().detectDoubleByte
+                let shouldDoubleStep = (ds.encoding != .YLUTF8Encoding) && detectDoubleByte
                 
-                if (isRightDoubleByte || isLeftDoubleByte) && detectDoubleByte {
+                if (isRightDoubleByte || isLeftDoubleByte) && shouldDoubleStep {
                     frontMostConnection()?.sendBytes(&arrow, length: 6)
                     return
                 }
@@ -103,8 +104,9 @@ extension YLView: @preconcurrency NSTextInputClient {
             
             guard let ds = frontMostTerminal() else { return }
             let detectDoubleByte = frontMostConnection()?.site?.detectDoubleByte ?? YLLGlobalConfig.sharedInstance().detectDoubleByte
+            let shouldDoubleStep = (ds.encoding != .YLUTF8Encoding) && detectDoubleByte
             
-            let isDeleteDoubleByte = detectDoubleByte &&
+            let isDeleteDoubleByte = shouldDoubleStep &&
                 ds.cursorColumn > 0 &&
                 ds.cells(ofRow: ds.cursorRow)?[Int(ds.cursorColumn) - 1].attr.terminalAttribute.doubleByte == 2
                 
@@ -261,6 +263,7 @@ extension YLView: @preconcurrency NSTextInputClient {
             var len = 4
             let detectDoubleByte = frontMostConnection()?.site?.detectDoubleByte ?? YLLGlobalConfig.sharedInstance().detectDoubleByte
             if let ds = frontMostTerminal(),
+               ds.encoding != .YLUTF8Encoding,
                detectDoubleByte,
                ds.cursorColumn < (Int32(YLLGlobalConfig.sharedInstance().column) - 1),
                ds.cells(ofRow: ds.cursorRow)?[Int(ds.cursorColumn) + 1].attr.terminalAttribute.doubleByte == 2 {

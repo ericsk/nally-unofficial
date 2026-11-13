@@ -167,6 +167,29 @@ public class YLTerminal: NSObject {
         self.clearAll()
     }
     
+    private static func approximateANSI8Index(r: Int, g: Int, b: Int) -> Int {
+        let bitR = r >= 96 ? 1 : 0
+        let bitG = g >= 96 ? 2 : 0
+        let bitB = b >= 96 ? 4 : 0
+        return bitR | bitG | bitB
+    }
+    
+    private static func approximateANSI8Index(from256 idx: Int) -> Int {
+        if idx >= 0 && idx <= 7 { return idx }
+        if idx >= 8 && idx <= 15 { return idx - 8 }
+        if idx >= 16 && idx <= 231 {
+            let cube = idx - 16
+            let r = (cube / 36) * 51
+            let g = ((cube / 6) % 6) * 51
+            let b = (cube % 6) * 51
+            return approximateANSI8Index(r: r, g: g, b: b)
+        }
+        if idx >= 232 && idx <= 255 {
+            return idx >= 244 ? 7 : 0
+        }
+        return 7
+    }
+    
     private func isParameter(_ c: UInt8) -> Bool {
         return c >= 0x30 && c <= 0x3F
     }
@@ -1227,35 +1250,92 @@ extension YLTerminal {
                                 _cursorY = 0
                             }
                         } else if c == CSI_SGR {
+                            let config = YLLGlobalConfig.sharedInstance()
+                            let defaultFg = Int(config.fgColorIndex)
+                            let defaultBg = Int(config.bgColorIndex)
                             if csArg.isEmpty {
-                                _fgColor = 7
-                                _bgColor = 9
+                                _fgColor = defaultFg
+                                _bgColor = defaultBg
                                 _bold = false
                                 _underline = false
                                 _blink = false
                                 _reverse = false != _modeScreenReverse
                             } else {
-                                for p in csArg {
-                                    if p == 0 {
-                                        _fgColor = 7
-                                        _bgColor = 9
+                                var argIdx = 0
+                                while argIdx < csArg.count {
+                                    let p = csArg[argIdx]
+                                    switch p {
+                                    case 0:
+                                        _fgColor = defaultFg
+                                        _bgColor = defaultBg
                                         _bold = false
                                         _underline = false
                                         _blink = false
                                         _reverse = false != _modeScreenReverse
-                                    } else if p >= 30 && p <= 39 {
-                                        _fgColor = p - 30
-                                    } else if p >= 40 && p <= 49 {
-                                        _bgColor = p - 40
-                                    } else if p == 1 {
+                                    case 1:
                                         _bold = true
-                                    } else if p == 4 {
+                                    case 4:
                                         _underline = true
-                                    } else if p == 5 {
+                                    case 5, 6:
                                         _blink = true
-                                    } else if p == 7 {
+                                    case 7:
                                         _reverse = true != _modeScreenReverse
+                                    case 21, 22:
+                                        _bold = false
+                                    case 24:
+                                        _underline = false
+                                    case 25:
+                                        _blink = false
+                                    case 27:
+                                        _reverse = false != _modeScreenReverse
+                                    case 30...37:
+                                        _fgColor = p - 30
+                                    case 38:
+                                        if argIdx + 2 < csArg.count && csArg[argIdx + 1] == 5 {
+                                            let colorIdx = csArg[argIdx + 2]
+                                            if colorIdx >= 8 && colorIdx <= 15 {
+                                                _fgColor = colorIdx - 8
+                                                _bold = true
+                                            } else {
+                                                _fgColor = Self.approximateANSI8Index(from256: colorIdx)
+                                            }
+                                            argIdx += 2
+                                        } else if argIdx + 4 < csArg.count && csArg[argIdx + 1] == 2 {
+                                            _fgColor = Self.approximateANSI8Index(
+                                                r: csArg[argIdx + 2],
+                                                g: csArg[argIdx + 3],
+                                                b: csArg[argIdx + 4]
+                                            )
+                                            argIdx += 4
+                                        }
+                                    case 39:
+                                        _fgColor = defaultFg
+                                    case 40...47:
+                                        _bgColor = p - 40
+                                    case 48:
+                                        if argIdx + 2 < csArg.count && csArg[argIdx + 1] == 5 {
+                                            let colorIdx = csArg[argIdx + 2]
+                                            _bgColor = Self.approximateANSI8Index(from256: colorIdx)
+                                            argIdx += 2
+                                        } else if argIdx + 4 < csArg.count && csArg[argIdx + 1] == 2 {
+                                            _bgColor = Self.approximateANSI8Index(
+                                                r: csArg[argIdx + 2],
+                                                g: csArg[argIdx + 3],
+                                                b: csArg[argIdx + 4]
+                                            )
+                                            argIdx += 4
+                                        }
+                                    case 49:
+                                        _bgColor = defaultBg
+                                    case 90...97:
+                                        _fgColor = p - 90
+                                        _bold = true
+                                    case 100...107:
+                                        _bgColor = p - 100
+                                    default:
+                                        break
                                     }
+                                    argIdx += 1
                                 }
                             }
                         } else if c == CSI_DSR {

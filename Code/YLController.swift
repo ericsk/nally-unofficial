@@ -70,7 +70,6 @@ public class YLController: NSObject, NSWindowDelegate {
         }
         
         initSwiftData()
-        updateSitesMenu()
         
         let blinkTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateBlinkTicker(_:)), userInfo: nil, repeats: true)
         blinkTimer.tolerance = 0.2
@@ -125,13 +124,6 @@ public class YLController: NSObject, NSWindowDelegate {
             hasRestoredConnections = true
             loadLastConnections()
         }
-    }
-    
-    // MARK: - Menu Updates (Obsolete: Handled declaratively by SwiftUI NallyCommands)
-    @objc public func updateSitesMenu() {
-    }
-    
-    @objc public func updateEncodingMenu() {
     }
     
     @objc public func updateBlinkTicker(_ timer: Timer) {
@@ -205,7 +197,6 @@ public class YLController: NSObject, NSWindowDelegate {
             if let tv = _telnetView {
                 refreshTabLabelNumber(tv)
             }
-            updateEncodingMenu()
             
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
@@ -280,8 +271,10 @@ public class YLController: NSObject, NSWindowDelegate {
         }
         let context = container.mainContext
         do {
-            let descriptor = FetchDescriptor<YLSite>(sortBy: [SortDescriptor(\.name)])
-            var fetched = try context.fetch(descriptor)
+            let descriptor = FetchDescriptor<YLSite>()
+            var fetched = try context.fetch(descriptor).sorted {
+                $0.name.localizedStandardCompare($1.name) == .orderedAscending
+            }
             
             if fetched.isEmpty {
                 // Migrate legacy sites from UserDefaults if available
@@ -291,7 +284,9 @@ public class YLController: NSObject, NSWindowDelegate {
                         context.insert(site)
                     }
                     try? context.save()
-                    fetched = try context.fetch(descriptor)
+                    fetched = try context.fetch(descriptor).sorted {
+                        $0.name.localizedStandardCompare($1.name) == .orderedAscending
+                    }
                 } else {
                     // Seed default site
                     let defaultSite = YLSite(
@@ -312,7 +307,6 @@ public class YLController: NSObject, NSWindowDelegate {
             }
             
             self.sitesList = fetched
-            updateSitesMenu()
         } catch {
             NSLog("SwiftData sync error: \(error)")
             loadSites()
@@ -368,8 +362,10 @@ public class YLController: NSObject, NSWindowDelegate {
         if let container = modelContainer {
             let context = container.mainContext
             try? context.save()
-            let descriptor = FetchDescriptor<YLSite>(sortBy: [SortDescriptor(\.name)])
-            if let fetched = try? context.fetch(descriptor) {
+            let descriptor = FetchDescriptor<YLSite>()
+            if let fetched = try? context.fetch(descriptor).sorted(by: {
+                $0.name.localizedStandardCompare($1.name) == .orderedAscending
+            }) {
                 for site in fetched where site.password.isEmpty {
                     populateCredentialsFromKeychain(for: site)
                 }
@@ -383,7 +379,6 @@ public class YLController: NSObject, NSWindowDelegate {
                 NSLog("Failed to encode SitesCodable: \(error)")
             }
         }
-        updateSitesMenu()
     }
     
     @objc public func loadLastConnections() {

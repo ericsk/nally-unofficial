@@ -114,4 +114,40 @@ struct TerminalGridTests {
         let extracted = terminal.stringFromIndex(0, length: 15)
         #expect(extracted == "批踢踢あいうABC")
     }
+    
+    @Test("YLTerminal ANSI SGR Reset Codes, 39/49 Defaults, and 256/TrueColor Sequences")
+    func testSGRResetAndExtendedColors() {
+        let terminal = YLTerminal()
+        let conn = YLConnection()
+        let config = YLLGlobalConfig.sharedInstance()
+        
+        // 1. Set bold(1), underline(4), blink(5), reverse(7), red fg(31), blue bg(44), then turn off individually (22, 24, 25, 27, 39, 49)
+        terminal.feedData(Data("\u{1B}[1;4;5;7;31;44mX\u{1B}[22;24;25;27;39;49mY".utf8), connection: conn)
+        let attrX = terminal.attrAtRow(0, column: 0).terminalAttribute
+        #expect(attrX.bold == true)
+        #expect(attrX.underline == true)
+        #expect(attrX.blink == true)
+        #expect(attrX.reverse == true)
+        #expect(attrX.fgColor == 1)
+        #expect(attrX.bgColor == 4)
+        
+        let attrY = terminal.attrAtRow(0, column: 1).terminalAttribute
+        #expect(attrY.bold == false)
+        #expect(attrY.underline == false)
+        #expect(attrY.blink == false)
+        #expect(attrY.reverse == false)
+        #expect(attrY.fgColor == Int(config.fgColorIndex)) // 7, NOT 9 (black)!
+        #expect(attrY.bgColor == Int(config.bgColorIndex)) // 9
+        
+        // 2. 256-color (\e[38;5;196m) and TrueColor (\e[38;2;0;255;0m) must NOT falsely trigger blink(5) or underline(4)
+        terminal.feedData(Data("\u{1B}[0;38;5;9mR\u{1B}[0;38;2;0;255;4mG".utf8), connection: conn)
+        let attrR = terminal.attrAtRow(0, column: 2).terminalAttribute
+        #expect(attrR.blink == false)
+        #expect(attrR.fgColor == 1)
+        #expect(attrR.bold == true)
+        
+        let attrG = terminal.attrAtRow(0, column: 3).terminalAttribute
+        #expect(attrG.underline == false)
+        #expect(attrG.fgColor == 2)
+    }
 }

@@ -111,6 +111,7 @@
 "Popover (Floating Overlay)" = "Popover (Floating Overlay)";
 "HUD Window (Independent)" = "HUD Window (Independent)";
 "Enable Cmd + Hover quick url preview" = "Enable Cmd + Hover quick url preview";
+"Enable trackpad / mouse wheel scrolling" = "Enable trackpad / mouse wheel scrolling";
 "Repeat dock icon bounce animation" = "Repeat dock icon bounce animation";
 "Protocol Defaults" = "Protocol Defaults";
 "Default Encoding:" = "Default Encoding:";

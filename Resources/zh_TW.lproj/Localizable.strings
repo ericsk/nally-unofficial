@@ -111,6 +111,7 @@
 "Popover (Floating Overlay)" = "懸浮氣泡（Popover）";
 "HUD Window (Independent)" = "獨立懸浮視窗（HUD）";
 "Enable Cmd + Hover quick url preview" = "啟用按住 Cmd 游標懸停即時預覽圖片";
+"Enable trackpad / mouse wheel scrolling" = "啟用觸控板／滑鼠滾輪上下捲動";
 "Repeat dock icon bounce animation" = "收到訊息時持續彈跳 Dock 圖示";
 "Protocol Defaults" = "預設通訊協定";
 "Default Encoding:" = "預設編碼：";

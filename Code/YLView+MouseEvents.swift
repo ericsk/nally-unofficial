@@ -95,6 +95,7 @@ extension YLView {
             
             guard let currRow = ds.cells(ofRow: Int32(moveToRow)) else { return }
             let detectDoubleByte = frontMostConnection()?.site?.detectDoubleByte ?? YLLGlobalConfig.sharedInstance().detectDoubleByte
+            let shouldDoubleStep = (ds.encoding != .YLUTF8Encoding) && detectDoubleByte
             
             let sendRight = {
                 cmd.append(contentsOf: [0x1B, 0x4F, 0x43]) // Right arrow 'C'
@@ -105,19 +106,19 @@ extension YLView {
             
             if home {
                 for i in 0..<moveToCol {
-                    if currRow[i].attr.terminalAttribute.doubleByte != 2 || detectDoubleByte {
+                    if currRow[i].attr.terminalAttribute.doubleByte != 2 || shouldDoubleStep {
                         sendRight()
                     }
                 }
             } else if moveToCol > cursorColumn {
                 for i in cursorColumn..<moveToCol {
-                    if currRow[i].attr.terminalAttribute.doubleByte != 2 || detectDoubleByte {
+                    if currRow[i].attr.terminalAttribute.doubleByte != 2 || shouldDoubleStep {
                         sendRight()
                     }
                 }
             } else if moveToCol < cursorColumn {
                 for i in moveToCol..<cursorColumn {
-                    if currRow[i].attr.terminalAttribute.doubleByte != 2 || detectDoubleByte {
+                    if currRow[i].attr.terminalAttribute.doubleByte != 2 || shouldDoubleStep {
                         sendLeft()
                     }
                 }
@@ -187,6 +188,52 @@ extension YLView {
     public override func mouseExited(with event: NSEvent) {
         cancelPendingHoverPreview()
         super.mouseExited(with: event)
+    }
+    
+    public override func scrollWheel(with event: NSEvent) {
+        guard YLLGlobalConfig.sharedInstance().enableMouseWheelScroll,
+              connected(),
+              let conn = frontMostConnection() else {
+            super.scrollWheel(with: event)
+            return
+        }
+        
+        if event.phase == .began || event.phase == .ended || event.phase == .cancelled {
+            scrollDeltaAccumulator = 0.0
+        }
+        
+        let steps: Int
+        if event.hasPreciseScrollingDeltas {
+            guard event.momentumPhase.isEmpty else { return }
+            scrollDeltaAccumulator += event.scrollingDeltaY
+            let threshold = max(16.0, _fontHeight)
+            let rawSteps = Int(scrollDeltaAccumulator / threshold)
+            guard rawSteps != 0 else { return }
+            scrollDeltaAccumulator -= CGFloat(rawSteps) * threshold
+            steps = max(-5, min(5, rawSteps))
+        } else {
+            if event.scrollingDeltaY > 0 {
+                steps = 1
+            } else if event.scrollingDeltaY < 0 {
+                steps = -1
+            } else {
+                return
+            }
+        }
+        
+        handleScrollSteps(steps, on: conn)
+    }
+    
+    func handleScrollSteps(_ steps: Int, on connection: YLConnection) {
+        guard steps != 0 else { return }
+        let arrowSeq: [UInt8] = steps > 0 ? [0x1B, 0x4F, 0x41] : [0x1B, 0x4F, 0x42]
+        let count = min(5, abs(steps))
+        var payload = [UInt8]()
+        payload.reserveCapacity(count * 3)
+        for _ in 0..<count {
+            payload.append(contentsOf: arrowSeq)
+        }
+        connection.sendBytes(&payload, length: payload.count)
     }
     
     func evaluateCmdHoverPreview(at pointInView: NSPoint, modifierFlags: NSEvent.ModifierFlags) {

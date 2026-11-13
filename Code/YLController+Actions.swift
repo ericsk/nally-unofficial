@@ -139,14 +139,6 @@ extension YLController {
         return connectSite.address
     }
     
-    @IBAction public func connect(_ sender: Any?) {
-        guard let textField = sender as? NSTextField else { return }
-        textField.abortEditing()
-        _telnetView?.window?.makeFirstResponder(_telnetView)
-        let finalAddress = connect(toAddressString: textField.stringValue)
-        textField.stringValue = finalAddress
-    }
-    
     @IBAction public func openLocation(_ sender: Any?) {
         if let window = _mainWindow {
             window.makeKeyAndOrderFront(self)
@@ -307,20 +299,6 @@ extension YLController {
     
     @IBAction public func editSites(_ sender: Any?) {
         AppState.shared.openSitesWindowAction?()
-    }
-    
-    @IBAction public func openSites(_ sender: Any?) {
-        // Unused in Nally UI but preserved
-    }
-    
-    @IBAction public func closeSites(_ sender: Any?) {
-        // Unused in Nally UI but preserved
-    }
-    
-    @IBAction public func openSiteMenu(_ sender: Any?) {
-        if let menuItem = sender as? NSMenuItem, let site = menuItem.representedObject as? YLSite {
-            newConnection(with: site)
-        }
     }
     
     @IBAction public func autoLogin(_ sender: Any?) {

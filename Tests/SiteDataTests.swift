@@ -33,8 +33,8 @@ struct SiteDataTests {
         context.insert(bs2)
         try context.save()
         
-        let descriptor = FetchDescriptor<YLSite>(sortBy: [SortDescriptor(\.name)])
-        let sites = try context.fetch(descriptor)
+        let descriptor = FetchDescriptor<YLSite>()
+        let sites = try context.fetch(descriptor).sorted { $0.name < $1.name }
         
         #expect(sites.count == 2)
         #expect(sites.map(\.name).contains("PTT"))

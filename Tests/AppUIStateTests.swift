@@ -394,4 +394,44 @@ struct AppUIStateTests {
         controller.performAntiIdleCheck(now: baseDate.addingTimeInterval(125))
         #expect(conn.sentBytesLog == [[0x00]])
     }
+    
+    @Test("Trackpad/Mouse Wheel Scroll Steps and UTF-8 Single-Step Forward Delete")
+    func testScrollStepsAndUTF8DeleteBehavior() {
+        class InputMockConnection: YLConnection {
+            var sentPayloads: [[UInt8]] = []
+            override func sendBytes(_ msg: UnsafePointer<UInt8>, length: Int) {
+                sentPayloads.append(Array(UnsafeBufferPointer(start: msg, count: length)))
+            }
+        }
+        
+        let view = YLView(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
+        let conn = InputMockConnection()
+        let term = YLTerminal()
+        term.encoding = .YLUTF8Encoding
+        let site = YLSite()
+        site.encoding = .YLUTF8Encoding
+        site.detectDoubleByte = true
+        conn.site = site
+        conn.terminal = term
+        conn.connected = true
+        
+        let item = NSTabViewItem(identifier: conn)
+        view.addTabViewItem(item)
+        view.selectTabViewItem(item)
+        
+        // 1. Scroll up 2 steps -> two Up-Arrow sequences (\eOA\eOA)
+        view.handleScrollSteps(2, on: conn)
+        #expect(conn.sentPayloads.last == [0x1B, 0x4F, 0x41, 0x1B, 0x4F, 0x41])
+        
+        // 2. Scroll down 1 step -> one Down-Arrow sequence (\eOB)
+        view.handleScrollSteps(-1, on: conn)
+        #expect(conn.sentPayloads.last == [0x1B, 0x4F, 0x42])
+        
+        // 3. UTF-8 forward delete over a 2-column CJK char sends 1 delete sequence (4 bytes), NOT 2 (8 bytes)
+        conn.sentPayloads.removeAll()
+        term.feedData(Data("批".utf8), connection: conn)
+        term.cursorColumn = 0
+        view.doCommand(by: #selector(NSResponder.deleteForward(_:)))
+        #expect(conn.sentPayloads.last == [0x1B, 0x5B, 0x33, 0x7E])
+    }
 }
