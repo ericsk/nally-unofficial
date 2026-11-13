@@ -46,7 +46,7 @@ struct NallyCommands: Commands {
             
             Button("Disconnect") {
                 if let controller = NallyAppDelegate.shared.controller {
-                    controller.closeTab(nil)
+                    controller.disconnect(nil)
                 }
             }
             .keyboardShortcut("d", modifiers: .command)
@@ -97,11 +97,6 @@ struct NallyCommands: Commands {
             Divider()
             
             DynamicSitesMenu()
-        }
-        
-        CommandMenu("Plugins") {
-            // Keep empty; YLPluginLoader dynamically inserts items here
-            EmptyView()
         }
         
         CommandGroup(after: .windowList) {
@@ -167,6 +162,7 @@ struct EncodingPicker: View {
         Picker("Encoding", selection: $currentEncoding) {
             Text("Big5").tag(YLEncoding.YLBig5Encoding)
             Text("GBK").tag(YLEncoding.YLGBKEncoding)
+            Text("UTF-8").tag(YLEncoding.YLUTF8Encoding)
         }
         .onChange(of: currentEncoding) { _, newValue in
             setEncoding(newValue)

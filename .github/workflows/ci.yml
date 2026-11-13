@@ -1,0 +1,26 @@
+name: macOS Build & Tests
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build-and-test:
+    name: Build & Run Swift Testing Suite (arm64)
+    runs-on: macos-15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Show Xcode & Swift versions
+        run: |
+          xcodebuild -version
+          swift --version
+
+      - name: Build & execute unit tests
+        run: make test
+
+      - name: Package release artifact check
+        run: python3 Scripts/package.py build/Release/Nally.app --output-dir build/dist

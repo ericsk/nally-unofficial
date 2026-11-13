@@ -43,15 +43,18 @@ struct ImagePreviewerTests {
         let postimgURL = URL(string: "https://postimg.cc/xyz123")!
         #expect(manager.isImageURL(postimgURL))
         
+        let meeeURL = URL(string: "https://meee.com.tw/abcXYZ")!
+        #expect(manager.isImageURL(meeeURL))
+        
         let nonImageURL = URL(string: "https://google.com/search")!
         #expect(!manager.isImageURL(nonImageURL))
     }
     
-    @Test("YLImagePreviewer Initialization & Reset Zoom")
+    @Test("YLImagePreviewer Initialization, Reset Zoom, and Resource Cleanup")
     @MainActor
     func testPreviewerZoomReset() {
         let url = URL(string: "https://example.com/test.png")!
-        let previewer = YLImagePreviewer(url: url)
+        let previewer = YLImagePreviewer(url: url, allowBrowserFallback: false, startDownload: false)
         
         previewer.zoomScale = 2.5
         previewer.panOffset = CGSize(width: 50, height: 50)
@@ -59,5 +62,57 @@ struct ImagePreviewerTests {
         previewer.resetZoom()
         #expect(previewer.zoomScale == 1.0)
         #expect(previewer.panOffset == .zero)
+        
+        previewer.closePreview()
+        #expect(previewer.isPresented == false)
+    }
+    
+    @Test("Cmd + Hover URL Preview Scheduling and Cancellation")
+    @MainActor
+    func testCmdHoverPreviewEvaluation() {
+        let config = YLLGlobalConfig.sharedInstance()
+        let prevPrefer = config.shouldPreferImagePreviewer
+        let prevHover = UserDefaults.standard.object(forKey: "EnableCmdHoverPreview")
+        defer {
+            config.shouldPreferImagePreviewer = prevPrefer
+            if let prevHover = prevHover {
+                UserDefaults.standard.set(prevHover, forKey: "EnableCmdHoverPreview")
+            } else {
+                UserDefaults.standard.removeObject(forKey: "EnableCmdHoverPreview")
+            }
+        }
+        
+        config.shouldPreferImagePreviewer = true
+        UserDefaults.standard.set(true, forKey: "EnableCmdHoverPreview")
+        
+        let view = YLView(frame: NSRect(x: 0, y: 0, width: 960, height: 576))
+        view.configure()
+        let conn = YLConnection()
+        let term = YLTerminal()
+        conn.terminal = term
+        let tabItem = NSTabViewItem(identifier: conn)
+        view.addTabViewItem(tabItem)
+        view.selectTabViewItem(tabItem)
+        
+        // Feed an HTTPS image URL at row 0, col 0
+        term.feedData(Data("https://i.imgur.com/test123.png".utf8), connection: conn)
+        
+        // Row 0 is at the top of the non-flipped YLView (y near height - fontHeight/2)
+        let hoverPoint = NSPoint(x: view.fontWidth * 2, y: CGFloat(config.row - 1) * view.fontHeight + 4)
+        
+        // Hovering WITH Command schedules preview task
+        view.evaluateCmdHoverPreview(at: hoverPoint, modifierFlags: [.command])
+        #expect(view.hoveredPreviewURL == "https://i.imgur.com/test123.png")
+        #expect(view.hoverPreviewTask != nil)
+        
+        // Releasing Command cancels pending preview task
+        view.evaluateCmdHoverPreview(at: hoverPoint, modifierFlags: [])
+        #expect(view.hoveredPreviewURL == nil)
+        #expect(view.hoverPreviewTask == nil)
+        
+        // Disabling EnableCmdHoverPreview prevents scheduling
+        UserDefaults.standard.set(false, forKey: "EnableCmdHoverPreview")
+        view.evaluateCmdHoverPreview(at: hoverPoint, modifierFlags: [.command])
+        #expect(view.hoverPreviewTask == nil)
     }
 }

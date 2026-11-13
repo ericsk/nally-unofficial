@@ -1,57 +1,117 @@
-/* Sheet Title */
+/* Alerts & Sheets */
 "Are you sure you want to quit Nally?" = "您确定要退出 Nally 吗？";
-
-/* Sheet Title */
-"Are you sure you want to close this tab?" = "您确定要关闭这个标签吗？";
-
-/* Default Button */
+"There are %d tabs open in Nally. Do you want to quit anyway?" = "还有 %d 个标签页正在连接中，您确定要退出 Nally 吗？";
+"Are you sure you want to close this tab?" = "您确定要关闭此标签页吗？";
+"The connection is still alive. If you close this tab, the connection will be lost. Do you want to close this tab anyway?" = "此连接仍在活动中。关闭标签页将会断开连接，确定要关闭吗？";
+"Are you sure you want to close the window?" = "您确定要关闭窗口吗？";
+"There are %d active connections. Closing the window will disconnect them." = "当前有 %d 个活动连接，关闭窗口将会断开所有连接。";
+"Close Window" = "关闭窗口";
 "Close" = "关闭";
-
-/* Cancel Button */
 "Cancel" = "取消";
-
-/* Menu */
-"Lookup in Dictionary" = "查字典";
-"Copy" = "复制";
-"Open mutiple URLs" = "打开多个链结";
-
-/* Default Button */
 "Quit" = "退出";
+"Done" = "完成";
 
-/* Sheet Message */
-"There are %d tabs open in Nally. Do you want to quit anyway?" = "还有 %d 个标签正在连接中，您确定要退出 Welly？";
+/* Contextual & Main Menus */
+"Lookup in Dictionary" = "查询词典";
+"Copy" = "拷贝";
+"Paste" = "粘贴";
+"Paste Wrap" = "自动折行粘贴";
+"Paste Color" = "彩色粘贴";
+"Paste tinyurl" = "缩短网址并粘贴";
+"Open multiple URLs" = "打开多个链接";
+"Jump to PTT Article (%@)" = "跳转至 PTT 文章 (%@)";
+"Copy PTT AID (%@)" = "拷贝 PTT 文章代码 (%@)";
+"New Connection..." = "新建连接...";
+"New Tab" = "新建标签页";
+"Open Location..." = "打开地址...";
+"Close Tab" = "关闭标签页";
+"Close Other Tabs" = "关闭其他标签页";
+"Copy Address" = "拷贝连接地址";
+"Reconnect" = "重新连接";
+"Disconnect" = "断开连接";
+"Auto Login" = "自动登录";
+"Customize Toolbar..." = "自定义工具栏...";
+"Show Hidden Text" = "显示隐藏文字";
+"Detect Double Byte" = "检测双字节字符";
+"Zoom In" = "放大";
+"Zoom Out" = "缩小";
+"Actual Size" = "实际大小";
+"Encoding" = "编码";
+"Sites" = "站点";
+"Edit Sites..." = "编辑站点书签...";
+"Select Next Tab" = "切换至下一个标签页";
+"Select Previous Tab" = "切换至上一个标签页";
 
-/* Sheet Message */
-"The connection is still alive. If you close this tab, the connection will be lost. Do you want to close this tab anyway?" = "此连接未断开。若您关闭这个标签会强制断开连接。您确定要关闭这个标签吗？";
+/* Toolbar & MenuBarExtra */
+"Go to this address" = "输入站点地址连接";
+"Manage Sites" = "管理站点书签";
+"Toggle Double Byte Detection" = "切换双字节字符检测";
+"Toggle Show Hidden Text" = "切换显示隐藏文字";
+"New Connection (Cmd+T)" = "新建标签页 (Cmd+T)";
+"Nally Quick Connect" = "Nally 快速连接";
+"Open Main Window" = "打开主窗口";
+"Bookmarks (Cmd+B)" = "站点书签 (Cmd+B)";
+"Preferences... (Cmd+,)" = "偏好设置... (Cmd+,)";
+"Quit Nally" = "退出 Nally";
+
+/* Bookmarks / SitesView */
+"Bookmarks" = "站点书签";
+"Search sites..." = "搜索站点...";
+"Untitled Site" = "未命名站点";
+"Add new site" = "添加站点";
+"Remove selected site" = "删除所选站点";
+"Duplicate selected site" = "复制所选站点";
+"Select a site from the sidebar to view or edit details." = "请从左侧列表选择站点以查看或编辑详情。";
+"Site Identification" = "站点标识信息";
+"Name:" = "名称：";
+"Address:" = "地址：";
+"Credentials (Optional Auto-login)" = "登录凭据（选填，供自动登录使用）";
+"Account:" = "账号：";
+"Password:" = "密码：";
+"Connection Parameters" = "连接参数";
+"Encoding:" = "字符编码：";
+"Big5 (Taiwan)" = "Big5（繁体中文）";
+"GBK (China)" = "GBK（简体中文）";
+"UTF-8 (Unicode)" = "UTF-8（Unicode）";
+"Detect Double-Byte Characters" = "检测双字节中文字符";
+"Connect Now" = "立即连接";
+
+/* Image Previewer & EXIF */
+"Quick Look" = "快速查看";
+"Save" = "存储";
+"EXIF" = "EXIF 信息";
+"Open in Browser" = "在浏览器中打开";
+"Failed to display image" = "无法显示图片";
+"EXIF Metadata" = "EXIF 相机信息";
+"Model:" = "相机型号：";
+"Exposure:" = "曝光时间：";
+"ISO:" = "ISO 感光度：";
+"F-Number:" = "光圈值：";
+"Focal Length:" = "焦距：";
+"Date:" = "拍摄日期：";
+"Unknown" = "未知";
 
 /* Preferences */
-"General" = "常规";
-
-/* Preferences */
+"General" = "通用";
 "Colors" = "颜色";
-
-/* Preferences */
 "Fonts" = "字体";
-
-/* Preferences */
 "Connection" = "连接";
-
-/* Preferences - Sections & Options */
 "Appearance" = "外观";
 "Theme Mode:" = "主题模式：";
 "System" = "系统默认";
 "Light" = "浅色";
 "Dark" = "深色";
-
-"Window & Sessions" = "窗口与标签";
-"Confirm when closing windows" = "关闭窗口时进行确认";
+"Window & Sessions" = "窗口与标签页";
+"Confirm when closing windows" = "关闭活动窗口或标签页时进行确认";
 "Restore last connections on startup" = "启动时恢复上次连接";
-"Show menu bar status icon (MenuBarExtra)" = "在菜单栏显示状态图标";
-
-"Terminal Behavior" = "终端行为";
+"Show menu bar status icon (MenuBarExtra)" = "在菜单栏显示快捷连接图标";
+"Terminal Behavior & Image Preview" = "终端行为与图片预览";
 "Prefer internal image previewer" = "优先使用内置图片预览器";
-"Repeat dock icon bounce animation" = "重复 Dock 图标跳动动画";
-
+"Preview Style:" = "预览样式：";
+"Popover (Floating Overlay)" = "悬浮气泡（Popover）";
+"HUD Window (Independent)" = "独立悬浮窗口（HUD）";
+"Enable Cmd + Hover quick url preview" = "启用按住 Cmd 悬停即时预览图片";
+"Repeat dock icon bounce animation" = "收到消息时持续弹跳 Dock 图标";
 "Protocol Defaults" = "默认协议";
 "Default Encoding:" = "默认编码：";
 "Big5 (Traditional Chinese)" = "Big5（繁体中文）";
@@ -60,27 +120,25 @@
 "Ctrl-U" = "Ctrl-U";
 "Esc + Esc" = "Esc + Esc";
 "Enable Double-Byte Character Detection" = "启用双字节字符检测";
-
+"Anti-Idle Keep-Alive" = "防闲置保活";
+"Enable Anti-Idle keep-alive" = "启用防闲置自动保持连接";
+"Keep-alive interval:" = "发送间隔：";
 "Default URL Scheme Handlers" = "默认 URL 协议处理程序";
 "TELNET Client:" = "TELNET 客户端：";
 "SSH Client:" = "SSH 客户端：";
-
 "Chinese Font Settings" = "中文字体设置";
 "English Font Settings" = "英文字体设置";
-"Sample Traditional Chinese Text" = "华康中文字体 123";
+"Sample Traditional Chinese Text" = "水木社区中文字体 123";
 "Choose Font..." = "选择字体...";
 "Left Offset:" = "左侧偏移：";
 "Bottom Offset:" = "下方偏移：";
-
 "Grid Layout & Font Rendering" = "网格布局与字体渲染";
 "Cell Width:" = "字符宽度：";
 "Cell Height:" = "字符高度：";
-"Enable Font Anti-Aliasing & Smoothing" = "启用字体平滑化与平滑渲染";
-
+"Enable Font Anti-Aliasing & Smoothing" = "启用字体抗锯齿与平滑渲染";
 "ANSI Color Palette" = "ANSI 色彩调色盘";
 "Canvas Background" = "画布背景";
 "Terminal Background:" = "终端背景：";
-
 "Black" = "黑色";
 "Black (Bright)" = "黑色（高亮）";
 "Red" = "红色";

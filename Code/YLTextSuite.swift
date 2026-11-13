@@ -34,8 +34,26 @@ public class YLTextSuite: NSObject {
         }
         
         /* Create runs from the text */
+        var previousWasCR = false
         for char in text {
             guard let utf16Val = char.utf16.first else { continue }
+            if utf16Val == cr {
+                commitBufferRun()
+                runs.append(lineRun)
+                previousWasCR = true
+                continue
+            }
+            if utf16Val == lf {
+                if previousWasCR {
+                    previousWasCR = false
+                    continue
+                }
+                commitBufferRun()
+                runs.append(lineRun)
+                continue
+            }
+            previousWasCR = false
+            
             if utf16Val == space {
                 commitBufferRun()
                 runs.append(spaceRun)
@@ -44,11 +62,6 @@ public class YLTextSuite: NSObject {
             if utf16Val == tab {
                 commitBufferRun()
                 runs.append(tabRun)
-                continue
-            }
-            if utf16Val == cr || utf16Val == lf {
-                commitBufferRun()
-                runs.append(lineRun)
                 continue
             }
             
@@ -98,10 +111,13 @@ public class YLTextSuite: NSObject {
             if run.shouldBeAvoidAtBeginOfLine() || (line.lastStringRun()?.shouldBeAvoidAtEndOfLine() ?? false) {
                 if let poppedRuns = line.popRunsToWrapLine(), !poppedRuns.isEmpty {
                     queue.prepend(contentsOf: poppedRuns)
-                } else if line.length < line.width { // can't pop, force split
+                } else if line.length < line.width { // can't pop, force split only if run actually splits
                     let first = queue.popFirst()!
-                    queue.prepend(contentsOf: first.forceSplitToMaxLength(line.width - line.length))
-                    continue
+                    let splittedRuns = first.forceSplitToMaxLength(line.width - line.length)
+                    queue.prepend(contentsOf: splittedRuns)
+                    if splittedRuns.count > 1 {
+                        continue
+                    }
                 }
             }
             

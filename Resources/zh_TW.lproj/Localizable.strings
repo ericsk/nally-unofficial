@@ -1,86 +1,144 @@
-/* Sheet Title */
+/* Alerts & Sheets */
 "Are you sure you want to quit Nally?" = "確定要結束 Nally？";
-
-/* Sheet Title */
-"Are you sure you want to close this tab?" = "確定要關閉標籤頁？";
-
-/* Default Button */
+"There are %d tabs open in Nally. Do you want to quit anyway?" = "還有 %d 個分頁正在連線中，確定要結束 Nally 嗎？";
+"Are you sure you want to close this tab?" = "確定要關閉此分頁？";
+"The connection is still alive. If you close this tab, the connection will be lost. Do you want to close this tab anyway?" = "此連線仍在作用中。關閉分頁將會中斷連線，確定要關閉嗎？";
+"Are you sure you want to close the window?" = "確定要關閉視窗？";
+"There are %d active connections. Closing the window will disconnect them." = "目前有 %d 個作用中連線，關閉視窗將會中斷所有連線。";
+"Close Window" = "關閉視窗";
 "Close" = "關閉";
-
-/* Cancel Button */
 "Cancel" = "取消";
+"Quit" = "結束";
+"Done" = "完成";
 
-/* Menu */
+/* Contextual & Main Menus */
 "Lookup in Dictionary" = "查詢字典";
 "Copy" = "拷貝";
-"Open mutiple URLs" = "開啓多個網址";
+"Paste" = "貼上";
+"Paste Wrap" = "自動斷行貼上";
+"Paste Color" = "彩色貼上";
+"Paste tinyurl" = "縮短網址並貼上";
+"Open multiple URLs" = "開啟多個網址";
+"Jump to PTT Article (%@)" = "跳轉至 PTT 文章 (%@)";
+"Copy PTT AID (%@)" = "拷貝 PTT 文章代碼 (%@)";
+"New Connection..." = "新增連線...";
+"New Tab" = "新增分頁";
+"Open Location..." = "開啟位址...";
+"Close Tab" = "關閉分頁";
+"Close Other Tabs" = "關閉其他分頁";
+"Copy Address" = "拷貝連線位址";
+"Reconnect" = "重新連線";
+"Disconnect" = "中斷連線";
+"Auto Login" = "自動登入";
+"Customize Toolbar..." = "自訂工具列...";
+"Show Hidden Text" = "顯示隱藏文字";
+"Detect Double Byte" = "偵測雙位元組字元";
+"Zoom In" = "放大";
+"Zoom Out" = "縮小";
+"Actual Size" = "實際大小";
+"Encoding" = "編碼";
+"Sites" = "站台";
+"Edit Sites..." = "編輯站台書籤...";
+"Select Next Tab" = "切換至下一個分頁";
+"Select Previous Tab" = "切換至上一個分頁";
 
-/* Default Button */
-"Quit" = "結束";
+/* Toolbar & MenuBarExtra */
+"Go to this address" = "輸入站台位址連線";
+"Manage Sites" = "管理站台書籤";
+"Toggle Double Byte Detection" = "切換雙位元組字元偵測";
+"Toggle Show Hidden Text" = "切換顯示隱藏文字";
+"New Connection (Cmd+T)" = "新增分頁 (Cmd+T)";
+"Nally Quick Connect" = "Nally 快速連線";
+"Open Main Window" = "開啟主視窗";
+"Bookmarks (Cmd+B)" = "站台書籤 (Cmd+B)";
+"Preferences... (Cmd+,)" = "偏好設定... (Cmd+,)";
+"Quit Nally" = "結束 Nally";
 
-/* Sheet Message */
-"There are %d tabs open in Nally. Do you want to quit anyway?" = "還有 %d 個標籤頁正在連線中，您確定要結束 Nally？";
+/* Bookmarks / SitesView */
+"Bookmarks" = "站台書籤";
+"Search sites..." = "搜尋站台...";
+"Untitled Site" = "未命名站台";
+"Add new site" = "新增站台";
+"Remove selected site" = "刪除所選站台";
+"Duplicate selected site" = "複製所選站台";
+"Select a site from the sidebar to view or edit details." = "請從左側列表選擇站台以檢視或編輯設定。";
+"Site Identification" = "站台識別資訊";
+"Name:" = "名稱：";
+"Address:" = "位址：";
+"Credentials (Optional Auto-login)" = "登入憑證（選填，供自動登入使用）";
+"Account:" = "帳號：";
+"Password:" = "密碼：";
+"Connection Parameters" = "連線參數";
+"Encoding:" = "文字編碼：";
+"Big5 (Taiwan)" = "Big5（繁體中文）";
+"GBK (China)" = "GBK（簡體中文）";
+"UTF-8 (Unicode)" = "UTF-8（萬國碼）";
+"Detect Double-Byte Characters" = "偵測雙位元組中文字元";
+"Connect Now" = "立即連線";
 
-/* Sheet Message */
-"The connection is still alive. If you close this tab, the connection will be lost. Do you want to close this tab anyway?" = "此連線未結束。若您關閉這個標籤頁會強迫斷線。您確定要關閉這個標籤頁嗎？";
+/* Image Previewer & EXIF */
+"Quick Look" = "快速查看";
+"Save" = "儲存";
+"EXIF" = "EXIF 資訊";
+"Open in Browser" = "在瀏覽器中開啟";
+"Failed to display image" = "無法顯示圖片";
+"EXIF Metadata" = "EXIF 相機資訊";
+"Model:" = "相機型號：";
+"Exposure:" = "曝光時間：";
+"ISO:" = "ISO 感光度：";
+"F-Number:" = "光圈值：";
+"Focal Length:" = "焦距：";
+"Date:" = "拍攝日期：";
+"Unknown" = "未知";
 
 /* Preferences */
 "General" = "一般";
-
-/* Preferences */
 "Colors" = "顏色";
-
-/* Preferences */
-"Fonts" = "字形";
-
-/* Preferences */
+"Fonts" = "字型";
 "Connection" = "連線";
-
-/* Preferences - Sections & Options */
 "Appearance" = "外觀";
 "Theme Mode:" = "主題模式：";
 "System" = "系統預設";
 "Light" = "淺色";
 "Dark" = "深色";
-
-"Window & Sessions" = "視窗與頁籤";
-"Confirm when closing windows" = "關閉視窗時進行確認";
+"Window & Sessions" = "視窗與分頁";
+"Confirm when closing windows" = "關閉連線中視窗或分頁時進行確認";
 "Restore last connections on startup" = "啟動時復原上次連線";
-"Show menu bar status icon (MenuBarExtra)" = "在選單列顯示狀態圖示";
-
-"Terminal Behavior" = "終端機行為";
+"Show menu bar status icon (MenuBarExtra)" = "在選單列顯示常駐快速連線圖示";
+"Terminal Behavior & Image Preview" = "終端機行為與圖片預覽";
 "Prefer internal image previewer" = "優先使用內建圖片預覽器";
-"Repeat dock icon bounce animation" = "重複 Dock 圖示跳動動畫";
-
+"Preview Style:" = "預覽樣式：";
+"Popover (Floating Overlay)" = "懸浮氣泡（Popover）";
+"HUD Window (Independent)" = "獨立懸浮視窗（HUD）";
+"Enable Cmd + Hover quick url preview" = "啟用按住 Cmd 游標懸停即時預覽圖片";
+"Repeat dock icon bounce animation" = "收到訊息時持續彈跳 Dock 圖示";
 "Protocol Defaults" = "預設通訊協定";
 "Default Encoding:" = "預設編碼：";
 "Big5 (Traditional Chinese)" = "Big5（繁體中文）";
 "GBK (Simplified Chinese)" = "GBK（簡體中文）";
-"ANSI Color Key:" = "ANSI 色彩切換鍵：";
+"ANSI Color Key:" = "ANSI 色彩控制鍵：";
 "Ctrl-U" = "Ctrl-U";
 "Esc + Esc" = "Esc + Esc";
 "Enable Double-Byte Character Detection" = "啟用雙位元組字元偵測";
-
+"Anti-Idle Keep-Alive" = "防閒置掛站";
+"Enable Anti-Idle keep-alive" = "啟用防閒置自動保持連線";
+"Keep-alive interval:" = "發送間隔：";
 "Default URL Scheme Handlers" = "預設 URL 協定處理程式";
 "TELNET Client:" = "TELNET 客戶端：";
 "SSH Client:" = "SSH 客戶端：";
-
 "Chinese Font Settings" = "中文字型設定";
 "English Font Settings" = "英文字型設定";
-"Sample Traditional Chinese Text" = "華康中文字體 123";
+"Sample Traditional Chinese Text" = "批踢踢實業坊 123";
 "Choose Font..." = "選擇字型...";
 "Left Offset:" = "左側偏移：";
 "Bottom Offset:" = "下方偏移：";
-
 "Grid Layout & Font Rendering" = "網格佈局與字型渲染";
 "Cell Width:" = "字元寬度：";
 "Cell Height:" = "字元高度：";
-"Enable Font Anti-Aliasing & Smoothing" = "啟用字型平滑化與平滑渲染";
-
+"Enable Font Anti-Aliasing & Smoothing" = "啟用字型反鋸齒與平滑渲染";
 "ANSI Color Palette" = "ANSI 色彩調色盤";
 "Canvas Background" = "畫布背景";
 "Terminal Background:" = "終端機背景：";
-
 "Black" = "黑色";
 "Black (Bright)" = "黑色（高亮）";
 "Red" = "紅色";

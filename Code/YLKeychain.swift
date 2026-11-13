@@ -74,4 +74,14 @@ public class YLKeychain: NSObject {
             throw NSError(domain: "YLKeychain", code: Int(status), userInfo: [NSLocalizedDescriptionKey: "SecItemAdd failed with status: \(status)"])
         }
     }
+    
+    public static func deletePassword(forService service: String, account: String) {
+        guard !service.isEmpty, !account.isEmpty else { return }
+        let deleteQuery: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account
+        ]
+        SecItemDelete(deleteQuery as CFDictionary)
+    }
 }

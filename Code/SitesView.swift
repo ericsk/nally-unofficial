@@ -105,7 +105,10 @@ struct SitesView: View {
             .navigationTitle("Bookmarks")
         } detail: {
             if let site = selectedSite {
-                SiteDetailView(site: site, onConnect: onConnect, onSave: saveChanges)
+                SiteDetailView(site: site, onConnect: onConnect, onSave: { savedSite in
+                    saveSiteChanges(savedSite)
+                })
+                .id(site.id)
             } else {
                 VStack(spacing: 12) {
                     Image(systemName: "bookmark.circle")
@@ -150,9 +153,13 @@ struct SitesView: View {
     
     private func deleteSelectedSite() {
         if let site = selectedSite {
+            if !site.address.isEmpty && !site.account.isEmpty {
+                YLKeychain.deletePassword(forService: site.address, account: site.account)
+            }
             modelContext.delete(site)
-            saveChanges()
             selectedSite = nil
+            try? modelContext.save()
+            controller.saveSites()
         }
     }
     
@@ -161,18 +168,25 @@ struct SitesView: View {
             let dup = site.copySite()
             dup.name = "\(site.name) Copy"
             modelContext.insert(dup)
-            saveChanges()
             selectedSite = dup
+            saveChanges()
         }
     }
     
     private func saveChanges() {
+        saveSiteChanges(selectedSite)
+    }
+    
+    private func saveSiteChanges(_ targetSite: YLSite?) {
         try? modelContext.save()
-        if let selected = selectedSite,
-           !selected.password.isEmpty,
-           !selected.address.isEmpty,
-           !selected.account.isEmpty {
-            try? YLKeychain.setPassword(selected.password, forService: selected.address, account: selected.account)
+        if let site = targetSite,
+           !site.address.isEmpty,
+           !site.account.isEmpty {
+            if site.password.isEmpty {
+                YLKeychain.deletePassword(forService: site.address, account: site.account)
+            } else {
+                try? YLKeychain.setPassword(site.password, forService: site.address, account: site.account)
+            }
         }
         controller.saveSites()
     }
@@ -195,28 +209,33 @@ struct ProtocolBadge: View {
 struct SiteDetailView: View {
     @Bindable var site: YLSite
     var onConnect: (YLSite) -> Void
-    var onSave: () -> Void
+    var onSave: (YLSite) -> Void
     
     var body: some View {
         Form {
             Section(header: Label("Site Identification", systemImage: "globe")) {
                 TextField("Name:", text: $site.name)
                     .textFieldStyle(.roundedBorder)
+                    .onSubmit { onSave(site) }
                 TextField("Address:", text: $site.address)
                     .textFieldStyle(.roundedBorder)
+                    .onSubmit { onSave(site) }
             }
             
             Section(header: Label("Credentials (Optional Auto-login)", systemImage: "key.fill")) {
                 TextField("Account:", text: $site.account)
                     .textFieldStyle(.roundedBorder)
+                    .onSubmit { onSave(site) }
                 SecureField("Password:", text: $site.password)
                     .textFieldStyle(.roundedBorder)
+                    .onSubmit { onSave(site) }
             }
             
             Section(header: Label("Connection Parameters", systemImage: "slider.horizontal.3")) {
                 Picker("Encoding:", selection: $site.encoding) {
                     Text("Big5 (Taiwan)").tag(YLEncoding.YLBig5Encoding)
                     Text("GBK (China)").tag(YLEncoding.YLGBKEncoding)
+                    Text("UTF-8 (Unicode)").tag(YLEncoding.YLUTF8Encoding)
                 }
                 
                 Picker("ANSI Color Key:", selection: $site.ansiColorKey) {
@@ -229,7 +248,7 @@ struct SiteDetailView: View {
             
             Section {
                 Button(action: {
-                    onSave()
+                    onSave(site)
                     onConnect(site)
                 }) {
                     HStack {
@@ -246,12 +265,9 @@ struct SiteDetailView: View {
             }
         }
         .formStyle(.grouped)
-        .onChange(of: site.name) { _, _ in onSave() }
-        .onChange(of: site.address) { _, _ in onSave() }
-        .onChange(of: site.account) { _, _ in onSave() }
-        .onChange(of: site.password) { _, _ in onSave() }
-        .onChange(of: site.encoding) { _, _ in onSave() }
-        .onChange(of: site.ansiColorKey) { _, _ in onSave() }
-        .onChange(of: site.detectDoubleByte) { _, _ in onSave() }
+        .onChange(of: site.encoding) { _, _ in onSave(site) }
+        .onChange(of: site.ansiColorKey) { _, _ in onSave(site) }
+        .onChange(of: site.detectDoubleByte) { _, _ in onSave(site) }
+        .onDisappear { onSave(site) }
     }
 }

@@ -231,6 +231,8 @@ struct MenuBarQuickConnectView: View {
             ForEach(appState.controller.sitesList) { site in
                 Button(action: {
                     NSApp.activate()
+                    openWindow(id: "main")
+                    appState.controller._mainWindow?.makeKeyAndOrderFront(nil)
                     appState.controller.newConnection(with: site)
                 }) {
                     HStack {
@@ -244,6 +246,7 @@ struct MenuBarQuickConnectView: View {
             
             Button(action: {
                 NSApp.activate()
+                openWindow(id: "main")
                 if let window = appState.controller._mainWindow {
                     window.makeKeyAndOrderFront(nil)
                 }

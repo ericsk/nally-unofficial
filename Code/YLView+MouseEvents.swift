@@ -4,6 +4,7 @@ import CoreText
 extension YLView {
     // MARK: - Event Handling (Mouse & Menu)
     public override func mouseDown(with event: NSEvent) {
+        cancelPendingHoverPreview()
         frontMostTerminal()?.hasMessage = false
         window?.makeFirstResponder(self)
         guard frontMostTerminal() != nil else { return }
@@ -38,26 +39,26 @@ extension YLView {
                 _selectionLocation -= 1
                 _selectionLength = 2
             } else if isEnglishNumberAlphabet(currRow[c].byte) {
-                var col = c
-                while col >= 0 {
-                    let cellItem = currRow[col]
-                    if isEnglishNumberAlphabet(cellItem.byte) && cellItem.attr.terminalAttribute.doubleByte == 0 {
-                        _selectionLocation = Int32(r * gColumn + col)
+                var startCol = c
+                while startCol > 0 {
+                    let prevCell = currRow[startCol - 1]
+                    if isEnglishNumberAlphabet(prevCell.byte) && prevCell.attr.terminalAttribute.doubleByte == 0 {
+                        startCol -= 1
                     } else {
                         break
                     }
-                    col -= 1
                 }
-                col = c + 1
-                while col < gColumn {
-                    let cellItem = currRow[col]
-                    if isEnglishNumberAlphabet(cellItem.byte) && cellItem.attr.terminalAttribute.doubleByte == 0 {
-                        _selectionLength += 1
+                var endCol = c
+                while endCol + 1 < gColumn {
+                    let nextCell = currRow[endCol + 1]
+                    if isEnglishNumberAlphabet(nextCell.byte) && nextCell.attr.terminalAttribute.doubleByte == 0 {
+                        endCol += 1
                     } else {
                         break
                     }
-                    col += 1
                 }
+                _selectionLocation = Int32(r * gColumn + startCol)
+                _selectionLength = Int32(endCol - startCol + 1)
             } else {
                 _selectionLength = 1
             }
@@ -93,7 +94,7 @@ extension YLView {
             }
             
             guard let currRow = ds.cells(ofRow: Int32(moveToRow)) else { return }
-            let detectDoubleByte = frontMostConnection()?.site?.detectDoubleByte ?? true
+            let detectDoubleByte = frontMostConnection()?.site?.detectDoubleByte ?? YLLGlobalConfig.sharedInstance().detectDoubleByte
             
             let sendRight = {
                 cmd.append(contentsOf: [0x1B, 0x4F, 0x43]) // Right arrow 'C'
@@ -165,13 +166,92 @@ extension YLView {
                         _shouldUseImagePreviewer = !_shouldUseImagePreviewer
                     }
                     
-                    if url.count < 25 && url.hasPrefix("http://") {
+                    let isDirectImage = URL(string: url).map { YLContextualMenuManager.sharedInstance.isImageURL($0) } ?? false
+                    if url.count < 30 && url.lowercased().hasPrefix("https://") && !isDirectImage {
                         resolveShortUrl(url)
                     } else {
                         loadUrl(of: url)
                     }
                 }
             }
+        }
+    }
+    
+    // MARK: - Cmd + Hover Quick URL Preview
+    public override func mouseMoved(with event: NSEvent) {
+        let pt = convert(event.locationInWindow, from: nil)
+        evaluateCmdHoverPreview(at: pt, modifierFlags: event.modifierFlags)
+        super.mouseMoved(with: event)
+    }
+    
+    public override func mouseExited(with event: NSEvent) {
+        cancelPendingHoverPreview()
+        super.mouseExited(with: event)
+    }
+    
+    func evaluateCmdHoverPreview(at pointInView: NSPoint, modifierFlags: NSEvent.ModifierFlags) {
+        let config = YLLGlobalConfig.sharedInstance()
+        let hoverEnabled = (UserDefaults.standard.object(forKey: "EnableCmdHoverPreview") as? Bool) ?? true
+        guard config.shouldPreferImagePreviewer,
+              hoverEnabled,
+              modifierFlags.contains(.command),
+              bounds.contains(pointInView),
+              let ds = frontMostTerminal() else {
+            cancelPendingHoverPreview()
+            return
+        }
+        
+        let gColumn = Int(config.column)
+        let gRow = Int(config.row)
+        guard gColumn > 0 && gRow > 0 else { return }
+        
+        let index = convertIndex(from: pointInView)
+        let row = index / gColumn
+        let col = index % gColumn
+        
+        guard let urlStr = ds.urlString(atRow: Int32(row), column: Int32(col)),
+              let url = URL(string: urlStr),
+              url.scheme?.lowercased() == "https",
+              YLContextualMenuManager.sharedInstance.isImageURL(url) else {
+            cancelPendingHoverPreview()
+            return
+        }
+        
+        if hoveredPreviewURL == urlStr,
+           hoverPreviewTask != nil || (hoverPreviewer?.isPresented ?? false) {
+            return
+        }
+        
+        hoverPreviewTask?.cancel()
+        hoveredPreviewURL = urlStr
+        
+        let anchorRect = NSRect(
+            x: CGFloat(col) * _fontWidth,
+            y: CGFloat(gRow - 1 - row) * _fontHeight,
+            width: _fontWidth,
+            height: _fontHeight
+        )
+        
+        hoverPreviewTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 250_000_000)
+            guard let self = self,
+                  !Task.isCancelled,
+                  self.hoveredPreviewURL == urlStr else {
+                return
+            }
+            self.hoverPreviewTask = nil
+            self.presentHoverPreview(for: url, anchorRect: anchorRect)
+        }
+    }
+    
+    func presentHoverPreview(for url: URL, anchorRect: NSRect) {
+        let previewer = YLImagePreviewer(url: url, allowBrowserFallback: false)
+        self.hoverPreviewer = previewer
+        let style = UserDefaults.standard.string(forKey: "ImagePreviewStyle") ?? "popover"
+        if style == "window" {
+            previewer.showLoadingWindow()
+        } else {
+            previewer.showPopover(relativeTo: anchorRect, of: self, preferredEdge: .minY)
         }
     }
     
@@ -187,12 +267,25 @@ extension YLView {
         let menu = YLView.defaultMenu ?? NSMenu()
         guard frontMostTerminal() != nil else { return menu }
         
-        if let s = selectedPlainString() {
-            let a = YLContextualMenuManager.sharedInstance.availableMenuItemForSelectionString(s)
-            for item in a {
-                menu.addItem(item)
-            }
+        let selected = selectedPlainString() ?? ""
+        let contextualItems = YLContextualMenuManager.sharedInstance.availableMenuItemForSelectionString(selected)
+        for item in contextualItems {
+            menu.addItem(item)
         }
+        
+        if selected.isEmpty && connected(), NSPasteboard.general.string(forType: .string) != nil {
+            if !menu.items.isEmpty {
+                menu.addItem(NSMenuItem.separator())
+            }
+            let pasteItem = NSMenuItem(title: NSLocalizedString("Paste", comment: "Menu"), action: #selector(paste(_:)), keyEquivalent: "")
+            pasteItem.target = self
+            menu.addItem(pasteItem)
+            
+            let pasteWrapItem = NSMenuItem(title: NSLocalizedString("Paste Wrap", comment: "Menu"), action: #selector(pasteWrap(_:)), keyEquivalent: "")
+            pasteWrapItem.target = self
+            menu.addItem(pasteWrapItem)
+        }
+        
         return menu
     }
 }

@@ -1,79 +1,86 @@
-#!/usr/bin/env python
-# Package a bundle and generate Sparkle appcasts for release
+#!/usr/bin/env python3
+"""Package Nally.app into a distributable macOS zip archive with SHA-256 checksum."""
 
-import sys, os, commands, time, plistlib, markdown2
+from __future__ import annotations
 
-try:
-    from jinja2 import Environment, FileSystemLoader
-except:
-    print "Install jinja2 first."
-    sys.exit(1)
+import argparse
+import hashlib
+import os
+import plistlib
+import subprocess
+import sys
+from pathlib import Path
 
-def parent_url(url):
-    return url[:url.rfind("/")];
 
-def remove_if_exists(file):
-    if os.path.isfile(file):
-        os.remove(file)
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(65536), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
-def package_bundle(bundle_path, zip_parent):
-    """Package a bundle and create the appcast, input:
-    
-       * A built bundle with Contents/Info.plist, must have SUFeedURL
-         for Sparkle.
-       * ~/.ssh/<bundleNameInLowercase>.private.pem to sign the zip"""
 
-    plist           = plistlib.readPlist("%s/Contents/Info.plist" % bundle_path)
-    bundle_name     = plist["CFBundleName"]
-    appcast_url     = plist["SUFeedURL"]
-    bundle_version  = plist["CFBundleVersion"]
-    zip             = "%s-%s.zip" % (bundle_name, bundle_version)
-    zip_url         = "%s/%s" % (zip_parent, zip)
-    priv_key        = os.path.expanduser("~/.ssh/%s.private.pem" % bundle_name.lower())
-    date            = time.strftime("%a, %d %b %Y %H:%M:%S %z")
+def package_bundle(bundle_path: Path, output_dir: Path) -> Path:
+    info_plist_path = bundle_path / "Contents" / "Info.plist"
+    if not info_plist_path.is_file():
+        raise FileNotFoundError(f"Missing Info.plist at {info_plist_path}")
 
-    print "[PACK] Building %s..." % zip
+    with info_plist_path.open("rb") as fh:
+        plist = plistlib.load(fh)
 
-    cwd = os.getcwd();
-    os.chdir(os.path.dirname(bundle_path))
-    os.system("zip -qry %s/%s %s" % (cwd, zip, os.path.basename(bundle_path)))
-    os.chdir(cwd)
+    bundle_name = plist.get("CFBundleName") or bundle_path.stem
+    short_version = plist.get("CFBundleShortVersionString") or plist.get("CFBundleVersion") or "dev"
 
-    print "[PACK] Signing %s..." % zip
-    signed = commands.getoutput('openssl dgst -sha1 -binary < "%s" | '\
-                                'openssl dgst -dss1 -sign "%s" | '\
-                                'openssl enc -base64' % (zip, priv_key))
+    output_dir.mkdir(parents=True, exist_ok=True)
+    archive_path = output_dir / f"{bundle_name}-{short_version}-arm64.zip"
+    if archive_path.exists():
+        archive_path.unlink()
 
-    env = Environment(loader=FileSystemLoader(sys.path[0]))
-    template = env.get_template("appcast.template.xml")
+    print(f"[PACK] Archiving {bundle_path.name} -> {archive_path} ...")
+    subprocess.run(
+        [
+            "/usr/bin/ditto",
+            "-c",
+            "-k",
+            "--sequesterRsrc",
+            "--keepParent",
+            str(bundle_path),
+            str(archive_path),
+        ],
+        check=True,
+    )
 
-    for lang in [ "en", "zh_CN", "zh_TW" ]:
-        if lang == "en":
-            suffix = ""
-        else:
-            suffix = ".%s" % lang
-        relnotes = markdown2.markdown_path("Changelog%s.markdown" % suffix)
-        appcast  = "%s%s.xml" % (bundle_name, suffix)
-        print "[PACK] Generating %s..." % appcast
-        output   = open(appcast, "w")
+    checksum = sha256_file(archive_path)
+    checksum_path = archive_path.with_suffix(".zip.sha256")
+    checksum_path.write_text(f"{checksum}  {archive_path.name}\n", encoding="utf-8")
 
-        output.write(template.render(appName = bundle_name,
-                                     link    = appcast_url,
-                                     relNotes= relnotes,
-                                     url     = zip_url,
-                                     date    = date,
-                                     version = bundle_version,
-                                     length  = os.path.getsize(zip),
-                                     signed  = signed).encode("utf-8"))
+    size_bytes = archive_path.stat().st_size
+    print(f"[PACK] Size:   {size_bytes:,} bytes")
+    print(f"[PACK] SHA256: {checksum}")
+    print(f"[PACK] Done! Artifacts written to {output_dir}")
+    return archive_path
 
-        output.close()
 
-    print "Done! Please publish %s to %s." % (zip, zip_url)
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Package Nally.app for macOS distribution.")
+    parser.add_argument("bundle", type=Path, help="Path to built Nally.app bundle")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=Path.cwd() / "build" / "dist",
+        help="Directory for generated zip and checksum (default: ./build/dist)",
+    )
+    args = parser.parse_args()
 
-if __name__ == '__main__':
-    if len(sys.argv) < 3:
-        print("usage: %s <bundle> <upload path>" % sys.argv[0])
-        sys.exit(1)
+    bundle_path = args.bundle.resolve()
+    if not bundle_path.is_dir():
+        print(f"Error: bundle not found at {bundle_path}", file=sys.stderr)
+        return 1
 
-    package_bundle(sys.argv[1], sys.argv[2])
+    package_bundle(bundle_path, args.output_dir.resolve())
+    return 0
 
+
+if __name__ == "__main__":
+    os.umask(0o022)
+    sys.exit(main())

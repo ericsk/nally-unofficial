@@ -100,7 +100,8 @@ extension YLController {
             } else {
                 connectSite.address = addressString
                 connectSite.name = name
-                connectSite.encoding = YLLGlobalConfig.sharedInstance().defaultEncoding
+                let isUTF8SSH = addressString.lowercased().hasPrefix("ssh://bbsu@")
+                connectSite.encoding = isUTF8SSH ? .YLUTF8Encoding : YLLGlobalConfig.sharedInstance().defaultEncoding
                 connectSite.ansiColorKey = YLLGlobalConfig.sharedInstance().defaultANSIColorKey
                 connectSite.detectDoubleByte = YLLGlobalConfig.sharedInstance().detectDoubleByte
             }
@@ -128,7 +129,8 @@ extension YLController {
             } else {
                 connectSite.address = addressString
                 connectSite.name = name
-                connectSite.encoding = YLLGlobalConfig.sharedInstance().defaultEncoding
+                let isUTF8SSH = addressString.lowercased().hasPrefix("ssh://bbsu@")
+                connectSite.encoding = isUTF8SSH ? .YLUTF8Encoding : YLLGlobalConfig.sharedInstance().defaultEncoding
                 connectSite.ansiColorKey = YLLGlobalConfig.sharedInstance().defaultANSIColorKey
                 connectSite.detectDoubleByte = YLLGlobalConfig.sharedInstance().detectDoubleByte
             }
@@ -237,6 +239,12 @@ extension YLController {
         closeTabViewItem(tabItem)
     }
     
+    @IBAction public func disconnect(_ sender: Any?) {
+        guard let conn = _telnetView?.frontMostConnection(), conn.connected else { return }
+        conn.terminal?.hasMessage = false
+        conn.close()
+    }
+    
     @objc public func closeTabViewItem(_ tabItem: NSTabViewItem) {
         guard _telnetView != nil else { return }
         guard let connection = tabItem.connection else {
@@ -329,7 +337,10 @@ extension YLController {
     }
     
     public func setShowHiddenText(_ show: Bool) {
-        YLLGlobalConfig.sharedInstance().showHiddenText = show
+        let config = YLLGlobalConfig.sharedInstance()
+        if config.showHiddenText != show {
+            config.showHiddenText = show
+        }
         _telnetView?.refreshHiddenRegion()
         _telnetView?.updateBackedImage()
         _telnetView?.needsDisplay = true

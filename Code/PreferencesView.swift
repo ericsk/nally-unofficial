@@ -94,6 +94,7 @@ struct ConnectionPreferencesView: View {
                 Picker("Default Encoding:", selection: $config.defaultEncoding) {
                     Text("Big5 (Traditional Chinese)").tag(YLEncoding.YLBig5Encoding)
                     Text("GBK (Simplified Chinese)").tag(YLEncoding.YLGBKEncoding)
+                    Text("UTF-8 (Unicode)").tag(YLEncoding.YLUTF8Encoding)
                 }
                 
                 Picker("ANSI Color Key:", selection: $config.defaultANSIColorKey) {
@@ -102,6 +103,21 @@ struct ConnectionPreferencesView: View {
                 }
                 
                 Toggle("Enable Double-Byte Character Detection", isOn: $config.detectDoubleByte)
+            }
+            
+            Section(header: Label("Anti-Idle Keep-Alive", systemImage: "moon.zzz")) {
+                Toggle("Enable Anti-Idle keep-alive", isOn: $config.antiIdleEnabled)
+                if config.antiIdleEnabled {
+                    Stepper(value: $config.antiIdleInterval, in: 30...600, step: 30) {
+                        HStack {
+                            Text("Keep-alive interval:")
+                            Spacer()
+                            Text("\(config.antiIdleInterval) s")
+                                .font(.system(.body, design: .monospaced))
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
             }
             
             Section(header: Label("Default URL Scheme Handlers", systemImage: "arrow.triangle.branch")) {

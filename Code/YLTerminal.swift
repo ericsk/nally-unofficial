@@ -48,6 +48,8 @@ public class YLTerminal: NSObject {
     private var csBuf: [UInt8] = []
     private var csArg: [Int] = []
     private var csTemp: Int = 0
+    private var utf8Buffer: [UInt8] = []
+    private var utf8ExpectedLength: Int = 0
     
     private var _delegate: YLView?
     private var _scrollBeginRow: Int32 = 0
@@ -64,9 +66,12 @@ public class YLTerminal: NSObject {
     private var _modeIRM: Bool = false
     
     private var _connection: YLConnection?
-    private var _pluginLoader: YLPluginLoader?
     
     private var gEmptyAttr: UInt16 = 0
+    
+    private static let urlProtocolBytes: [[UInt8]] = [
+        "http://", "https://", "ftp://", "telnet://", "bbs://", "ssh://", "mailto:"
+    ].map { Array($0.utf8) }
     
     // Constants
     private let ASC_NUL: UInt8 = 0x00
@@ -204,6 +209,21 @@ public class YLTerminal: NSObject {
         if _cursorY >= row { _cursorY = row - 1 }
     }
     
+    private func advanceLineWithScrollIfNeeded() {
+        if _cursorY == _scrollEndRow {
+            let emptyLine = grid[Int(_scrollBeginRow)]
+            clearRow(_scrollBeginRow)
+            for rowIdx in Int(_scrollBeginRow)..<Int(_scrollEndRow) {
+                grid[rowIdx] = grid[rowIdx + 1]
+            }
+            grid[Int(_scrollEndRow)] = emptyLine
+            setAllDirty()
+        } else {
+            _cursorY += 1
+            if _cursorY >= row { _cursorY = row - 1 }
+        }
+    }
+    
     private func setGridByte(_ c: UInt8) {
         if _cursorX <= column - 1 {
             if _modeIRM {
@@ -213,29 +233,81 @@ public class YLTerminal: NSObject {
                 }
             }
             grid[Int(_cursorY)][Int(_cursorX)].byte = c
+            grid[Int(_cursorY)][Int(_cursorX)].unicodeScalar = 0
             grid[Int(_cursorY)][Int(_cursorX)].attr.v = currentAttrRaw()
             setDirty(true, atRow: _cursorY, column: _cursorX)
             _cursorX += 1
         } else if _cursorX == column && _modeWraptext {
             _cursorX = 0
             _gotWrapped = true
-            if _cursorY == _scrollEndRow {
-                let emptyLine = grid[Int(_scrollBeginRow)]
-                clearRow(_scrollBeginRow)
-                for rowIdx in Int(_scrollBeginRow)..<Int(_scrollEndRow) {
-                    grid[rowIdx] = grid[rowIdx + 1]
-                }
-                grid[Int(_scrollEndRow)] = emptyLine
-                setAllDirty()
-            } else {
-                _cursorY += 1
-                if _cursorY >= row { _cursorY = row - 1 }
-            }
+            advanceLineWithScrollIfNeeded()
             grid[Int(_cursorY)][Int(_cursorX)].byte = c
+            grid[Int(_cursorY)][Int(_cursorX)].unicodeScalar = 0
             grid[Int(_cursorY)][Int(_cursorX)].attr.v = currentAttrRaw()
             setDirty(true, atRow: _cursorY, column: _cursorX)
             _cursorX += 1
         }
+    }
+    
+    private func setUTF8Scalar(_ scalar: UInt32) {
+        guard column >= 2 && row > 0 else { return }
+        let bmpCode: UInt16 = scalar <= 0xFFFF ? UInt16(scalar) : 0xFFFD
+        let isWide = isEastAsianWideScalar(scalar)
+        
+        if !isWide {
+            if _cursorX == column && _modeWraptext {
+                _cursorX = 0
+                _gotWrapped = true
+                advanceLineWithScrollIfNeeded()
+            }
+            guard _cursorX < column else { return }
+            if _modeIRM {
+                for col in stride(from: Int(column) - 1, to: Int(_cursorX), by: -1) {
+                    grid[Int(_cursorY)][col] = grid[Int(_cursorY)][col - 1]
+                    setDirty(true, atRow: _cursorY, column: Int32(col))
+                }
+            }
+            grid[Int(_cursorY)][Int(_cursorX)].byte = 0x80
+            grid[Int(_cursorY)][Int(_cursorX)].unicodeScalar = bmpCode
+            var attr = attribute(v: currentAttrRaw())
+            attr.f.doubleByte = 0
+            grid[Int(_cursorY)][Int(_cursorX)].attr = attr
+            setDirty(true, atRow: _cursorY, column: _cursorX)
+            _cursorX += 1
+            return
+        }
+        
+        // Wide (2-column) character
+        if _cursorX >= column - 1 {
+            if !_modeWraptext { return }
+            if _cursorX == column - 1 {
+                clearRow(_cursorY, fromStart: column - 1, toEnd: column - 1)
+            }
+            _cursorX = 0
+            _gotWrapped = true
+            advanceLineWithScrollIfNeeded()
+        }
+        
+        if _modeIRM && Int(column) - 1 >= Int(_cursorX) + 2 {
+            for col in stride(from: Int(column) - 1, through: Int(_cursorX) + 2, by: -1) {
+                grid[Int(_cursorY)][col] = grid[Int(_cursorY)][col - 2]
+                setDirty(true, atRow: _cursorY, column: Int32(col))
+            }
+        }
+        
+        let rawAttr = currentAttrRaw()
+        var leftAttr = attribute(v: rawAttr)
+        leftAttr.f.doubleByte = 1
+        var rightAttr = attribute(v: rawAttr)
+        rightAttr.f.doubleByte = 2
+        
+        let rIdx = Int(_cursorY)
+        let cIdx = Int(_cursorX)
+        grid[rIdx][cIdx] = cell(byte: 0xFF, unicodeScalar: bmpCode, attr: leftAttr)
+        grid[rIdx][cIdx + 1] = cell(byte: 0xFF, unicodeScalar: bmpCode, attr: rightAttr)
+        setDirty(true, atRow: _cursorY, column: _cursorX)
+        setDirty(true, atRow: _cursorY, column: _cursorX + 1)
+        _cursorX += 2
     }
     
     // MARK: - Input Interface
@@ -246,7 +318,6 @@ public class YLTerminal: NSObject {
                 self.feedBytes(baseAddress, length: Int32(data.count), connection: connection)
             }
         }
-        _pluginLoader?.feedData(data)
     }
     
     // MARK: - Start / Stop
@@ -269,6 +340,8 @@ public class YLTerminal: NSObject {
         }
         csBuf.removeAll()
         csArg.removeAll()
+        utf8Buffer.removeAll()
+        utf8ExpectedLength = 0
         _fgColor = Int(YLLGlobalConfig.sharedInstance().fgColorIndex)
         _bgColor = Int(YLLGlobalConfig.sharedInstance().bgColorIndex)
         csTemp = 0
@@ -378,27 +451,57 @@ public class YLTerminal: NSObject {
     
     // MARK: - Access Data
     public func attrAtRow(_ r: Int32, column c: Int32) -> attribute {
+        guard r >= 0 && r < row && c >= 0 && c < column else {
+            return attribute(v: gEmptyAttr)
+        }
         return grid[Int(r)][Int(c)].attr
     }
     
     @objc(stringFromIndex:length:)
     public func stringFromIndex(_ begin: Int32, length: Int32) -> String? {
+        guard row > 0 && column > 0 else { return nil }
+        let maxCells = Int(row * column)
+        let start = max(0, Int(begin))
+        let end = min(maxCells, Int(begin) + max(0, Int(length)))
+        guard start < end else { return nil }
+        
         var textBuf = [unichar]()
         var firstByte: UInt8 = 0
         var spacebuf = 0
         
-        let encoding = _connection?.site?.encoding ?? .YLBig5Encoding
+        let encoding = self.encoding
+        updateDoubleByteState(forRow: Int32(start / Int(column)))
         
-        for i in Int(begin)..<Int(begin + length) {
+        for i in start..<end {
             let x = i % Int(column)
             let y = i / Int(column)
-            if x == 0 && i != Int(begin) && (i - 1) < Int(begin + length) {
+            if x == 0 && i != start && (i - 1) < end {
                 updateDoubleByteState(forRow: Int32(y))
                 textBuf.append(0x000D) // newline CR
                 spacebuf = 0
             }
             let db = grid[y][x].attr.f.doubleByte
-            if db == 0 {
+            if encoding == .YLUTF8Encoding {
+                if db == 0 {
+                    let scalar = grid[y][x].unicodeScalar
+                    if scalar != 0 {
+                        for _ in 0..<spacebuf { textBuf.append(32) }
+                        textBuf.append(scalar)
+                        spacebuf = 0
+                    } else if grid[y][x].byte == 0 || grid[y][x].byte == 32 {
+                        spacebuf += 1
+                    } else {
+                        for _ in 0..<spacebuf { textBuf.append(32) }
+                        textBuf.append(UInt16(grid[y][x].byte))
+                        spacebuf = 0
+                    }
+                } else if db == 2 {
+                    for _ in 0..<spacebuf { textBuf.append(32) }
+                    let scalar = grid[y][x].unicodeScalar
+                    textBuf.append(scalar != 0 ? scalar : 0xFFFD)
+                    spacebuf = 0
+                }
+            } else if db == 0 {
                 if grid[y][x].byte == 0 || grid[y][x].byte == 32 {
                     spacebuf += 1
                 } else {
@@ -412,12 +515,14 @@ public class YLTerminal: NSObject {
                 firstByte = grid[y][x].byte
             } else if db == 2 && firstByte != 0 {
                 let index = (Int(firstByte) << 8) + Int(grid[y][x].byte) - 0x8000
-                for _ in 0..<spacebuf {
-                    textBuf.append(32)
+                if index >= 0 {
+                    for _ in 0..<spacebuf {
+                        textBuf.append(32)
+                    }
+                    let charVal = (encoding == .YLBig5Encoding) ? lookupBig5(UInt16(index)) : lookupGBK(UInt16(index))
+                    textBuf.append(charVal)
+                    spacebuf = 0
                 }
-                let charVal = (encoding == .YLBig5Encoding) ? lookupBig5(UInt16(index)) : lookupGBK(UInt16(index))
-                textBuf.append(charVal)
-                spacebuf = 0
             }
         }
         if textBuf.isEmpty { return nil }
@@ -445,43 +550,78 @@ public class YLTerminal: NSObject {
     public func updateDoubleByteState(forRow r: Int32) {
         guard r >= 0 && r < row else { return }
         let rIdx = Int(r)
-        var db = 0
-        for i in 0..<Int(column) {
-            if db == 0 || db == 2 {
-                if grid[rIdx][i].byte > 0x7F {
-                    db = 1
-                } else {
-                    db = 0
+        let cols = Int(column)
+        if self.encoding == .YLUTF8Encoding {
+            // Sanitize any orphaned half-cells created by partial single-column overwrites
+            for i in 0..<cols {
+                let cellDb = grid[rIdx][i].attr.f.doubleByte
+                if cellDb == 1 {
+                    if i + 1 >= cols || grid[rIdx][i + 1].attr.f.doubleByte != 2 {
+                        grid[rIdx][i].byte = 32
+                        grid[rIdx][i].unicodeScalar = 0
+                        grid[rIdx][i].attr.f.doubleByte = 0
+                        setDirty(true, atRow: r, column: Int32(i))
+                    }
+                } else if cellDb == 2 {
+                    if i == 0 || grid[rIdx][i - 1].attr.f.doubleByte != 1 {
+                        grid[rIdx][i].byte = 32
+                        grid[rIdx][i].unicodeScalar = 0
+                        grid[rIdx][i].attr.f.doubleByte = 0
+                        setDirty(true, atRow: r, column: Int32(i))
+                    }
                 }
-            } else { // db == 1
-                db = 2
             }
-            grid[rIdx][i].attr.f.doubleByte = UInt32(db & 3)
+        } else {
+            var db = 0
+            for i in 0..<cols {
+                if db == 0 || db == 2 {
+                    if grid[rIdx][i].byte > 0x7F {
+                        db = 1
+                    } else {
+                        db = 0
+                    }
+                } else { // db == 1
+                    db = 2
+                }
+                grid[rIdx][i].attr.f.doubleByte = UInt32(db & 3)
+            }
+        }
+        
+        // Keep double-byte cell pairs atomically dirty so partial overwrites never cut CJK glyphs in half
+        if dirtyRows[rIdx] {
+            let rowOffset = rIdx * cols
+            for i in 0..<cols {
+                let cellDb = grid[rIdx][i].attr.f.doubleByte
+                if cellDb == 1 && i + 1 < cols && dirty[rowOffset + i] && !dirty[rowOffset + i + 1] {
+                    dirty[rowOffset + i + 1] = true
+                } else if cellDb == 2 && i > 0 && dirty[rowOffset + i] && !dirty[rowOffset + i - 1] {
+                    dirty[rowOffset + i - 1] = true
+                }
+            }
         }
     }
     
     @objc(updateURLStateForRow:)
     public func updateURLState(forRow r: Int32) {
-        guard r >= 0 && r < row else { return }
+        guard r >= 0 && r < row && column > 0 else { return }
         let rIdx = Int(r)
-        let protocols = ["http://", "https://", "ftp://", "telnet://", "bbs://", "ssh://", "mailto:"]
+        let cols = Int(column)
         var urlState = false
         if r > 0 {
-            urlState = grid[rIdx - 1][Int(column - 1)].attr.f.url != 0
+            urlState = grid[rIdx - 1][cols - 1].attr.f.url != 0
         }
         
-        for i in 0..<Int(column) {
+        for i in 0..<cols {
             if urlState {
                 let c = grid[rIdx][i].byte
                 if c < 0x21 || c > 0x7E || c == 41 {
                     urlState = false
                 }
             } else {
-                for p in protocols {
-                    let len = p.count
-                    if i + len <= Int(column) {
+                for pBytes in Self.urlProtocolBytes {
+                    let len = pBytes.count
+                    if i + len <= cols {
                         var match = true
-                        let pBytes = Array(p.utf8)
                         for s in 0..<len {
                             if grid[rIdx][i + s].byte != pBytes[s] || grid[rIdx][i + s].attr.f.doubleByte != 0 {
                                 match = false
@@ -506,6 +646,7 @@ public class YLTerminal: NSObject {
     
     @objc(urlStringAtRow:column:)
     public func urlString(atRow r: Int32, column c: Int32) -> String? {
+        guard r >= 0 && r < row && c >= 0 && c < column else { return nil }
         var rowIdx = Int(r)
         var colIdx = Int(c)
         
@@ -595,11 +736,6 @@ public class YLTerminal: NSObject {
         get { return _connection }
         set { _connection = newValue }
     }
-    
-    @objc public var pluginLoader: YLPluginLoader? {
-        get { return _pluginLoader }
-        set { _pluginLoader = newValue }
-    }
 }
 
 // Extension to support while-loop for feedBytes
@@ -612,72 +748,98 @@ extension YLTerminal {
                 let c = bytes[i]
                 switch parserState {
                 case .normal:
-                    if c == ASC_NUL {
-                        // do nothing
-                    } else if c == ASC_ETX || c == ASC_EQT {
-                        // do nothing
-                    } else if c == ASC_ENQ {
-                        let cmd: [UInt8] = [ASC_NUL]
-                        _connection?.sendBytes(cmd, length: 1)
-                    } else if c == ASC_ACK {
-                        // do nothing
-                    } else if c == ASC_BEL {
-                        NSSound(named: "Whit.aiff")?.play()
-                        self.hasMessage = true
-                    } else if c == ASC_BS {
-                        if _cursorX > 0 {
-                            if _cursorX == column && _modeWraptext {
-                                _cursorX -= 1
-                            }
-                            _cursorX -= 1
-                        } else if _cursorX == 0 && _gotWrapped {
-                            _cursorX = column - 1
-                            if _cursorY == _scrollBeginRow {
-                                let emptyLine = grid[Int(_scrollEndRow)]
-                                clearRow(_scrollEndRow)
-                                for rowIdx in stride(from: Int(_scrollEndRow), to: Int(_scrollBeginRow), by: -1) {
-                                    grid[rowIdx] = grid[rowIdx - 1]
+                    if c >= 0x80 && self.encoding == .YLUTF8Encoding {
+                        if (c & 0xC0) == 0x80 {
+                            if utf8ExpectedLength > 0 {
+                                utf8Buffer.append(c)
+                                if utf8Buffer.count == utf8ExpectedLength {
+                                    if let decoded = String(bytes: utf8Buffer, encoding: .utf8),
+                                       let scalar = decoded.unicodeScalars.first {
+                                        setUTF8Scalar(scalar.value)
+                                    } else {
+                                        setUTF8Scalar(0xFFFD)
+                                    }
+                                    utf8Buffer.removeAll(keepingCapacity: true)
+                                    utf8ExpectedLength = 0
                                 }
-                                grid[Int(_scrollBeginRow)] = emptyLine
-                                setAllDirty()
-                            } else {
-                                _cursorY -= 1
-                                if _cursorY < 0 { _cursorY = 0 }
                             }
-                            _gotWrapped = false
-                        }
-                    } else if c == ASC_HT {
-                        let curX = Int(_cursorX)
-                        let nextTab = (curX / 8 + 1) * 8
-                        _cursorX = Int32(nextTab)
-                    } else if c == ASC_LF || c == ASC_VT || c == ASC_FF {
-                        if !_modeLNM { _cursorX = 0 }
-                        if _cursorY == _scrollEndRow {
-                            let emptyLine = grid[Int(_scrollBeginRow)]
-                            clearRow(_scrollBeginRow)
-                            for rowIdx in Int(_scrollBeginRow)..<Int(_scrollEndRow) {
-                                grid[rowIdx] = grid[rowIdx + 1]
-                            }
-                            grid[Int(_scrollEndRow)] = emptyLine
-                            setAllDirty()
+                        } else if (c & 0xE0) == 0xC0 && c >= 0xC2 {
+                            utf8Buffer.removeAll(keepingCapacity: true)
+                            utf8Buffer.append(c)
+                            utf8ExpectedLength = 2
+                        } else if (c & 0xF0) == 0xE0 {
+                            utf8Buffer.removeAll(keepingCapacity: true)
+                            utf8Buffer.append(c)
+                            utf8ExpectedLength = 3
+                        } else if (c & 0xF8) == 0xF0 && c <= 0xF4 {
+                            utf8Buffer.removeAll(keepingCapacity: true)
+                            utf8Buffer.append(c)
+                            utf8ExpectedLength = 4
                         } else {
-                            _cursorY += 1
-                            if _cursorY >= row { _cursorY = row - 1 }
+                            utf8Buffer.removeAll(keepingCapacity: true)
+                            utf8ExpectedLength = 0
                         }
-                    } else if c == ASC_CR {
-                        _cursorX = 0
-                    } else if c == ASC_LS1 || c == ASC_LS0 || c == ASC_DLE || c == ASC_DC1 || c == ASC_DC2 || c == ASC_DC3 || c == ASC_DC4 || c == ASC_NAK || c == ASC_SYN || c == ASC_ETB {
-                        // do nothing
-                    } else if c == ASC_CAN || c == ASC_SUB {
-                        // do nothing
-                    } else if c == ASC_EM {
-                        // do nothing
-                    } else if c == ASC_ESC {
-                        parserState = .escape
-                    } else if c == ASC_FS || c == ASC_GS || c == ASC_RS || c == ASC_US || c == ASC_DEL {
-                        // do nothing
                     } else {
-                        setGridByte(c)
+                        if utf8ExpectedLength > 0 {
+                            utf8Buffer.removeAll(keepingCapacity: true)
+                            utf8ExpectedLength = 0
+                        }
+                        if c == ASC_NUL {
+                            // do nothing
+                        } else if c == ASC_ETX || c == ASC_EQT {
+                            // do nothing
+                        } else if c == ASC_ENQ {
+                            let cmd: [UInt8] = [ASC_NUL]
+                            _connection?.sendBytes(cmd, length: 1)
+                        } else if c == ASC_ACK {
+                            // do nothing
+                        } else if c == ASC_BEL {
+                            NSSound(named: "Whit.aiff")?.play()
+                            self.hasMessage = true
+                        } else if c == ASC_BS {
+                            if _cursorX > 0 {
+                                if _cursorX == column && _modeWraptext {
+                                    _cursorX -= 1
+                                }
+                                _cursorX -= 1
+                            } else if _cursorX == 0 && _gotWrapped {
+                                _cursorX = column - 1
+                                if _cursorY == _scrollBeginRow {
+                                    let emptyLine = grid[Int(_scrollEndRow)]
+                                    clearRow(_scrollEndRow)
+                                    for rowIdx in stride(from: Int(_scrollEndRow), to: Int(_scrollBeginRow), by: -1) {
+                                        grid[rowIdx] = grid[rowIdx - 1]
+                                    }
+                                    grid[Int(_scrollBeginRow)] = emptyLine
+                                    setAllDirty()
+                                } else {
+                                    _cursorY -= 1
+                                    if _cursorY < 0 { _cursorY = 0 }
+                                }
+                                _gotWrapped = false
+                            }
+                        } else if c == ASC_HT {
+                            let curX = Int(_cursorX)
+                            let nextTab = (curX / 8 + 1) * 8
+                            _cursorX = min(column - 1, Int32(nextTab))
+                        } else if c == ASC_LF || c == ASC_VT || c == ASC_FF {
+                            if !_modeLNM { _cursorX = 0 }
+                            advanceLineWithScrollIfNeeded()
+                        } else if c == ASC_CR {
+                            _cursorX = 0
+                        } else if c == ASC_LS1 || c == ASC_LS0 || c == ASC_DLE || c == ASC_DC1 || c == ASC_DC2 || c == ASC_DC3 || c == ASC_DC4 || c == ASC_NAK || c == ASC_SYN || c == ASC_ETB {
+                            // do nothing
+                        } else if c == ASC_CAN || c == ASC_SUB {
+                            // do nothing
+                        } else if c == ASC_EM {
+                            // do nothing
+                        } else if c == ASC_ESC {
+                            parserState = .escape
+                        } else if c == ASC_FS || c == ASC_GS || c == ASC_RS || c == ASC_US || c == ASC_DEL {
+                            // do nothing
+                        } else {
+                            setGridByte(c)
+                        }
                     }
                     
                 case .escape:
@@ -721,8 +883,9 @@ extension YLTerminal {
                         _savedCursorY = _cursorY
                         parserState = .normal
                     } else if c == ESC_DECRC {
-                        _cursorX = _savedCursorX
-                        _cursorY = _savedCursorY
+                        if _savedCursorX >= 0 && _savedCursorY >= 0 {
+                            cursorMoveTo(_savedCursorX, _savedCursorY)
+                        }
                         parserState = .normal
                     } else if c == ESC_HASH {
                         if i < Int(len) - 1 && bytes[i + 1] == 56 {
@@ -733,6 +896,7 @@ extension YLTerminal {
                                     grid[y][col].attr.v = gEmptyAttr
                                     dirty[y * Int(column) + col] = true
                                 }
+                                dirtyRows[y] = true
                             }
                         } else {
                             NSLog("Unhandled <ESC># case")
@@ -774,7 +938,7 @@ extension YLTerminal {
                     if isParameter(c) {
                         csBuf.append(c)
                         if c >= 48 && c <= 57 {
-                            csTemp = csTemp * 10 + Int(c - 48)
+                            csTemp = min(csTemp * 10 + Int(c - 48), 9999)
                         } else if c == 63 {
                             csArg.append(-1)
                             csTemp = 0
@@ -812,12 +976,16 @@ extension YLTerminal {
                         }
                         
                         if c == CSI_ICH {
-                            let p = !csArg.isEmpty ? max(1, csArg[0]) : 1
-                            for col in stride(from: Int(column) - 1, to: Int(_cursorX) + p - 1, by: -1) {
-                                grid[Int(_cursorY)][col] = grid[Int(_cursorY)][col - p]
-                                setDirty(true, atRow: _cursorY, column: Int32(col))
+                            if _cursorX < column {
+                                let p = min(Int(column - _cursorX), !csArg.isEmpty ? max(1, csArg[0]) : 1)
+                                if Int(column) - 1 >= Int(_cursorX) + p {
+                                    for col in stride(from: Int(column) - 1, through: Int(_cursorX) + p, by: -1) {
+                                        grid[Int(_cursorY)][col] = grid[Int(_cursorY)][col - p]
+                                        setDirty(true, atRow: _cursorY, column: Int32(col))
+                                    }
+                                }
+                                clearRow(_cursorY, fromStart: _cursorX, toEnd: min(column - 1, _cursorX + Int32(p) - 1))
                             }
-                            clearRow(_cursorY, fromStart: _cursorX, toEnd: _cursorX + Int32(p) - 1)
                         } else if c == CSI_CUU {
                             let p = !csArg.isEmpty ? max(1, csArg[0]) : 1
                             _cursorY -= Int32(p)
@@ -879,13 +1047,14 @@ extension YLTerminal {
                             }
                         } else if c == CSI_ED {
                             let mode = !csArg.isEmpty ? csArg[0] : 0
+                            let clampedX = min(_cursorX, column - 1)
                             if mode == 0 {
-                                clearRow(_cursorY, fromStart: _cursorX, toEnd: column - 1)
+                                clearRow(_cursorY, fromStart: clampedX, toEnd: column - 1)
                                 for j in (_cursorY + 1)..<row {
                                     clearRow(j)
                                 }
                             } else if mode == 1 {
-                                clearRow(_cursorY, fromStart: 0, toEnd: _cursorX)
+                                clearRow(_cursorY, fromStart: 0, toEnd: clampedX)
                                 for j in 0..<_cursorY {
                                     clearRow(j)
                                 }
@@ -894,50 +1063,59 @@ extension YLTerminal {
                             }
                         } else if c == CSI_EL {
                             let mode = !csArg.isEmpty ? csArg[0] : 0
+                            let clampedX = min(_cursorX, column - 1)
                             if mode == 0 {
-                                clearRow(_cursorY, fromStart: _cursorX, toEnd: column - 1)
+                                clearRow(_cursorY, fromStart: clampedX, toEnd: column - 1)
                             } else if mode == 1 {
-                                clearRow(_cursorY, fromStart: 0, toEnd: _cursorX)
+                                clearRow(_cursorY, fromStart: 0, toEnd: clampedX)
                             } else if mode == 2 {
                                 clearRow(_cursorY)
                             }
                         } else if c == CSI_IL {
-                            let p = !csArg.isEmpty ? max(1, csArg[0]) : 1
-                            for _ in 0..<p {
-                                clearRow(_scrollEndRow)
-                                let emptyRow = grid[Int(_scrollEndRow)]
-                                for r in stride(from: Int(_scrollEndRow), to: Int(_cursorY), by: -1) {
-                                    grid[r] = grid[r - 1]
+                            if _cursorY >= _scrollBeginRow && _cursorY <= _scrollEndRow {
+                                let maxLines = Int(_scrollEndRow - _cursorY + 1)
+                                let p = min(maxLines, !csArg.isEmpty ? max(1, csArg[0]) : 1)
+                                for _ in 0..<p {
+                                    clearRow(_scrollEndRow)
+                                    let emptyRow = grid[Int(_scrollEndRow)]
+                                    for r in stride(from: Int(_scrollEndRow), to: Int(_cursorY), by: -1) {
+                                        grid[r] = grid[r - 1]
+                                    }
+                                    grid[Int(_cursorY)] = emptyRow
                                 }
-                                grid[Int(_cursorY)] = emptyRow
-                            }
-                            for j in _cursorY..._scrollEndRow {
-                                setDirtyForRow(j)
+                                for j in _cursorY..._scrollEndRow {
+                                    setDirtyForRow(j)
+                                }
                             }
                         } else if c == CSI_DL {
-                            let p = !csArg.isEmpty ? max(1, csArg[0]) : 1
-                            for _ in 0..<p {
-                                clearRow(_cursorY)
-                                let emptyRow = grid[Int(_cursorY)]
-                                for r in Int(_cursorY)..<Int(_scrollEndRow) {
-                                    grid[r] = grid[r + 1]
+                            if _cursorY >= _scrollBeginRow && _cursorY <= _scrollEndRow {
+                                let maxLines = Int(_scrollEndRow - _cursorY + 1)
+                                let p = min(maxLines, !csArg.isEmpty ? max(1, csArg[0]) : 1)
+                                for _ in 0..<p {
+                                    clearRow(_cursorY)
+                                    let emptyRow = grid[Int(_cursorY)]
+                                    for r in Int(_cursorY)..<Int(_scrollEndRow) {
+                                        grid[r] = grid[r + 1]
+                                    }
+                                    grid[Int(_scrollEndRow)] = emptyRow
                                 }
-                                grid[Int(_scrollEndRow)] = emptyRow
-                            }
-                            for j in _cursorY..._scrollEndRow {
-                                setDirtyForRow(j)
+                                for j in _cursorY..._scrollEndRow {
+                                    setDirtyForRow(j)
+                                }
                             }
                         } else if c == CSI_DCH {
-                            let p = !csArg.isEmpty ? max(1, csArg[0]) : 1
-                            for j in Int(_cursorX)..<Int(column) {
-                                if j <= Int(column) - 1 - p {
-                                    grid[Int(_cursorY)][j] = grid[Int(_cursorY)][j + p]
-                                } else {
-                                    grid[Int(_cursorY)][j].byte = 0
-                                    grid[Int(_cursorY)][j].attr.v = gEmptyAttr
-                                    grid[Int(_cursorY)][j].attr.f.bgColor = UInt32(_bgColor & 0xF)
+                            if _cursorX < column {
+                                let p = !csArg.isEmpty ? max(1, csArg[0]) : 1
+                                for j in Int(_cursorX)..<Int(column) {
+                                    if j <= Int(column) - 1 - p {
+                                        grid[Int(_cursorY)][j] = grid[Int(_cursorY)][j + p]
+                                    } else {
+                                        grid[Int(_cursorY)][j].byte = 0
+                                        grid[Int(_cursorY)][j].attr.v = gEmptyAttr
+                                        grid[Int(_cursorY)][j].attr.f.bgColor = UInt32(_bgColor & 0xF)
+                                    }
+                                    setDirty(true, atRow: _cursorY, column: Int32(j))
                                 }
-                                setDirty(true, atRow: _cursorY, column: Int32(j))
                             }
                         } else if c == CSI_HPA {
                             let p = !csArg.isEmpty ? max(1, csArg[0]) : 1
@@ -1110,23 +1288,24 @@ extension YLTerminal {
                         } else if c == CSI_DECSTBM {
                             if csArg.isEmpty {
                                 _scrollBeginRow = 0
-                                _scrollEndRow = row - 1
-                            } else if csArg.count == 2 {
-                                var s = Int32(csArg[0])
-                                var e = Int32(csArg[1])
+                                _scrollEndRow = max(0, row - 1)
+                            } else if csArg.count >= 2 && row > 0 {
+                                let rawStart = csArg[0] <= 0 ? 1 : csArg[0]
+                                let rawEnd = csArg[1] <= 0 ? Int(row) : csArg[1]
+                                var s = Int32(max(1, min(Int(row), rawStart)))
+                                var e = Int32(max(1, min(Int(row), rawEnd)))
                                 if s > e { swap(&s, &e) }
                                 _scrollBeginRow = s - 1
                                 _scrollEndRow = e - 1
                             }
                             _cursorX = 0
-                            _cursorY = _scrollBeginRow
+                            _cursorY = _modeOriginRelative ? _scrollBeginRow : 0
                         } else if c == CSI_SCP {
                             _savedCursorX = _cursorX
                             _savedCursorY = _cursorY
                         } else if c == CSI_RCP {
                             if _savedCursorX >= 0 && _savedCursorY >= 0 {
-                                _cursorX = _savedCursorX
-                                _cursorY = _savedCursorY
+                                cursorMoveTo(_savedCursorX, _savedCursorY)
                             }
                         } else {
                             NSLog("unsupported control sequence: 0x%X", c)
@@ -1138,11 +1317,20 @@ extension YLTerminal {
                 i += 1
             }
             
+            var carryURLCheck = false
+            let lastCol = max(0, Int(column) - 1)
             for rowIdx in 0..<Int(row) {
-                if dirtyRows[rowIdx] {
+                let rowWasDirty = dirtyRows[rowIdx]
+                if rowWasDirty || carryURLCheck {
+                    let prevEndUrl = column > 0 ? grid[rowIdx][lastCol].attr.f.url : 0
                     updateDoubleByteState(forRow: Int32(rowIdx))
+                    updateURLState(forRow: Int32(rowIdx))
+                    let newEndUrl = column > 0 ? grid[rowIdx][lastCol].attr.f.url : 0
+                    carryURLCheck = (prevEndUrl != newEndUrl)
+                    if dirtyRows[rowIdx] && !rowWasDirty {
+                        updateDoubleByteState(forRow: Int32(rowIdx))
+                    }
                 }
-                updateURLState(forRow: Int32(rowIdx))
             }
             
             scheduleTickIfNeeded()

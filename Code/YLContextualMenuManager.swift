@@ -5,8 +5,6 @@ import Cocoa
 public class YLContextualMenuManager: NSObject {
     @objc public static let sharedInstance = YLContextualMenuManager()
     
-    private var urlsToOpen: [String] = []
-    
     private override init() {
         super.init()
     }
@@ -37,12 +35,13 @@ public class YLContextualMenuManager: NSObject {
     
     private func protocolPrefixAppendedUrlString(_ s: String) -> String {
         let protocols = ["http://", "https://", "ftp://", "telnet://", "bbs://", "ssh://", "mailto:"]
+        let lower = s.lowercased()
         for p in protocols {
-            if s.hasPrefix(p) {
+            if lower.hasPrefix(p) {
                 return s
             }
         }
-        return "http://" + s
+        return "https://" + s
     }
     
     @objc public func isImageURL(_ url: URL) -> Bool {
@@ -52,7 +51,7 @@ public class YLContextualMenuManager: NSObject {
             return true
         }
         let host = url.host?.lowercased() ?? ""
-        if host.contains("imgur.com") || host.contains("postimg.cc") || host.contains("upload.cc") || host.contains("i.red.it") {
+        if host.contains("imgur.com") || host.contains("postimg.cc") || host.contains("upload.cc") || host.contains("i.redd.it") || host.contains("i.red.it") || host.contains("meee.com.tw") {
             return !url.path.isEmpty && url.path != "/"
         }
         return false
@@ -106,48 +105,48 @@ public class YLContextualMenuManager: NSObject {
             }
             
             if !urls.isEmpty {
-                var title = ""
-                if urls.count > 1 {
-                    title = NSLocalizedString("Open mutiple URLs", comment: "Open mutiple URLs")
-                } else if urls.count == 1 {
-                    title = urls[0]
-                }
+                let title = urls.count > 1
+                    ? NSLocalizedString("Open multiple URLs", comment: "Open multiple URLs")
+                    : urls[0]
                 
-                self.urlsToOpen = urls
                 let item = NSMenuItem(title: title, action: #selector(openURL(_:)), keyEquivalent: "")
                 item.target = self
+                item.representedObject = urls
                 items.append(item)
             }
         }
         
         let isAllDigit: (String) -> Bool = { s in
+            guard !s.isEmpty else { return false }
             let nonNumbers = CharacterSet.decimalDigits.inverted
             return s.rangeOfCharacter(from: nonNumbers) == nil
         }
         
         let addShortenedURLMenuItem: (String, String) -> Void = { [weak self] title, actualURLString in
             guard let self = self else { return }
-            self.urlsToOpen = [actualURLString]
             let item = NSMenuItem(title: title, action: #selector(openURL(_:)), keyEquivalent: "")
             item.target = self
+            item.representedObject = [actualURLString]
             items.append(item)
         }
         
         if shortURL.hasPrefix("sm") && shortURL.count <= 10 && isAllDigit(String(shortURL.dropFirst(2))) {
-            addShortenedURLMenuItem("NicoNico/\(shortURL)", "http://www.nicovideo.jp/watch/\(shortURL)")
+            addShortenedURLMenuItem("NicoNico/\(shortURL)", "https://www.nicovideo.jp/watch/\(shortURL)")
         } else if shortURL.hasPrefix("id=") && shortURL.count <= 12 && isAllDigit(String(shortURL.dropFirst(3))) {
-            addShortenedURLMenuItem("pixiv_illust/\(shortURL)", "http://www.pixiv.net/member_illust.php?mode=medium&illust_\(shortURL)")
+            let illustId = String(shortURL.dropFirst(3))
+            addShortenedURLMenuItem("pixiv_illust/\(shortURL)", "https://www.pixiv.net/artworks/\(illustId)")
         } else if shortURL.hasPrefix("mid=") && shortURL.count <= 12 && isAllDigit(String(shortURL.dropFirst(4))) {
             let idStr = String(shortURL.dropFirst(4))
-            addShortenedURLMenuItem("pixiv_member/\(idStr)", "http://www.pixiv.net/member.php?id=\(idStr)")
-        } else if shortURL.hasSuffix(".jpg") || shortURL.hasSuffix(".jpeg") {
-            addShortenedURLMenuItem("Image search by GOOGLE", "https://www.google.com/searchbyimage?&image_url=\(shortURL)")
+            addShortenedURLMenuItem("pixiv_member/\(idStr)", "https://www.pixiv.net/users/\(idStr)")
+        } else if shortURL.lowercased().hasSuffix(".jpg") || shortURL.lowercased().hasSuffix(".jpeg") {
+            let encodedImg = shortURL.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? shortURL
+            addShortenedURLMenuItem("Image search by GOOGLE", "https://www.google.com/searchbyimage?&image_url=\(encodedImg)")
         } else if shortURL.count == 4 {
-            addShortenedURLMenuItem("ppt.cc/\(shortURL)", "http://ppt.cc/\(shortURL)")
+            addShortenedURLMenuItem("ppt.cc/\(shortURL)", "https://ppt.cc/\(shortURL)")
         } else if shortURL.count == 5 {
-            addShortenedURLMenuItem("0rz.tw/\(shortURL)", "http://0rz.tw/\(shortURL)")
+            addShortenedURLMenuItem("0rz.tw/\(shortURL)", "https://0rz.tw/\(shortURL)")
         } else if shortURL.count == 6 || shortURL.count == 7 {
-            addShortenedURLMenuItem("tinyurl.com/\(shortURL)", "http://tinyurl.com/\(shortURL)")
+            addShortenedURLMenuItem("tinyurl.com/\(shortURL)", "https://tinyurl.com/\(shortURL)")
         }
         
         if !selectedString.isEmpty {
@@ -166,7 +165,7 @@ public class YLContextualMenuManager: NSObject {
             copyItem.representedObject = selectedString
             items.append(copyItem)
         } else {
-            if let clippedString = NSPasteboard.general.string(forType: .string),
+            if let clippedString = NSPasteboard.general.string(forType: .string)?.trimmingCharacters(in: .whitespacesAndNewlines),
                let url = URL(string: clippedString),
                url.scheme != nil,
                url.host != nil {
@@ -197,21 +196,33 @@ public class YLContextualMenuManager: NSObject {
         pasteboard.setString(aid, forType: .string)
     }
     
+    static func resolvedURL(from rawString: String) -> URL? {
+        if let directURL = URL(string: rawString), directURL.scheme != nil {
+            return directURL
+        }
+        if let escaped = rawString.addingPercentEncoding(withAllowedCharacters: .urlFragmentAllowed),
+           let encodedURL = URL(string: escaped), encodedURL.scheme != nil {
+            return encodedURL
+        }
+        return nil
+    }
+    
     @objc public func openURL(_ sender: Any?) {
-        for u in urlsToOpen {
+        guard let item = sender as? NSMenuItem,
+              let urls = item.representedObject as? [String] else { return }
+        for u in urls {
             let appended = protocolPrefixAppendedUrlString(u)
-            if let escaped = appended.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-               let url = URL(string: escaped) {
+            if let url = Self.resolvedURL(from: appended) {
                 NSWorkspace.shared.open(url)
             }
         }
-        urlsToOpen.removeAll()
     }
     
     @objc public func google(_ sender: Any?) {
         guard let item = sender as? NSMenuItem, let query = item.representedObject as? String else { return }
-        if let escaped = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-           let url = URL(string: "http://www.google.com/search?q=\(escaped)") {
+        var components = URLComponents(string: "https://www.google.com/search")
+        components?.queryItems = [URLQueryItem(name: "q", value: query)]
+        if let url = components?.url {
             NSWorkspace.shared.open(url)
         }
     }
@@ -226,8 +237,9 @@ public class YLContextualMenuManager: NSObject {
     
     @objc public func tinyurl(_ sender: Any?) {
         guard let item = sender as? NSMenuItem, let u = item.representedObject as? String else { return }
-        let apiRequestString = "http://tinyurl.com/api-create.php?url=\(u)"
-        guard let url = URL(string: apiRequestString) else { return }
+        var components = URLComponents(string: "https://tinyurl.com/api-create.php")
+        components?.queryItems = [URLQueryItem(name: "url", value: u)]
+        guard let url = components?.url else { return }
         
         var request = URLRequest(url: url)
         request.httpMethod = "GET"

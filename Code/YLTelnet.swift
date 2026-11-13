@@ -86,41 +86,102 @@ public class YLTelnet: YLConnection {
     }
     
     @objc public override func reconnect() {
+        guard !hostName.isEmpty, port > 0, port <= 65535 else { return }
+        let savedHost = hostName
+        let savedPort = UInt32(port)
         close()
-        _ = connect(toAddress: hostName, port: UInt32(port))
+        _ = connect(toAddress: savedHost, port: savedPort)
+    }
+    
+    static func parseTelnetAddress(_ addr: String) -> (host: String, port: UInt32)? {
+        var clean = addr.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clean.isEmpty else { return nil }
+        if clean.lowercased().hasPrefix("telnet://") {
+            clean = String(clean.dropFirst(9))
+        } else if clean.lowercased().hasPrefix("bbs://") {
+            clean = String(clean.dropFirst(6))
+        }
+        if let slashIdx = clean.firstIndex(of: "/") {
+            clean = String(clean[..<slashIdx])
+        }
+        guard !clean.isEmpty else { return nil }
+        
+        if clean.hasPrefix("[") {
+            guard let closeIdx = clean.firstIndex(of: "]") else { return nil }
+            let host = String(clean[clean.index(after: clean.startIndex)..<closeIdx])
+            guard !host.isEmpty else { return nil }
+            let remainder = clean[clean.index(after: closeIdx)...].trimmingCharacters(in: .whitespaces)
+            if remainder.isEmpty {
+                return (host, 23)
+            } else if remainder.hasPrefix(":") {
+                let portStr = String(remainder.dropFirst())
+                if portStr.isEmpty { return (host, 23) }
+                guard let p = UInt16(portStr), p > 0 else { return nil }
+                return (host, UInt32(p))
+            } else if let p = UInt16(remainder), p > 0 {
+                return (host, UInt32(p))
+            }
+            return nil
+        }
+        
+        if clean.contains(" ") {
+            let spaceParts = clean.split(separator: " ", omittingEmptySubsequences: true)
+            guard spaceParts.count == 2 else { return nil }
+            let host = String(spaceParts[0])
+            guard !host.isEmpty, let p = UInt16(spaceParts[1]), p > 0 else { return nil }
+            return (host, UInt32(p))
+        }
+        
+        let colonParts = clean.components(separatedBy: ":")
+        if colonParts.count == 1 {
+            return (clean, 23)
+        } else if colonParts.count == 2 {
+            let host = colonParts[0]
+            guard !host.isEmpty else { return nil }
+            if colonParts[1].isEmpty {
+                return (host, 23)
+            }
+            guard let p = UInt16(colonParts[1]), p > 0 else { return nil }
+            return (host, UInt32(p))
+        } else {
+            // Unbracketed IPv6 address (e.g. 2001:db8::1)
+            return (clean, 23)
+        }
     }
     
     @objc(connectToAddress:)
     public override func connect(toAddress addr: String) -> Bool {
-        let parts = addr.components(separatedBy: CharacterSet(charactersIn: ": "))
-        if parts.count == 2 {
-            if let p = Int(parts[1]), p > 0 {
-                return connect(toAddress: parts[0], port: UInt32(p))
-            } else {
-                return connect(toAddress: parts[0], port: 23)
-            }
-        } else if parts.count == 1 {
-            return connect(toAddress: addr, port: 23)
+        guard let parsed = Self.parseTelnetAddress(addr) else {
+            return false
         }
-        return false
+        return connect(toAddress: parsed.host, port: parsed.port)
     }
     
     @objc(connectToAddress:port:)
     public override func connect(toAddress addr: String, port: UInt32) -> Bool {
         NSLog("YLTelnet: connectToAddress: \(addr) port: \(port)")
-        isProcessing = true
-        if port == 23 {
-            connectionAddress = addr
-        } else {
-            connectionAddress = "\(addr):\(port)"
+        let trimmedHost = addr.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedHost.isEmpty,
+              let validPort = UInt16(exactly: port),
+              validPort > 0,
+              let nwPort = NWEndpoint.Port(rawValue: validPort) else {
+            isProcessing = false
+            return false
         }
-        self.port = Int(port)
-        self.hostName = addr
+        
+        isProcessing = true
+        let displayHost = trimmedHost.contains(":") ? "[\(trimmedHost)]" : trimmedHost
+        if validPort == 23 {
+            connectionAddress = displayHost
+        } else {
+            connectionAddress = "\(displayHost):\(validPort)"
+        }
+        self.port = Int(validPort)
+        self.hostName = trimmedHost
         
         self.terminal?.clearAll()
         
-        let nwHost = NWEndpoint.Host(addr)
-        let nwPort = NWEndpoint.Port(integerLiteral: UInt16(port))
+        let nwHost = NWEndpoint.Host(trimmedHost)
         
         let conn = NWConnection(host: nwHost, port: nwPort, using: .tcp)
         self.connection = conn

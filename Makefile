@@ -32,13 +32,12 @@ install: all
 
 release: all
 	@echo "Packaging Nally release..."
-	python3 Scripts/package.py "$(SYMROOT)/$(CONFIG)/Nally.app" http://nally.googlecode.com/files 2>/dev/null || \
-	python Scripts/package.py "$(SYMROOT)/$(CONFIG)/Nally.app" http://nally.googlecode.com/files
+	python3 Scripts/package.py "$(SYMROOT)/$(CONFIG)/Nally.app" --output-dir "$(SYMROOT)/dist"
 
 help:
 	@echo "Available make targets for Nally:"
 	@echo "  all      - Build Nally.app in Release configuration (default target)"
 	@echo "  clean    - Remove build artifacts and derived data cache"
-	@echo "  test     - Execute unit test suite (43 tests across 9 test suites)"
+	@echo "  test     - Execute unit test suite (53 tests across 9 test suites)"
 	@echo "  install  - Build and install Nally.app to /Applications"
 	@echo "  release  - Package Nally.app for distribution"

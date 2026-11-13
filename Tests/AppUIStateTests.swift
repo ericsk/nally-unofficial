@@ -106,6 +106,8 @@ struct AppUIStateTests {
         
         // Test setShowHiddenText
         let globalConfig = YLLGlobalConfig.sharedInstance()
+        let savedHidden = globalConfig.showHiddenText
+        defer { globalConfig.showHiddenText = savedHidden }
         controller.setShowHiddenText(true)
         #expect(globalConfig.showHiddenText == true)
         controller.setShowHiddenText(false)
@@ -290,13 +292,46 @@ struct AppUIStateTests {
         #expect(appearanceCallbackCount == 1)
         
         let dict = config.chineseAttribute(withHilite: 0, index: 1) as? [String: Any]
-        let attrColor = dict?[kCTForegroundColorAttributeName as String] as? NSColor
-        #expect(attrColor == config.colorAtIndex(1, hilite: false))
+        let attrColor = dict?[kCTForegroundColorAttributeName as String]
+        #expect(attrColor != nil)
+        let cgColor = attrColor as! CGColor
+        #expect(cgColor == config.colorAtIndex(1, hilite: false).cgColor)
+    }
+    
+    @Test("Controller Disconnect Keeps Tab Open While Closing Active Connection")
+    func testControllerDisconnectKeepsTab() {
+        let controller = YLController()
+        let view = YLView(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
+        controller._telnetView = view
+        
+        class DisconnectMockConnection: YLConnection {
+            var closeCalled = false
+            override func close() {
+                closeCalled = true
+                connected = false
+            }
+        }
+        
+        let conn = DisconnectMockConnection()
+        conn.terminal = YLTerminal()
+        conn.connected = true
+        let item = NSTabViewItem(identifier: conn)
+        view.addTabViewItem(item)
+        view.selectTabViewItem(item)
+        
+        controller.disconnect(nil)
+        #expect(conn.closeCalled == true)
+        #expect(conn.connected == false)
+        #expect(view.numberOfTabViewItems == 1)
     }
     
     @Test("YLLGlobalConfig Dynamic Zoom and Reset")
     func testGlobalConfigZoomAndReset() {
         let config = YLLGlobalConfig.sharedInstance()
+        let savedWidth = config.cellWidth
+        let savedHeight = config.cellHeight
+        defer { config.applyCellSize(width: savedWidth, height: savedHeight) }
+        
         config.resetZoom()
         #expect(config.cellWidth == 12.0)
         #expect(config.cellHeight == 24.0)
@@ -314,5 +349,49 @@ struct AppUIStateTests {
         #expect(config.cellHeight == 24.0)
         
         config.resetZoom()
+    }
+    
+    @Test("Anti-Idle Keep-Alive Pulse Dispatch After Idle Threshold")
+    func testAntiIdlePulseDispatch() {
+        class AntiIdleMockConnection: YLConnection {
+            var sentBytesLog: [[UInt8]] = []
+            override func sendBytes(_ msg: UnsafePointer<UInt8>, length: Int) {
+                let slice = Array(UnsafeBufferPointer(start: msg, count: length))
+                sentBytesLog.append(slice)
+                lastTouchDateValue = Date()
+            }
+        }
+        
+        let config = YLLGlobalConfig.sharedInstance()
+        let savedEnabled = config.antiIdleEnabled
+        let savedInterval = config.antiIdleInterval
+        defer {
+            config.antiIdleEnabled = savedEnabled
+            config.antiIdleInterval = savedInterval
+        }
+        
+        config.antiIdleEnabled = true
+        config.antiIdleInterval = 120
+        
+        let controller = YLController()
+        let view = YLView(frame: NSRect(x: 0, y: 0, width: 800, height: 600))
+        controller._telnetView = view
+        
+        let conn = AntiIdleMockConnection()
+        conn.terminal = YLTerminal()
+        conn.connected = true
+        let baseDate = Date()
+        conn.lastTouchDateValue = baseDate
+        
+        let tabItem = NSTabViewItem(identifier: conn)
+        view.addTabViewItem(tabItem)
+        
+        // 60s elapsed (< 120s): should NOT send keep-alive
+        controller.performAntiIdleCheck(now: baseDate.addingTimeInterval(60))
+        #expect(conn.sentBytesLog.isEmpty)
+        
+        // 125s elapsed (>= 120s): should send single NUL (0x00) keep-alive pulse
+        controller.performAntiIdleCheck(now: baseDate.addingTimeInterval(125))
+        #expect(conn.sentBytesLog == [[0x00]])
     }
 }

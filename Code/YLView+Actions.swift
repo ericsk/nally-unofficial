@@ -43,10 +43,14 @@ extension YLView {
             }
             
             let colIndex = index % gColumn
-            if currentRow[colIndex].byte != 0 {
+            if ds.encoding == .YLUTF8Encoding && currentRow[colIndex].attr.f.doubleByte == 1 {
+                continue
+            }
+            if currentRow[colIndex].byte != 0 || currentRow[colIndex].unicodeScalar != 0 {
                 for _ in 0..<emptyCount {
                     var spaceCell = currentRow[colIndex]
                     spaceCell.byte = UInt8(ascii: " ")
+                    spaceCell.unicodeScalar = 0
                     var termAttr = spaceCell.attr.terminalAttribute
                     termAttr.doubleByte = 0
                     termAttr.url = false
@@ -93,21 +97,17 @@ extension YLView {
         let cellCount = data.count / MemoryLayout<cell>.size
         guard cellCount > 0 else { return }
         
+        let config = YLLGlobalConfig.sharedInstance()
+        let colorKey = frontMostConnection()?.site?.ansiColorKey ?? config.defaultANSIColorKey
         var escBytes = Data()
-        if let s = frontMostConnection()?.site {
-            switch s.ansiColorKey {
-            case .YLCtrlUANSIColorKey:
-                escBytes.append(0x15)
-            case .YLEscEscEscANSIColorKey:
-                escBytes.append(contentsOf: [0x1B, 0x1B])
-            @unknown default:
-                escBytes.append(0x1B)
-            }
-        } else {
+        switch colorKey {
+        case .YLCtrlUANSIColorKey:
+            escBytes.append(0x15)
+        case .YLEscEscEscANSIColorKey:
+            escBytes.append(contentsOf: [0x1B, 0x1B])
+        @unknown default:
             escBytes.append(0x1B)
         }
-        
-        let config = YLLGlobalConfig.sharedInstance()
         let defaultANSI = TerminalAttribute(
             fgColor: Int(config.fgColorIndex),
             bgColor: Int(config.bgColorIndex),
@@ -121,13 +121,22 @@ extension YLView {
         
         var previousANSI = defaultANSI
         var writeBuffer = Data()
+        let activeEncoding = frontMostConnection()?.site?.encoding ?? frontMostTerminal()?.encoding ?? config.defaultEncoding
+        
+        let appendCellPayload = { (item: cell) in
+            if activeEncoding == .YLUTF8Encoding, item.unicodeScalar != 0, let scalar = UnicodeScalar(item.unicodeScalar) {
+                writeBuffer.append(contentsOf: String(scalar).utf8)
+            } else {
+                writeBuffer.append(item.byte)
+            }
+        }
         
         data.withUnsafeBytes { rawBuffer in
             let cells = rawBuffer.bindMemory(to: cell.self)
             
             for i in 0..<cellCount {
                 let cellItem = cells[i]
-                if cellItem.byte == UInt8(ascii: "\n") {
+                if cellItem.byte == UInt8(ascii: "\n") && cellItem.unicodeScalar == 0 {
                     previousANSI = defaultANSI
                     writeBuffer.append(escBytes)
                     writeBuffer.append(contentsOf: "[m\r".utf8)
@@ -142,7 +151,7 @@ extension YLView {
                     currentANSI.reverse == previousANSI.reverse &&
                     currentANSI.bgColor == previousANSI.bgColor &&
                     currentANSI.fgColor == previousANSI.fgColor {
-                    writeBuffer.append(cellItem.byte)
+                    appendCellPayload(cellItem)
                     continue
                 }
                 
@@ -152,7 +161,7 @@ extension YLView {
                     (currentANSI.bold == false && previousANSI.bold == true) ||
                     (currentANSI.underline == false && previousANSI.underline == true) ||
                     (currentANSI.reverse == false && previousANSI.reverse == true) ||
-                    (currentANSI.bgColor == Int(config.bgColorIndex) && (previousANSI.reverse ? 1 : 0) != Int(config.bgColorIndex)) {
+                    (currentANSI.bgColor == Int(config.bgColorIndex) && previousANSI.bgColor != Int(config.bgColorIndex)) {
                     
                     tmp += "[0"
                     if currentANSI.blink { tmp += ";5" }
@@ -168,7 +177,7 @@ extension YLView {
                     tmp += "m"
                     writeBuffer.append(escBytes)
                     writeBuffer.append(contentsOf: tmp.utf8)
-                    writeBuffer.append(cellItem.byte)
+                    appendCellPayload(cellItem)
                     previousANSI = currentANSI
                     continue
                 }
@@ -191,7 +200,7 @@ extension YLView {
                 tmp += "m"
                 writeBuffer.append(escBytes)
                 writeBuffer.append(contentsOf: tmp.utf8)
-                writeBuffer.append(cellItem.byte)
+                appendCellPayload(cellItem)
                 previousANSI = currentANSI
             }
         }
@@ -221,9 +230,10 @@ extension YLView {
         let lPadding: Int32 = 4
         let textSuite = YLTextSuite()
         
-        guard let conn = frontMostConnection(), let site = conn.site else { return }
+        guard let conn = frontMostConnection() else { return }
+        let encoding = conn.site?.encoding ?? conn.terminal?.encoding ?? YLLGlobalConfig.sharedInstance().defaultEncoding
         
-        let wrappedText = textSuite.wrapText(text, withLength: lineWidth, encoding: site.encoding)
+        let wrappedText = textSuite.wrapText(text, withLength: lineWidth, encoding: encoding)
         let paddedText = textSuite.paddingText(wrappedText, withLeftPadding: lPadding)
         
         insertText(paddedText, withDelay: 50)

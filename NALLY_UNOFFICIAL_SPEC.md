@@ -60,11 +60,10 @@ graph TD
   * 繪製 BBS 特殊框線與符號字元（如三角塊 `◢◣◤◥`、方塊等），採用自訂 Bezier 路徑填充。
   * 實作選取區 (Selection)、游標閃爍 (Blink) 與字型平滑化 (Font Smoothing)。
 
-### 2.6 輔助功能與外掛系統 (Utilities & Plugins)
+### 2.6 輔助功能與圖片預覽 (Utilities & Previewer)
 * **[YLController.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLController.swift)**: App 主要控管元件，負責連結視窗選單、處理連線/斷線、切換分頁、管理站台名單以及同步分頁狀態。完美支援連線中分頁與視窗關閉前確認 (`ConfirmOnClose`) 邏輯，斷線狀態時自動免確認直接關閉。
 * **[YLRun.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLRun.swift) / [YLLine.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLLine.swift) / [YLTextSuite.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLTextSuite.swift)**: 負責剪貼簿文字貼上時的折行、中英文邊界處理及頭尾避開標點符號的邏輯。
-* **[YLPluginLoader.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLPluginLoader.swift)**: 負責動態載入 App 內置及 App Support 目錄下的外掛套件 (`.bundle`)。
-* **[YLImagePreviewer.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLImagePreviewer.swift) / [ImagePreviewerView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/ImagePreviewerView.swift)**: 用 SwiftUI 改寫的網址圖片下載與 HUD 懸浮預覽面板，具備非同步下載進度指示與 EXIF 資訊檢視。
+* **[YLImagePreviewer.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/YLImagePreviewer.swift) / [ImagePreviewerView.swift](file:///Users/ericsk/Projects/Nally-Unofficial/Code/ImagePreviewerView.swift)**: 用 SwiftUI 改寫的網址圖片下載、點擊與 `Cmd + Hover` 懸浮預覽面板，具備非同步下載進度指示、EXIF 資訊檢視與 ATS 瀏覽器自動 Fallback。
 
 ---
 
@@ -151,6 +150,7 @@ xcodebuild -scheme Nally -configuration Release SYMROOT=build build
 - [x] **終端機捲動與 CoreText 繪圖記憶體零初始化優化 (Priority 1)**：解耦 VT100 換行捲動與點陣圖同步重繪，刪除 75 行遺留的 Cocoa `extendBottom`/`extendTop` 搬移代碼，改用 `Array(unsafeUninitializedCapacity:)` 著色 Glyph 與座標緩衝區，並新增解耦驗證測試。
 - [x] **Dirty 狀態列級 O(1) 批次重置與 Telnet 網路接收重用緩衝區 (Priority 2)**：實作 `YLTerminal.clearDirty(forRow:)` 搭配 `withUnsafeMutableBufferPointer` 批次清空 Boolean，消除每畫面 1,920 次尋址；`YLTelnet` 導入容量保留式 `reusableReadBuffer: [UInt8]` 避免接收時 Heap 重新配置；並於 `TerminalPerformanceTests` 完成全套單元測試覆蓋。
 - [x] **現代化深度重構 (Phases 1~5)**：完成 Keychain 密碼隔離 (`@Transient`)、單一 `ModelContainer` 共享、純 `@Observable` 狀態驅動與型別安全分頁模型、SwiftUI 原生焦點與鍵盤導覽、`SWIFT_STRICT_CONCURRENCY = complete` 零警告建置、`YLSSH` FIFO 序列寫入佇列、`YLTerminal` 16ms 合併繪圖 Tick、`URLSession` 洩漏修復、過時 API 全面替換以及終端機等比例動態縮放 (`Cmd+=`/`Cmd+-`/`Cmd+0`)。
+- [x] **Code Review 全方位加固與現代功能演進 (Stages 1~4)**：修補 SSH 參數注入防護 (`--`) 與雙向獨立 FD、強化 VT100/VT102 與 Telnet/TextSuite 全邊界防護、修復 CoreText `CGColor` 屬性與中文字雙格成對 Dirty 重繪、實作 250ms 防抖 `Cmd + Hover` 圖片預覽與 ATS 瀏覽器 Fallback、新增 UTF-8 終端機編碼 (`YLUTF8Encoding`) 與防閒置掛站 (`Anti-Idle`) 機制、清理舊外掛與廢棄資源、升級 Python 3 打包腳本與 GitHub Actions CI，並翻新英/繁/簡 UTF-8 多語系翻譯。
 
 ---
 

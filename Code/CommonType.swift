@@ -12,6 +12,7 @@ import Foundation
 public enum YLEncoding: UInt16, Codable {
     case YLBig5Encoding = 0
     case YLGBKEncoding = 1
+    case YLUTF8Encoding = 2
 }
 
 @objc(YLANSIColorKey)
@@ -98,10 +99,12 @@ public struct attribute: Equatable, Hashable {
 // Simulating C struct cell
 public struct cell: Equatable, Hashable {
     public var byte: UInt8 = 0
+    public var unicodeScalar: UInt16 = 0
     public var attr: attribute = attribute(v: 0)
     
-    public init(byte: UInt8 = 0, attr: attribute = attribute(v: 0)) {
+    public init(byte: UInt8 = 0, unicodeScalar: UInt16 = 0, attr: attribute = attribute(v: 0)) {
         self.byte = byte
+        self.unicodeScalar = unicodeScalar
         self.attr = attr
     }
 }
@@ -184,15 +187,17 @@ public struct TerminalAttribute: Equatable, Hashable {
 
 public struct TerminalCell: Equatable, Hashable {
     public var byte: UInt8
+    public var unicodeScalar: UInt16
     public var attr: TerminalAttribute
 
-    public init(byte: UInt8 = 0, attr: TerminalAttribute = TerminalAttribute()) {
+    public init(byte: UInt8 = 0, unicodeScalar: UInt16 = 0, attr: TerminalAttribute = TerminalAttribute()) {
         self.byte = byte
+        self.unicodeScalar = unicodeScalar
         self.attr = attr
     }
 
     public var isBlink: Bool {
-        return attr.blink && (attr.doubleByte != 0 || (byte != 32 && byte != 0)) // 32 is ASCII space ' '
+        return attr.blink && (attr.doubleByte != 0 || unicodeScalar != 0 || (byte != 32 && byte != 0)) // 32 is ASCII space ' '
     }
 }
 
@@ -209,12 +214,35 @@ extension attribute {
 
 extension cell {
     public var terminalCell: TerminalCell {
-        return TerminalCell(byte: self.byte, attr: self.attr.terminalAttribute)
+        return TerminalCell(byte: self.byte, unicodeScalar: self.unicodeScalar, attr: self.attr.terminalAttribute)
     }
 
     public init(_ terminalCell: TerminalCell) {
         self.byte = terminalCell.byte
+        self.unicodeScalar = terminalCell.unicodeScalar
         self.attr = attribute(terminalCell.attr)
+    }
+}
+
+public func isEastAsianWideScalar(_ scalar: UInt32) -> Bool {
+    switch scalar {
+    case 0x1100...0x115F,
+         0x2329...0x232A,
+         0x2500...0x26FF, // BBS box-drawing, block elements, geometric shapes & symbols
+         0x2E80...0x303E,
+         0x3040...0x33FF,
+         0x3400...0x4DBF,
+         0x4E00...0xA4CF,
+         0xA960...0xA97F,
+         0xAC00...0xD7FF,
+         0xF900...0xFAFF,
+         0xFE10...0xFE6F,
+         0xFF01...0xFF60,
+         0xFFE0...0xFFE6,
+         0x1F000...0x3FFFD:
+        return true
+    default:
+        return false
     }
 }
 

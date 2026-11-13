@@ -25,7 +25,7 @@ public class YLController: NSObject, NSWindowDelegate {
     public var modelContainer: ModelContainer?
     private var lastConnectionTime = Date.distantPast
     private var lastConnectionAddress = ""
-    public var _pluginLoader: YLPluginLoader?
+    private var hasRestoredConnections = false
     public weak var _exifController: YLExifController?
     
     // MARK: - Initializer & Lifecycle
@@ -34,16 +34,9 @@ public class YLController: NSObject, NSWindowDelegate {
         // Register defaults
         UserDefaults.standard.register(defaults: [
             "ConfirmOnClose": true,
-            "RestoreConnection": false
+            "RestoreConnection": false,
+            "EnableCmdHoverPreview": true
         ])
-        
-        // Register URL event handler
-        NSAppleEventManager.shared().setEventHandler(
-            self,
-            andSelector: #selector(getUrl(_:withReplyEvent:)),
-            forEventClass: AEEventClass(kInternetEventClass),
-            andEventID: AEEventID(kAEGetURL)
-        )
         
         let globalConfig = YLLGlobalConfig.sharedInstance()
         
@@ -65,16 +58,22 @@ public class YLController: NSObject, NSWindowDelegate {
             self?.updateWindowAndTerminalLayout()
         }
         
+        globalConfig.onHiddenTextChange = { [weak self] in
+            guard let self = self else { return }
+            self._telnetView?.refreshHiddenRegion()
+            self._telnetView?.updateBackedImage()
+            self._telnetView?.needsDisplay = true
+        }
+        
+        globalConfig.onDetectDoubleByteChange = { [weak self] newValue in
+            self?._telnetView?.frontMostConnection()?.site?.detectDoubleByte = newValue
+        }
+        
         initSwiftData()
         updateSitesMenu()
         
-        _pluginLoader = YLPluginLoader()
-        
-        if UserDefaults.standard.bool(forKey: "RestoreConnection") {
-            loadLastConnections()
-        }
-        
-        Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateBlinkTicker(_:)), userInfo: nil, repeats: true)
+        let blinkTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(updateBlinkTicker(_:)), userInfo: nil, repeats: true)
+        blinkTimer.tolerance = 0.2
     }
     
     
@@ -122,7 +121,8 @@ public class YLController: NSObject, NSWindowDelegate {
             window.setFrame(r, display: true, animate: false)
         }
         
-        if UserDefaults.standard.bool(forKey: "RestoreConnection") {
+        if !hasRestoredConnections && UserDefaults.standard.bool(forKey: "RestoreConnection") {
+            hasRestoredConnections = true
             loadLastConnections()
         }
     }
@@ -135,16 +135,37 @@ public class YLController: NSObject, NSWindowDelegate {
     }
     
     @objc public func updateBlinkTicker(_ timer: Timer) {
+        performAntiIdleCheck()
+        guard let window = _mainWindow,
+              window.occlusionState.contains(.visible),
+              let tv = _telnetView,
+              tv.frontMostTerminal() != nil else { return }
         YLLGlobalConfig.sharedInstance().updateBlinkTicker()
-        if _telnetView?.hasBlinkCell() ?? false {
-            _telnetView?.needsDisplay = true
+        if tv.hasBlinkCell() {
+            tv.needsDisplay = true
+        }
+    }
+    
+    public func performAntiIdleCheck(now: Date = Date()) {
+        let config = YLLGlobalConfig.sharedInstance()
+        guard config.antiIdleEnabled, let tv = _telnetView else { return }
+        let threshold = TimeInterval(max(30, config.antiIdleInterval))
+        for item in tv.tabViewItems {
+            guard let conn = item.connection, conn.connected else { continue }
+            let lastTouch = conn.lastTouchDate() ?? now
+            if now.timeIntervalSince(lastTouch) >= threshold {
+                conn.sendAntiIdlePulse()
+                conn.icon = NSImage(named: "sleep.pdf")
+            } else if conn.icon?.name() != "message.pdf" && conn.icon?.name() != "connect.pdf" {
+                conn.icon = NSImage(named: "connect.pdf")
+            }
         }
     }
     
     // MARK: - Connection Management
-    public func newConnection(with site: YLSite) {
+    public func newConnection(with site: YLSite, bypassDebounce: Bool = false) {
         let now = Date()
-        if site.address == lastConnectionAddress && now.timeIntervalSince(lastConnectionTime) < 0.5 {
+        if !bypassDebounce && site.address == lastConnectionAddress && now.timeIntervalSince(lastConnectionTime) < 0.5 {
             NSLog("[Nally] Ignored duplicate connection request to site: \(site.name)")
             return
         }
@@ -163,7 +184,6 @@ public class YLController: NSObject, NSWindowDelegate {
             connection.connectionName = site.name
             connection.connectionAddress = site.address
             terminal.delegate = _telnetView
-            terminal.pluginLoader = _pluginLoader
             
             let tabItem: NSTabViewItem
             
@@ -373,7 +393,7 @@ public class YLController: NSObject, NSWindowDelegate {
                 let decodedSites = try JSONDecoder().decode([YLSite].self, from: data)
                 for site in decodedSites {
                     populateCredentialsFromKeychain(for: site)
-                    newConnection(with: site)
+                    newConnection(with: site, bypassDebounce: true)
                 }
             } catch {
                 NSLog("Failed to decode LastConnectionsCodable: \(error)")
@@ -383,7 +403,7 @@ public class YLController: NSObject, NSWindowDelegate {
             for siteDict in dictionaries {
                 let site = YLSite.site(withDictionary: siteDict)
                 populateCredentialsFromKeychain(for: site)
-                newConnection(with: site)
+                newConnection(with: site, bypassDebounce: true)
             }
         }
     }

@@ -41,14 +41,23 @@ public class YLRun: NSObject {
         } // matches original C comment: not correct!
         
         var calculatedLength = 0
-        for char in string.utf16 {
-            if char > 0x0020 && char < 0x0080 {
-                calculatedLength += 1
-            } else if char >= 0x0080 {
-                // Call low-level mapping functions (bridged from encoding.h)
-                let lookupVal = (encoding == .YLBig5Encoding) ? lookupU2B(char) : lookupU2G(char)
-                if lookupVal != 0x0000 {
-                    calculatedLength += 2
+        if encoding == .YLUTF8Encoding {
+            for scalar in string.unicodeScalars {
+                if scalar.value > 0x0020 && scalar.value < 0x0080 {
+                    calculatedLength += 1
+                } else if scalar.value >= 0x0080 {
+                    calculatedLength += isEastAsianWideScalar(scalar.value) ? 2 : 1
+                }
+            }
+        } else {
+            for char in string.utf16 {
+                if char > 0x0020 && char < 0x0080 {
+                    calculatedLength += 1
+                } else if char >= 0x0080 {
+                    let lookupVal = (encoding == .YLBig5Encoding) ? lookupU2B(char) : lookupU2G(char)
+                    if lookupVal != 0x0000 {
+                        calculatedLength += 2
+                    }
                 }
             }
         }
@@ -69,13 +78,23 @@ public class YLRun: NSObject {
         var secondString = ""
         
         for char in string {
-            guard let utf16Val = char.utf16.first else { continue }
-            if utf16Val > 0x0020 && utf16Val < 0x0080 {
-                length += 1
-            } else if utf16Val >= 0x0080 {
-                let lookupVal = (encoding == .YLBig5Encoding) ? lookupU2B(utf16Val) : lookupU2G(utf16Val)
-                if lookupVal != 0x0000 {
-                    length += 2
+            if encoding == .YLUTF8Encoding {
+                for scalar in char.unicodeScalars {
+                    if scalar.value > 0x0020 && scalar.value < 0x0080 {
+                        length += 1
+                    } else if scalar.value >= 0x0080 {
+                        length += isEastAsianWideScalar(scalar.value) ? 2 : 1
+                    }
+                }
+            } else {
+                guard let utf16Val = char.utf16.first else { continue }
+                if utf16Val > 0x0020 && utf16Val < 0x0080 {
+                    length += 1
+                } else if utf16Val >= 0x0080 {
+                    let lookupVal = (encoding == .YLBig5Encoding) ? lookupU2B(utf16Val) : lookupU2G(utf16Val)
+                    if lookupVal != 0x0000 {
+                        length += 2
+                    }
                 }
             }
             

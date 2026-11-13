@@ -35,7 +35,7 @@ public class YLConnection: NSObject, YLConnectionProtocol {
     @objc(connectionWithAddress:)
     public class func connection(withAddress addr: String) -> YLConnection {
         NSLog("YLConnection: connectionWithAddress called with: \(addr)")
-        if addr.hasPrefix("ssh://") {
+        if addr.trimmingCharacters(in: .whitespacesAndNewlines).lowercased().hasPrefix("ssh://") {
             NSLog("YLConnection: returning YLSSH")
             return YLSSH()
         } else {
@@ -65,8 +65,10 @@ public class YLConnection: NSObject, YLConnectionProtocol {
     @objc public dynamic var connected: Bool = false {
         didSet {
             if connected {
+                lastTouchDateValue = Date()
                 icon = NSImage(named: "connect.pdf")
             } else {
+                lastTouchDateValue = nil
                 terminal?.hasMessage = false
                 icon = NSImage(named: "offline.pdf")
             }
@@ -88,6 +90,12 @@ public class YLConnection: NSObject, YLConnectionProtocol {
     
     @objc public func lastTouchDate() -> Date? {
         return lastTouchDateValue
+    }
+    
+    @objc public func sendAntiIdlePulse() {
+        guard connected else { return }
+        var nulByte: UInt8 = 0x00
+        sendBytes(&nulByte, length: 1)
     }
     
     @objc public func close() {}

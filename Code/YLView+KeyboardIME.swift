@@ -17,7 +17,7 @@ extension YLView: @preconcurrency NSTextInputClient {
         
         let modifierFlags = event.modifierFlags
         
-        if modifierFlags.contains(.control) {
+        if modifierFlags.contains(.control) && !modifierFlags.contains(.command) {
             buf[0] = UInt8(c & 0xFF)
             frontMostConnection()?.sendBytes(&buf, length: 1)
             return
@@ -84,7 +84,7 @@ extension YLView: @preconcurrency NSTextInputClient {
                     ds.cursorColumn > 0 &&
                     ds.cells(ofRow: ds.cursorRow)?[Int(ds.cursorColumn) - 1].attr.terminalAttribute.doubleByte == 2
                     
-                let detectDoubleByte = frontMostConnection()?.site?.detectDoubleByte ?? true
+                let detectDoubleByte = frontMostConnection()?.site?.detectDoubleByte ?? YLLGlobalConfig.sharedInstance().detectDoubleByte
                 
                 if (isRightDoubleByte || isLeftDoubleByte) && detectDoubleByte {
                     frontMostConnection()?.sendBytes(&arrow, length: 6)
@@ -102,7 +102,7 @@ extension YLView: @preconcurrency NSTextInputClient {
             buf[1] = 0x08
             
             guard let ds = frontMostTerminal() else { return }
-            let detectDoubleByte = frontMostConnection()?.site?.detectDoubleByte ?? true
+            let detectDoubleByte = frontMostConnection()?.site?.detectDoubleByte ?? YLLGlobalConfig.sharedInstance().detectDoubleByte
             
             let isDeleteDoubleByte = detectDoubleByte &&
                 ds.cursorColumn > 0 &&
@@ -124,8 +124,13 @@ extension YLView: @preconcurrency NSTextInputClient {
         let viewCursor: NSCursor
         if currentFlags.contains(.command) {
             viewCursor = YLView.initializeCursor
+            if let win = self.window {
+                let pt = convert(win.mouseLocationOutsideOfEventStream, from: nil)
+                evaluateCmdHoverPreview(at: pt, modifierFlags: currentFlags)
+            }
         } else {
             viewCursor = NSCursor.arrow
+            cancelPendingHoverPreview()
         }
         viewCursor.set()
         super.flagsChanged(with: event)
@@ -164,20 +169,27 @@ extension YLView: @preconcurrency NSTextInputClient {
         let encoding = conn.site?.encoding ?? conn.terminal?.encoding ?? .YLBig5Encoding
         
         var data = Data()
-        data.reserveCapacity(mStr.length * 2)
-        
-        for i in 0..<mStr.length {
-            let ch = mStr.character(at: i)
-            if ch < 0x007F {
-                var b = UInt8(ch)
-                data.append(&b, count: 1)
-            } else {
-                let code: UInt16 = (encoding == .YLBig5Encoding) ? lookupU2B(ch) : lookupU2G(ch)
-                var buf: [UInt8] = [UInt8(code >> 8), UInt8(code & 0xFF)]
-                data.append(&buf, count: 2)
+        if encoding == .YLUTF8Encoding {
+            data.append(contentsOf: (mStr as String).utf8)
+        } else {
+            data.reserveCapacity(mStr.length * 2)
+            
+            for i in 0..<mStr.length {
+                let ch = mStr.character(at: i)
+                if ch < 0x007F {
+                    var b = UInt8(ch)
+                    data.append(&b, count: 1)
+                } else {
+                    let code: UInt16 = (encoding == .YLBig5Encoding) ? lookupU2B(ch) : lookupU2G(ch)
+                    if code != 0 {
+                        var buf: [UInt8] = [UInt8(code >> 8), UInt8(code & 0xFF)]
+                        data.append(&buf, count: 2)
+                    }
+                }
             }
         }
         
+        guard !data.isEmpty else { return }
         sendDataChunked(data, to: conn, microsecondDelay: microsecond)
     }
     
@@ -247,8 +259,9 @@ extension YLView: @preconcurrency NSTextInputClient {
             ch[0] = 0x1B; ch[1] = 0x5B; ch[2] = 0x33; ch[3] = 0x7E
             ch[4] = 0x1B; ch[5] = 0x5B; ch[6] = 0x33; ch[7] = 0x7E
             var len = 4
+            let detectDoubleByte = frontMostConnection()?.site?.detectDoubleByte ?? YLLGlobalConfig.sharedInstance().detectDoubleByte
             if let ds = frontMostTerminal(),
-               let site = frontMostConnection()?.site, site.detectDoubleByte,
+               detectDoubleByte,
                ds.cursorColumn < (Int32(YLLGlobalConfig.sharedInstance().column) - 1),
                ds.cells(ofRow: ds.cursorRow)?[Int(ds.cursorColumn) + 1].attr.terminalAttribute.doubleByte == 2 {
                 len += 4

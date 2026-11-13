@@ -14,13 +14,18 @@ import UniformTypeIdentifiers
 @MainActor
 @Observable
 @objc(YLImagePreviewer)
-public class YLImagePreviewer: NSObject, @preconcurrency URLSessionDownloadDelegate {
+public class YLImagePreviewer: NSObject, @preconcurrency URLSessionDownloadDelegate, NSPopoverDelegate, NSWindowDelegate {
+    @ObservationIgnored private static var activePreviewer: YLImagePreviewer?
+    
     @ObservationIgnored private var downloadSession: URLSession?
     @ObservationIgnored private var downloadTask: URLSessionDownloadTask?
     @ObservationIgnored private var downloadedData: Data?
     public private(set) var originalUrl: URL
     public private(set) var filename: String = "image"
     @ObservationIgnored private var tempFileURL: URL?
+    @ObservationIgnored public var allowBrowserFallback: Bool = true
+    @ObservationIgnored public var opensInBackground: Bool = false
+    @ObservationIgnored private var isCleanedUp: Bool = false
     
     public var downloadProgress: Double = 0.0
     public var isDownloading: Bool = true
@@ -37,8 +42,13 @@ public class YLImagePreviewer: NSObject, @preconcurrency URLSessionDownloadDeleg
     @ObservationIgnored private var tiffData: [String: Any]?
     
     @objc(initWithURL:)
-    public init(url: URL) {
+    public convenience init(url: URL) {
+        self.init(url: url, allowBrowserFallback: true, startDownload: true)
+    }
+    
+    public init(url: URL, allowBrowserFallback: Bool = true, startDownload: Bool = true) {
         self.originalUrl = url
+        self.allowBrowserFallback = allowBrowserFallback
         self.filename = url.lastPathComponent.isEmpty ? "image" : url.lastPathComponent
         super.init()
         
@@ -47,29 +57,43 @@ public class YLImagePreviewer: NSObject, @preconcurrency URLSessionDownloadDeleg
             self.formatName = pathExt.uppercased()
         }
         
-        // Start downloading using URLSession
-        let config = URLSessionConfiguration.default
-        let session = URLSession(configuration: config, delegate: self, delegateQueue: OperationQueue.main)
-        self.downloadSession = session
-        let task = session.downloadTask(with: url)
-        self.downloadTask = task
-        task.resume()
-        
-        let stylePreference = UserDefaults.standard.string(forKey: "ImagePreviewStyle") ?? "popover"
-        if stylePreference == "window" {
-            showLoadingWindow()
+        if startDownload {
+            beginDownload()
         }
     }
     
+    public func beginDownload() {
+        guard downloadSession == nil else { return }
+        isCleanedUp = false
+        let config = URLSessionConfiguration.default
+        let session = URLSession(configuration: config, delegate: self, delegateQueue: OperationQueue.main)
+        self.downloadSession = session
+        let task = session.downloadTask(with: originalUrl)
+        self.downloadTask = task
+        task.resume()
+    }
+    
+    private func registerAsActivePreviewer() {
+        if let existing = Self.activePreviewer, existing !== self {
+            existing.closePreview()
+        }
+        Self.activePreviewer = self
+    }
+    
     public func showPopover(relativeTo positioningRect: NSRect, of positioningView: NSView, preferredEdge: NSRectEdge = .minY) {
+        guard positioningView.window != nil else { return }
+        registerAsActivePreviewer()
+        
         let popover = NSPopover()
         popover.behavior = .transient
         popover.animates = true
+        popover.delegate = self
         popover.contentSize = NSSize(width: 680, height: 500)
         
         let hostingView = NSHostingView(rootView: ImagePreviewerView(previewer: self))
-        popover.contentViewController = NSViewController()
-        popover.contentViewController?.view = hostingView
+        let viewController = NSViewController()
+        viewController.view = hostingView
+        popover.contentViewController = viewController
         
         self.popover = popover
         popover.show(relativeTo: positioningRect, of: positioningView, preferredEdge: preferredEdge)
@@ -77,6 +101,8 @@ public class YLImagePreviewer: NSObject, @preconcurrency URLSessionDownloadDeleg
     
     public func showLoadingWindow() {
         if window != nil { return }
+        registerAsActivePreviewer()
+        
         let style: NSWindow.StyleMask = [.titled, .closable, .utilityWindow, .hudWindow]
         let panel = NSPanel(
             contentRect: NSRect(x: 0, y: 0, width: 440, height: 120),
@@ -86,6 +112,8 @@ public class YLImagePreviewer: NSObject, @preconcurrency URLSessionDownloadDeleg
         )
         panel.isFloatingPanel = true
         panel.isOpaque = true
+        panel.isReleasedWhenClosed = false
+        panel.delegate = self
         panel.center()
         panel.title = "Loading \(filename)..."
         
@@ -96,11 +124,31 @@ public class YLImagePreviewer: NSObject, @preconcurrency URLSessionDownloadDeleg
         panel.makeKeyAndOrderFront(nil)
     }
     
+    public var isPresented: Bool {
+        return (popover?.isShown ?? false) || (window?.isVisible ?? false)
+    }
+    
     public func closePreview() {
-        popover?.performClose(nil)
+        let activePopover = popover
+        let activeWindow = window
         popover = nil
-        window?.close()
         window = nil
+        
+        activePopover?.delegate = nil
+        activePopover?.performClose(nil)
+        activePopover?.contentViewController = nil
+        
+        activeWindow?.delegate = nil
+        activeWindow?.close()
+        activeWindow?.contentView = nil
+        
+        cleanupResources()
+    }
+    
+    private func cleanupResources() {
+        guard !isCleanedUp else { return }
+        isCleanedUp = true
+        
         downloadTask?.cancel()
         downloadTask = nil
         downloadSession?.invalidateAndCancel()
@@ -110,6 +158,24 @@ public class YLImagePreviewer: NSObject, @preconcurrency URLSessionDownloadDeleg
             try? FileManager.default.removeItem(at: temp)
             tempFileURL = nil
         }
+        
+        if Self.activePreviewer === self {
+            Self.activePreviewer = nil
+        }
+    }
+    
+    // MARK: - NSPopoverDelegate & NSWindowDelegate
+    
+    public func popoverDidClose(_ notification: Notification) {
+        popover?.contentViewController = nil
+        popover = nil
+        cleanupResources()
+    }
+    
+    public func windowWillClose(_ notification: Notification) {
+        window?.contentView = nil
+        window = nil
+        cleanupResources()
     }
     
     public func copyImageToClipboard() {
@@ -124,7 +190,8 @@ public class YLImagePreviewer: NSObject, @preconcurrency URLSessionDownloadDeleg
         panel.nameFieldStringValue = filename
         
         let parentWindow = window ?? NSApp.mainWindow
-        let completion: (NSApplication.ModalResponse) -> Void = { response in
+        let completion: (NSApplication.ModalResponse) -> Void = { [weak self] response in
+            guard let self = self else { return }
             if response == .OK, let saveUrl = panel.url, let data = self.downloadedData {
                 do {
                     try data.write(to: saveUrl, options: .atomic)
@@ -186,6 +253,7 @@ public class YLImagePreviewer: NSObject, @preconcurrency URLSessionDownloadDeleg
     // MARK: - URLSessionDownloadDelegate
     
     public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didWriteData bytesWritten: Int64, totalBytesWritten: Int64, totalBytesExpectedToWrite: Int64) {
+        guard !isCleanedUp else { return }
         if totalBytesExpectedToWrite > 0 {
             self.downloadProgress = Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)
             self.title = "Loading \(filename)... (\(Int(downloadProgress * 100))%)"
@@ -196,6 +264,13 @@ public class YLImagePreviewer: NSObject, @preconcurrency URLSessionDownloadDeleg
     }
     
     public func urlSession(_ session: URLSession, downloadTask: URLSessionDownloadTask, didFinishDownloadingTo location: URL) {
+        guard !isCleanedUp else { return }
+        if let httpResponse = downloadTask.response as? HTTPURLResponse,
+           !(200...299).contains(httpResponse.statusCode) {
+            fallbackToBrowser()
+            return
+        }
+        
         do {
             let data = try Data(contentsOf: location)
             self.downloadedData = data
@@ -294,14 +369,27 @@ public class YLImagePreviewer: NSObject, @preconcurrency URLSessionDownloadDeleg
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         downloadSession?.finishTasksAndInvalidate()
         downloadSession = nil
+        guard !isCleanedUp else { return }
         if let error = error {
+            let nsError = error as NSError
+            if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorCancelled {
+                return
+            }
             NSLog("[Nally] Download failed: \(error.localizedDescription)")
             fallbackToBrowser()
         }
     }
     
     private func fallbackToBrowser() {
-        NSWorkspace.shared.open(originalUrl)
-        closePreview()
+        guard !isCleanedUp else { return }
+        if allowBrowserFallback {
+            let config = NSWorkspace.OpenConfiguration()
+            config.activates = !opensInBackground
+            NSWorkspace.shared.open(originalUrl, configuration: config, completionHandler: nil)
+            closePreview()
+        } else {
+            self.isDownloading = false
+            self.image = nil
+        }
     }
 }

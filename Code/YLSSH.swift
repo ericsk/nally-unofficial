@@ -1,10 +1,33 @@
 import Cocoa
 import Combine
 
+private final class SSHWriteChannel: @unchecked Sendable {
+    private var fd: Int32
+    
+    init(fd: Int32) {
+        self.fd = fd
+    }
+    
+    var currentFd: Int32 {
+        fd
+    }
+    
+    func close() {
+        if fd >= 0 {
+            Darwin.close(fd)
+            fd = -1
+        }
+    }
+    
+    deinit {
+        close()
+    }
+}
+
 @objc(YLSSH)
 public class YLSSH: YLConnection {
     private var process: Process?
-    private var masterFd: Int32 = -1
+    private var writeChannel: SSHWriteChannel?
     private var loginAsBBS: Bool = false
     private var usePacketMode: Bool = true
     private var ioTask: Task<Void, Never>?
@@ -15,13 +38,16 @@ public class YLSSH: YLConnection {
         if let proc = process, proc.isRunning {
             proc.terminate()
         }
-        if masterFd >= 0 {
-            Darwin.close(masterFd)
+        if let channel = writeChannel {
+            writeQueue.async {
+                channel.close()
+            }
         }
     }
     
     @objc public override func close() {
         NSLog("YLSSH: close called")
+        isProcessing = false
         
         if let task = ioTask {
             task.cancel()
@@ -35,50 +61,148 @@ public class YLSSH: YLConnection {
             process = nil
         }
         
-        if masterFd >= 0 {
-            Darwin.close(masterFd)
-            masterFd = -1
+        if let channel = writeChannel {
+            writeChannel = nil
+            writeQueue.async {
+                channel.close()
+            }
         }
         
         connected = false
+        terminal?.closeConnection()
     }
     
     @objc public override func reconnect() {
+        let savedAddress = connectionAddress
         close()
-        if let address = connectionAddress {
+        if let address = savedAddress, !address.isEmpty {
             DispatchQueue.main.async { [weak self] in
                 _ = self?.connect(toAddress: address)
             }
         }
     }
     
-    @objc(connectToAddress:)
-    public override func connect(toAddress addr: String) -> Bool {
-        var cleanAddr = addr
-        if cleanAddr.hasPrefix("ssh://bbs") {
-            cleanAddr = String(cleanAddr.dropFirst(6)) // Keeps "bbs@..."
-            loginAsBBS = true
-        } else if cleanAddr.hasPrefix("ssh://") {
+    static func parseSSHAddress(_ addr: String) -> (target: String, port: UInt32, loginAsBBS: Bool)? {
+        var cleanAddr = addr.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleanAddr.isEmpty else { return nil }
+        
+        if cleanAddr.lowercased().hasPrefix("ssh://") {
             cleanAddr = String(cleanAddr.dropFirst(6))
-            loginAsBBS = false
+        }
+        if let slashIdx = cleanAddr.firstIndex(of: "/") {
+            cleanAddr = String(cleanAddr[..<slashIdx])
+        }
+        guard !cleanAddr.isEmpty else { return nil }
+        
+        // Reject whitespace, control characters, or leading '-' option injection
+        guard cleanAddr.unicodeScalars.allSatisfy({ $0.value > 0x20 && $0.value < 0x7F }) else {
+            return nil
+        }
+        guard !cleanAddr.hasPrefix("-") else { return nil }
+        
+        let userPart: String?
+        let hostPortPart: Substring
+        if let atIdx = cleanAddr.lastIndex(of: "@") {
+            let u = String(cleanAddr[..<atIdx])
+            guard !u.isEmpty, !u.hasPrefix("-") else { return nil }
+            userPart = u
+            hostPortPart = cleanAddr[cleanAddr.index(after: atIdx)...]
+        } else {
+            userPart = nil
+            hostPortPart = cleanAddr[...]
         }
         
-        let parts = cleanAddr.components(separatedBy: ":")
-        if parts.count == 2 {
-            if let p = UInt32(parts[1]), p > 0 {
-                return connect(toAddress: parts[0], port: p)
+        let host: String
+        let port: UInt32
+        
+        if hostPortPart.hasPrefix("[") {
+            guard let closeIdx = hostPortPart.firstIndex(of: "]") else { return nil }
+            host = String(hostPortPart[hostPortPart.index(after: hostPortPart.startIndex)..<closeIdx])
+            let remainder = hostPortPart[hostPortPart.index(after: closeIdx)...]
+            if remainder.isEmpty {
+                port = 22
+            } else if remainder.hasPrefix(":") {
+                let portStr = String(remainder.dropFirst())
+                if portStr.isEmpty {
+                    port = 22
+                } else {
+                    guard let p = UInt16(portStr), p > 0 else { return nil }
+                    port = UInt32(p)
+                }
             } else {
-                return connect(toAddress: parts[0], port: 22)
+                return nil
             }
-        } else if parts.count == 1 {
-            return connect(toAddress: cleanAddr, port: 22)
+        } else {
+            let parts = hostPortPart.components(separatedBy: ":")
+            if parts.count == 1 {
+                host = parts[0]
+                port = 22
+            } else if parts.count == 2 {
+                host = parts[0]
+                if parts[1].isEmpty {
+                    port = 22
+                } else {
+                    guard let p = UInt16(parts[1]), p > 0 else { return nil }
+                    port = UInt32(p)
+                }
+            } else {
+                // Unbracketed IPv6 address
+                host = String(hostPortPart)
+                port = 22
+            }
         }
-        return false
+        
+        guard !host.isEmpty, !host.hasPrefix("-") else { return nil }
+        
+        let target = userPart != nil ? "\(userPart!)@\(host)" : host
+        guard !target.hasPrefix("-") else { return nil }
+        
+        let lowerUser = userPart?.lowercased() ?? ""
+        let isBBS = (lowerUser == "bbs" || lowerUser == "bbsu")
+        return (target, port, isBBS)
+    }
+    
+    static func sshArguments(target: String, port: UInt32, loginAsBBS: Bool) -> [String] {
+        let portStr = String(port)
+        if loginAsBBS {
+            return ["-e", "none", "-x", "-p", portStr, "--", target]
+        } else {
+            return ["-e", "none", "-p", portStr, "--", target]
+        }
+    }
+    
+    @objc(connectToAddress:)
+    public override func connect(toAddress addr: String) -> Bool {
+        guard let parsed = Self.parseSSHAddress(addr) else {
+            NSLog("YLSSH: rejected invalid or unsafe SSH address: \(addr)")
+            return false
+        }
+        self.loginAsBBS = parsed.loginAsBBS
+        self.connectionAddress = addr.trimmingCharacters(in: .whitespacesAndNewlines)
+        return connect(toAddress: parsed.target, port: parsed.port)
     }
     
     @objc(connectToAddress:port:)
     public override func connect(toAddress addr: String, port: UInt32) -> Bool {
         NSLog("YLSSH: connectToAddress: \(addr) port: \(port)")
+        let trimmedTarget = addr.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedTarget.isEmpty,
+              !trimmedTarget.hasPrefix("-"),
+              trimmedTarget.unicodeScalars.allSatisfy({ $0.value > 0x20 && $0.value < 0x7F }),
+              let validPort = UInt16(exactly: port),
+              validPort > 0 else {
+            return false
+        }
+        
+        if let atIdx = trimmedTarget.lastIndex(of: "@") {
+            let hostPart = trimmedTarget[trimmedTarget.index(after: atIdx)...]
+            guard !hostPart.isEmpty, !hostPart.hasPrefix("-") else { return false }
+        }
+        
+        if (connectionAddress ?? "").isEmpty {
+            connectionAddress = validPort == 22 ? "ssh://\(trimmedTarget)" : "ssh://\(trimmedTarget):\(validPort)"
+        }
+        
         terminal?.clearAll()
         
         // 1. Open master PTY
@@ -164,23 +288,22 @@ public class YLSSH: YLConnection {
         // 3. Enable Packet Mode
         var one: Int32 = 1
         let ioctlRet = ioctl(fd, UInt(TIOCPKT), &one)
-        if ioctlRet < 0 {
-            usePacketMode = false
-        } else {
-            usePacketMode = true
+        usePacketMode = (ioctlRet >= 0)
+        
+        // 4. Duplicate a dedicated write FD so readSource and writeQueue own independent FDs
+        let dupWriteFd = Darwin.dup(fd)
+        guard dupWriteFd >= 0 else {
+            NSLog("YLSSH: dup failed")
+            Darwin.close(slaveFd)
+            Darwin.close(fd)
+            return false
         }
         
-        // 4. Spawn ssh Process
+        // 5. Spawn ssh Process
         let slaveHandle = FileHandle(fileDescriptor: slaveFd, closeOnDealloc: false)
         let proc = Process()
         proc.executableURL = URL(fileURLWithPath: "/usr/bin/ssh")
-        
-        let portStr = String(port)
-        if loginAsBBS {
-            proc.arguments = ["-e", "none", "-x", "-p", portStr, addr]
-        } else {
-            proc.arguments = ["-e", "none", "-p", portStr, addr]
-        }
+        proc.arguments = Self.sshArguments(target: trimmedTarget, port: UInt32(validPort), loginAsBBS: loginAsBBS)
         
         var env = ProcessInfo.processInfo.environment
         env["TERM"] = "vt102"
@@ -194,6 +317,8 @@ public class YLSSH: YLConnection {
             try proc.run()
         } catch {
             NSLog("YLSSH: failed to run ssh: \(error.localizedDescription)")
+            Darwin.close(slaveFd)
+            Darwin.close(dupWriteFd)
             Darwin.close(fd)
             return false
         }
@@ -201,55 +326,53 @@ public class YLSSH: YLConnection {
         // Close slaveFd in parent
         Darwin.close(slaveFd)
         
-        self.masterFd = fd
-        self.process = proc
-        
-        // Set masterFd to non-blocking
+        // Set non-blocking mode on master PTY description
         let flags = fcntl(fd, F_GETFL, 0)
         _ = fcntl(fd, F_SETFL, flags | O_NONBLOCK)
         
-        // 5. Read loop using Swift Concurrency and AsyncStream
+        self.writeChannel = SSHWriteChannel(fd: dupWriteFd)
+        self.process = proc
+        
+        // 6. Read loop using Swift Concurrency and AsyncStream (readSource owns `fd`)
         let packetMode = usePacketMode
         let dataStream = AsyncStream<Data> { continuation in
             let readQueue = DispatchQueue(label: "org.yllan.nally.ssh.read")
             let readSource = DispatchSource.makeReadSource(fileDescriptor: fd, queue: readQueue)
             let bufferCapacity = 4096
             let buf = UnsafeMutablePointer<UInt8>.allocate(capacity: bufferCapacity)
-            var isBufferDeallocated = false
-            let deallocateBuffer = {
-                if !isBufferDeallocated {
-                    isBufferDeallocated = true
+            var isCleanedUp = false
+            let cleanup = {
+                if !isCleanedUp {
+                    isCleanedUp = true
                     buf.deallocate()
+                    Darwin.close(fd)
                 }
             }
             
             readSource.setEventHandler {
                 let readRes = Darwin.read(fd, buf, bufferCapacity)
                 if readRes > 0 {
-                    let data: Data
                     if packetMode {
-                        if readRes > 1 {
-                            if buf[0] == 0 { // TIOCPKT_DATA
-                                data = Data(bytes: buf.advanced(by: 1), count: readRes - 1)
-                                continuation.yield(data)
-                            }
+                        if readRes > 1 && buf[0] == 0 { // TIOCPKT_DATA
+                            let data = Data(bytes: buf.advanced(by: 1), count: readRes - 1)
+                            continuation.yield(data)
                         }
                     } else {
-                        data = Data(bytes: buf, count: readRes)
+                        let data = Data(bytes: buf, count: readRes)
                         continuation.yield(data)
                     }
                 } else if readRes == 0 {
                     readSource.cancel()
                 } else {
                     let err = errno
-                    if err != EAGAIN && err != EWOULDBLOCK {
+                    if err != EAGAIN && err != EWOULDBLOCK && err != EINTR {
                         readSource.cancel()
                     }
                 }
             }
             
             readSource.setCancelHandler {
-                deallocateBuffer()
+                cleanup()
                 continuation.finish()
             }
             
@@ -262,18 +385,18 @@ public class YLSSH: YLConnection {
         
         ioTask = Task { [weak self] in
             for await data in dataStream {
-                guard let self = self else { break }
+                guard let self = self, !Task.isCancelled else { break }
                 await MainActor.run {
                     self.receiveData(data)
                 }
             }
-            // Reading completed (EOF or cancelled)
-            await MainActor.run {
+            await MainActor.run { [weak self] in
                 self?.close()
             }
         }
         
         self.connected = true
+        self.terminal?.startConnection()
         return true
     }
     
@@ -292,7 +415,7 @@ public class YLSSH: YLConnection {
     
     @objc(sendBytes:length:)
     public override func sendBytes(_ msg: UnsafePointer<UInt8>, length: Int) {
-        guard masterFd >= 0, length > 0 else { return }
+        guard writeChannel != nil, length > 0 else { return }
         let data = Data(bytes: msg, count: length)
         enqueueWrite(data)
     }
@@ -303,8 +426,7 @@ public class YLSSH: YLConnection {
     }
     
     private func enqueueWrite(_ data: Data) {
-        let fd = self.masterFd
-        guard fd >= 0, !data.isEmpty else { return }
+        guard let channel = self.writeChannel, !data.isEmpty else { return }
         lastTouchDateValue = Date()
         
         writeQueue.async { [weak self] in
@@ -312,6 +434,9 @@ public class YLSSH: YLConnection {
             var offset = 0
             
             while remaining > 0 {
+                let fd = channel.currentFd
+                guard fd >= 0 else { break }
+                
                 let written = data.withUnsafeBytes { rawBuffer -> Int in
                     guard let baseAddress = rawBuffer.baseAddress?.assumingMemoryBound(to: UInt8.self) else { return -1 }
                     return Darwin.write(fd, baseAddress + offset, remaining)

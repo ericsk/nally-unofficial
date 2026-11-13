@@ -19,10 +19,12 @@ public class YLLGlobalConfig: NSObject {
     @ObservationIgnored public var onAppearanceChange: (() -> Void)?
     @ObservationIgnored public var onLayoutChange: (() -> Void)?
     @ObservationIgnored public var onMessageCountChange: ((Int32) -> Void)?
+    @ObservationIgnored public var onHiddenTextChange: (() -> Void)?
+    @ObservationIgnored public var onDetectDoubleByteChange: ((Bool) -> Void)?
     
     // Store 2x10 color tables
     // 0 is normal, 1 is hilite
-    private var colorTable: [[NSColor]] = Array(repeating: Array(repeating: NSColor.black, count: 10), count: 2)
+    private var colorTable: [[NSColor]] = Array(repeating: Array(repeating: NSColor(srgbRed: 0, green: 0, blue: 0, alpha: 1.0), count: 10), count: 2)
     
     // Store 2x10 CoreText attributes
     @ObservationIgnored private var cCTAttribute: [[CFDictionary?]] = Array(repeating: Array(repeating: nil, count: 10), count: 2)
@@ -68,6 +70,7 @@ public class YLLGlobalConfig: NSObject {
         didSet {
             guard !isInitializing else { return }
             UserDefaults.standard.set(showHiddenText, forKey: "ShowHiddenText")
+            onHiddenTextChange?()
         }
     }
     public var shouldSmoothFonts: Bool = false {
@@ -87,6 +90,7 @@ public class YLLGlobalConfig: NSObject {
         didSet {
             guard !isInitializing else { return }
             UserDefaults.standard.set(detectDoubleByte, forKey: "DetectDoubleByte")
+            onDetectDoubleByteChange?(detectDoubleByte)
         }
     }
     public var shouldPreferImagePreviewer: Bool = true {
@@ -105,6 +109,23 @@ public class YLLGlobalConfig: NSObject {
         didSet {
             guard !isInitializing else { return }
             UserDefaults.standard.set(Int(defaultANSIColorKey.rawValue), forKey: "DefaultANSIColorKey")
+        }
+    }
+    public var antiIdleEnabled: Bool = false {
+        didSet {
+            guard !isInitializing else { return }
+            UserDefaults.standard.set(antiIdleEnabled, forKey: "AntiIdleEnabled")
+        }
+    }
+    public var antiIdleInterval: Int = 120 {
+        didSet {
+            guard !isInitializing else { return }
+            let clamped = max(30, min(600, antiIdleInterval))
+            if clamped != antiIdleInterval {
+                antiIdleInterval = clamped
+                return
+            }
+            UserDefaults.standard.set(antiIdleInterval, forKey: "AntiIdleInterval")
         }
     }
     public var blinkTicker: Bool = false
@@ -183,6 +204,9 @@ public class YLLGlobalConfig: NSObject {
         defaultEncoding = YLEncoding(rawValue: UInt16(defaults.integer(forKey: "DefaultEncoding"))) ?? .YLBig5Encoding
         defaultANSIColorKey = YLANSIColorKey(rawValue: UInt16(defaults.integer(forKey: "DefaultANSIColorKey"))) ?? .YLCtrlUANSIColorKey
         repeatBounce = defaults.bool(forKey: "RepeatBounce")
+        antiIdleEnabled = defaults.bool(forKey: "AntiIdleEnabled")
+        let savedInterval = defaults.integer(forKey: "AntiIdleInterval")
+        antiIdleInterval = savedInterval >= 30 ? min(600, savedInterval) : 120
         
         if defaults.object(forKey: "ShouldPreferImagePreviewer") != nil {
             shouldPreferImagePreviewer = defaults.bool(forKey: "ShouldPreferImagePreviewer")
@@ -291,16 +315,17 @@ public class YLLGlobalConfig: NSObject {
         
         for i in 0..<10 {
             for j in 0..<2 {
+                let cgColor = colorTable[j][i].cgColor
                 let cDict: [CFString: Any] = [
                     kCTFontAttributeName: chineseCTFont!,
-                    kCTForegroundColorAttributeName: colorTable[j][i],
+                    kCTForegroundColorAttributeName: cgColor,
                     kCTLigatureAttributeName: number
                 ]
                 cCTAttribute[j][i] = cDict as CFDictionary
                 
                 let eDict: [CFString: Any] = [
                     kCTFontAttributeName: englishCTFont!,
-                    kCTForegroundColorAttributeName: colorTable[j][i],
+                    kCTForegroundColorAttributeName: cgColor,
                     kCTLigatureAttributeName: number
                 ]
                 eCTAttribute[j][i] = eDict as CFDictionary

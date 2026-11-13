@@ -21,9 +21,7 @@
 		GG99455233220044005566AA /* PTTAIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG99455233220044005566BB /* PTTAIDTests.swift */; };
 		GG778899001122334455AA01 /* YLQuickLookHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG778899001122334455BB01 /* YLQuickLookHelper.swift */; };
 		GG778899001122334455AA02 /* ImagePreviewerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = GG778899001122334455BB02 /* ImagePreviewerTests.swift */; };
-		GG88344122119933004455EE /* YLTerminal.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD001F408FCD8990CB2B96A /* YLTerminal.swift */; };
 		07B73DA00E581E2C00CC97D3 /* YLKeychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73D9F0E581E2C00CC97D3 /* YLKeychain.swift */; };
-		07B73D9E0E581E2C00CC97D3 /* YLBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07B73D9D0E581E2C00CC97D3 /* YLBundle.swift */; };
 		ADD0046E8995C996CE02389F /* YLRun.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD0047EEFFBB9E5B3F1DF71 /* YLRun.swift */; };
 		ADD0048CF5E8AE89F17C5A32 /* YLLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD0049A21A8637E143E8D94 /* YLLine.swift */; };
 		ADD004ABAD1D6351B7F2739E /* YLTextSuite.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD004B64F3082459AC49E15 /* YLTextSuite.swift */; };
@@ -36,7 +34,6 @@
 		ADD000A88119515F88A137E7 /* YLConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD000B780D12F1CE4CCCAA6 /* YLConnection.swift */; };
 		ADD000C21FF91B9B670C67B2 /* YLTelnet.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD000D5E726BC113FCE71D5 /* YLTelnet.swift */; };
 		ADD000E5606C129CB76394F7 /* YLSSH.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD000F7512427C946583E19 /* YLSSH.swift */; };
-		ADD00038F1129BC18B451762 /* YLPluginLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD000494100586642EA350B /* YLPluginLoader.swift */; };
 		ADD0001E4E44D1B43ED8F9C8 /* CommonType.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADD0002313DA553B87270B44 /* CommonType.swift */; };
 		DAE10B3BED2F493E815B0126 /* ImagePreviewerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E568408F064A5CA6079187 /* ImagePreviewerView.swift */; };
 		CF077DECCA3246279792BA50 /* YLImagePreviewer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF3B7EEA050E444887AB782D /* YLImagePreviewer.swift */; };
@@ -50,8 +47,6 @@
 		105B234BF52D4039A30D3682 /* NallyCommands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80104742B2954F909E42FC73 /* NallyCommands.swift */; };
 		02A5DAA01EFF4F8996F0203C /* PreferencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F5FFE76102B4FF89F7D4501 /* PreferencesView.swift */; };
 		9F2EBBE877A24C96811D3B8C /* SitesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B6BE7F372734231B6A39829 /* SitesView.swift */; };
-		079E9BB00F08B9480089C9E2 /* HUDSave.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */; };
-		079E9BB10F08B9480089C9E2 /* HUDSaveActive.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */; };
 		850711AB0CA7A347005F4734 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 850711AA0CA7A347005F4734 /* ApplicationServices.framework */; };
 		85137B330D02192800833909 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 85137B320D02192800833909 /* Credits.rtf */; };
 		8570AD5F0A3923A900838442 /* YLView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8570AD5E0A3923A900838442 /* YLView.swift */; };
@@ -66,10 +61,6 @@
 		85957EAF0CFF1176006E5E08 /* sleep.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85957EAE0CFF1176006E5E08 /* sleep.pdf */; };
 		85A0E73D0D06B72900ACA26F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 85A0E73B0D06B72900ACA26F /* Localizable.strings */; };
 		85AD6FE70D227F1D00992A1C /* DragonBall.icns in Resources */ = {isa = PBXBuildFile; fileRef = 85B247E60CEA1B840090046C /* DragonBall.icns */; };
-		85AE9DA70CB1597A0045317F /* reload.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DA60CB1597A0045317F /* reload.pdf */; };
-		85AE9DAE0CB15D220045317F /* bookmark.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 85AE9DAD0CB15D220045317F /* bookmark.pdf */; };
-		85AF012B12912AD000728C12 /* nally.public.pem in Resources */ = {isa = PBXBuildFile; fileRef = 85AF012A12912AD000728C12 /* nally.public.pem */; };
-
 		85F7F2090B06EE36000C4CDF /* YLLGlobalConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.swift */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072F0486CEB800E47090 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
@@ -134,7 +125,6 @@
 		ADD000B780D12F1CE4CCCAA6 /* YLConnection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLConnection.swift; sourceTree = "<group>"; };
 		ADD000D5E726BC113FCE71D5 /* YLTelnet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLTelnet.swift; sourceTree = "<group>"; };
 		ADD000F7512427C946583E19 /* YLSSH.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLSSH.swift; sourceTree = "<group>"; };
-		ADD000494100586642EA350B /* YLPluginLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLPluginLoader.swift; sourceTree = "<group>"; };
 		ADD0002313DA553B87270B44 /* CommonType.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CommonType.swift; sourceTree = "<group>"; };
 		90E568408F064A5CA6079187 /* ImagePreviewerView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImagePreviewerView.swift; sourceTree = "<group>"; };
 		DF3B7EEA050E444887AB782D /* YLImagePreviewer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLImagePreviewer.swift; sourceTree = "<group>"; };
@@ -148,17 +138,13 @@
 		80104742B2954F909E42FC73 /* NallyCommands.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NallyCommands.swift; sourceTree = "<group>"; };
 		7F5FFE76102B4FF89F7D4501 /* PreferencesView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PreferencesView.swift; sourceTree = "<group>"; };
 		1B6BE7F372734231B6A39829 /* SitesView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SitesView.swift; sourceTree = "<group>"; };
-		079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = HUDSave.tiff; sourceTree = "<group>"; };
-		079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = HUDSaveActive.tiff; sourceTree = "<group>"; };
-
-		07B73D9D0E581E2C00CC97D3 /* YLBundle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLBundle.swift; sourceTree = "<group>"; };
-		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		7119D1820EE7DC46003F98C8 /* Nally.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Nally.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		71585BD70EFE06C200E04E4E /* zh_CN */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = zh_CN; path = zh_CN.lproj/Localizable.strings; sourceTree = "<group>"; };
-		71585BD80EFE086B00E04E4E /* zh_CN */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = zh_CN; path = zh_CN.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		71585BD70EFE06C200E04E4E /* zh_CN */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = zh_CN; path = zh_CN.lproj/Localizable.strings; sourceTree = "<group>"; };
+		71585BD80EFE086B00E04E4E /* zh_CN */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = zh_CN; path = zh_CN.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		850711AA0CA7A347005F4734 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		85137B320D02192800833909 /* Credits.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = Credits.rtf; sourceTree = "<group>"; };
 		8540FE4712AB8BA3000FE1D6 /* TextSuiteTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TextSuiteTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -173,15 +159,11 @@
 		85834AC20CFE7F530015E348 /* message.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = message.pdf; sourceTree = "<group>"; };
 		85834C0F0CFEC3F30015E348 /* Whit.aiff */ = {isa = PBXFileReference; lastKnownFileType = audio.aiff; path = Whit.aiff; sourceTree = "<group>"; };
 		85957EAE0CFF1176006E5E08 /* sleep.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = sleep.pdf; sourceTree = "<group>"; };
-		85A0E73C0D06B72900ACA26F /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
-		85AE9DA60CB1597A0045317F /* reload.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = reload.pdf; sourceTree = "<group>"; };
-		85AE9DAD0CB15D220045317F /* bookmark.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = bookmark.pdf; sourceTree = "<group>"; };
-		85AF012A12912AD000728C12 /* nally.public.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = nally.public.pem; path = Deploy/nally.public.pem; sourceTree = SOURCE_ROOT; };
-
+		85A0E73C0D06B72900ACA26F /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/Localizable.strings; sourceTree = "<group>"; };
 		85B247E60CEA1B840090046C /* DragonBall.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = DragonBall.icns; sourceTree = "<group>"; };
 
-		85EA93240D0791240098C94B /* zh_TW */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = zh_TW; path = zh_TW.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		85EA93250D0791240098C94B /* zh_TW */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = zh_TW; path = zh_TW.lproj/Localizable.strings; sourceTree = "<group>"; };
+		85EA93240D0791240098C94B /* zh_TW */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = zh_TW; path = zh_TW.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		85EA93250D0791240098C94B /* zh_TW */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = zh_TW; path = zh_TW.lproj/Localizable.strings; sourceTree = "<group>"; };
 		85F7F2080B06EE36000C4CDF /* YLLGlobalConfig.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = YLLGlobalConfig.swift; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8DCEE14C182CDF3D008A9259 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
@@ -224,7 +206,6 @@
 				ADD000B780D12F1CE4CCCAA6 /* YLConnection.swift */,
 				ADD000D5E726BC113FCE71D5 /* YLTelnet.swift */,
 				ADD000F7512427C946583E19 /* YLSSH.swift */,
-				ADD000494100586642EA350B /* YLPluginLoader.swift */,
 				ADD0002313DA553B87270B44 /* CommonType.swift */,
 				90E568408F064A5CA6079187 /* ImagePreviewerView.swift */,
 				DF3B7EEA050E444887AB782D /* YLImagePreviewer.swift */,
@@ -244,7 +225,6 @@
 				85D9B9D20C97DF7B006C5E0F /* Views */,
 				85ED53B90D09349C003296D4 /* Abstract Interface */,
 				85F701440C895C8600E27A1E /* Model */,
-				07B73D9D0E581E2C00CC97D3 /* YLBundle.swift */,
 			);
 			path = Code;
 			sourceTree = "<group>";
@@ -301,11 +281,8 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				85AF012A12912AD000728C12 /* nally.public.pem */,
 				07B73DA30E581E2C00CC97D3 /* g2u.bin */,
 				07B73DA40E581E2C00CC97D3 /* b2u.bin */,
-				079E9BAE0F08B9480089C9E2 /* HUDSave.tiff */,
-				079E9BAF0F08B9480089C9E2 /* HUDSaveActive.tiff */,
 				85137B320D02192800833909 /* Credits.rtf */,
 				85834C0F0CFEC3F30015E348 /* Whit.aiff */,
 				85957EAE0CFF1176006E5E08 /* sleep.pdf */,
@@ -313,8 +290,6 @@
 				857EAE290CF1D62900777C15 /* connect.pdf */,
 				857EAE4E0CF1D89300777C15 /* offline.pdf */,
 				85B247E60CEA1B840090046C /* DragonBall.icns */,
-				85AE9DAD0CB15D220045317F /* bookmark.pdf */,
-				85AE9DA60CB1597A0045317F /* reload.pdf */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				85A0E73B0D06B72900ACA26F /* Localizable.strings */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
@@ -491,8 +466,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
-				85AE9DA70CB1597A0045317F /* reload.pdf in Resources */,
-				85AE9DAE0CB15D220045317F /* bookmark.pdf in Resources */,
 				857EAE2A0CF1D62900777C15 /* connect.pdf in Resources */,
 				857EAE4F0CF1D89300777C15 /* offline.pdf in Resources */,
 				85834AC30CFE7F530015E348 /* message.pdf in Resources */,
@@ -501,9 +474,6 @@
 				85137B330D02192800833909 /* Credits.rtf in Resources */,
 				85A0E73D0D06B72900ACA26F /* Localizable.strings in Resources */,
 				85AD6FE70D227F1D00992A1C /* DragonBall.icns in Resources */,
-				079E9BB00F08B9480089C9E2 /* HUDSave.tiff in Resources */,
-				079E9BB10F08B9480089C9E2 /* HUDSaveActive.tiff in Resources */,
-				85AF012B12912AD000728C12 /* nally.public.pem in Resources */,
 				07B73DA50E581E2C00CC97D3 /* g2u.bin in Resources */,
 				07B73DA60E581E2C00CC97D3 /* b2u.bin in Resources */,
 			);
@@ -513,18 +483,19 @@
 
 /* Begin PBXShellScriptBuildPhase section */
 		71BFE93910550718005ACFF5 /* ShellScript */ = {
-			alwaysOutOfDate = 1;
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
+				"$(BUILT_PRODUCTS_DIR)/$(INFOPLIST_PATH)",
 			);
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/dsstore_cleaned.stamp",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Remove .DS_Store\nfind ${BUILT_PRODUCTS_DIR}/Nally.app -name \".DS_Store\" -delete\n";
+			shellScript = "# Remove .DS_Store\nfind \"${BUILT_PRODUCTS_DIR}/Nally.app\" -name \".DS_Store\" -delete\ntouch \"${DERIVED_FILE_DIR}/dsstore_cleaned.stamp\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -549,7 +520,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				07B73D9E0E581E2C00CC97D3 /* YLBundle.swift in Sources */,
 				ADD0046E8995C996CE02389F /* YLRun.swift in Sources */,
 				ADD0048CF5E8AE89F17C5A32 /* YLLine.swift in Sources */,
 				ADD004ABAD1D6351B7F2739E /* YLTextSuite.swift in Sources */,
@@ -562,7 +532,6 @@
 				ADD000A88119515F88A137E7 /* YLConnection.swift in Sources */,
 				ADD000C21FF91B9B670C67B2 /* YLTelnet.swift in Sources */,
 				ADD000E5606C129CB76394F7 /* YLSSH.swift in Sources */,
-				ADD00038F1129BC18B451762 /* YLPluginLoader.swift in Sources */,
 				ADD0001E4E44D1B43ED8F9C8 /* CommonType.swift in Sources */,
 				DAE10B3BED2F493E815B0126 /* ImagePreviewerView.swift in Sources */,
 				CF077DECCA3246279792BA50 /* YLImagePreviewer.swift in Sources */,

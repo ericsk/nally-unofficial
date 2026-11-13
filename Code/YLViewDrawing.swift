@@ -132,8 +132,13 @@ extension YLView {
             
             if db == 0 {
                 buffer.isDoubleByte[bufLength] = false
-                let b = currRow[x].byte
-                buffer.textBuf[bufLength] = UInt16(b == 0 ? UInt8(ascii: " ") : b)
+                let scalar = currRow[x].unicodeScalar
+                if termEncoding == .YLUTF8Encoding && scalar != 0 {
+                    buffer.textBuf[bufLength] = scalar
+                } else {
+                    let b = currRow[x].byte
+                    buffer.textBuf[bufLength] = UInt16(b == 0 ? UInt8(ascii: " ") : b)
+                }
                 buffer.bufIndex[bufLength] = x
                 buffer.position[bufLength] = CGPoint(
                     x: CGFloat(x) * fontWidth + ePaddingLeft,
@@ -144,10 +149,15 @@ extension YLView {
             } else if db == 1 {
                 // Continue
             } else if db == 2 {
-                let leftByte = UInt16(currRow[x - 1].byte)
-                let rightByte = UInt16(currRow[x].byte)
-                let code = (leftByte << 8) + rightByte - 0x8000
-                let ch = (termEncoding == .YLBig5Encoding) ? lookupBig5(code) : lookupGBK(code)
+                let ch: unichar
+                if termEncoding == .YLUTF8Encoding && currRow[x].unicodeScalar != 0 {
+                    ch = currRow[x].unicodeScalar
+                } else {
+                    let leftByte = UInt16(currRow[x - 1].byte)
+                    let rightByte = UInt16(currRow[x].byte)
+                    let code = (leftByte << 8) + rightByte - 0x8000
+                    ch = (termEncoding == .YLBig5Encoding) ? lookupBig5(code) : lookupGBK(code)
+                }
                 
                 if isSpecialSymbol(ch) {
                     self.drawSpecialSymbol(ch, forRow: r, column: Int32(x - 1), leftAttribute: currRow[x - 1].attr, rightAttribute: currRow[x].attr, context: myCGContext)
@@ -226,11 +236,11 @@ extension YLView {
             let attrDict = CTRunGetAttributes(run)
             let runFont = unsafeBitCast(CFDictionaryGetValue(attrDict, Unmanaged.passUnretained(kCTFontAttributeName).toOpaque()), to: CTFont.self)
             let cgFont = CTFontCopyGraphicsFont(runFont, nil)
-            let runColor = unsafeBitCast(CFDictionaryGetValue(attrDict, Unmanaged.passUnretained(kCTForegroundColorAttributeName).toOpaque()), to: NSColor.self)
+            let runColor = unsafeBitCast(CFDictionaryGetValue(attrDict, Unmanaged.passUnretained(kCTForegroundColorAttributeName).toOpaque()), to: CGColor.self)
             
             myCGContext.setFont(cgFont)
             myCGContext.setFontSize(CTFontGetSize(runFont))
-            myCGContext.setFillColor(red: runColor.redComponent, green: runColor.greenComponent, blue: runColor.blueComponent, alpha: 1.0)
+            myCGContext.setFillColor(runColor)
             myCGContext.setStrokeColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
             myCGContext.setLineWidth(1.0)
             

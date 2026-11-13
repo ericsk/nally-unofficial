@@ -28,7 +28,9 @@ struct TextSuiteTests {
         TestCase(input: "aaa(aa", length: 5, expected: "aaa\n(aa", comment: "Prohibit Tail"),
         TestCase(input: "aaa)aa", length: 5, expected: "aaa)\naa", comment: "Prohibit Head"),
         TestCase(input: "你好不好。", length: 8, expected: "你好不\n好。", comment: "Prohibit Head"),
-        TestCase(input: "中文", length: 1, expected: "中\n文", comment: "Force Add")
+        TestCase(input: "中文", length: 1, expected: "中\n文", comment: "Force Add"),
+        TestCase(input: "(((((((((。", length: 10, expected: "(((((((((\n。", comment: "Unsplittable Prohibit Head After All Prohibit Tail Does Not Hang"),
+        TestCase(input: "Line1\r\nLine2", length: 20, expected: "Line1\nLine2", comment: "CRLF Deduplication")
     ])
     func testWrapLine(testCase: TestCase) {
         let t = YLTextSuite()
@@ -79,5 +81,13 @@ struct TextSuiteTests {
         let input = "Line1\nLine2\nLine3"
         let padded = suite.paddingText(input, withLeftPadding: 4)
         #expect(padded == "    Line1\n    Line2\n    Line3")
+    }
+    
+    @Test("UTF-8 Line Wrapping Supports CJK, Japanese Kana, and Narrow Accents")
+    func testUTF8LineWrapping() {
+        let suite = YLTextSuite()
+        // "あいう" = 6 cols, "é" = 1 col -> fits 6 on line 1 ("あいう"), "é" on line 2 when width = 6
+        let wrapped = suite.wrapText("あいうé", withLength: 6, encoding: .YLUTF8Encoding)
+        #expect(wrapped == "あいう\né")
     }
 }

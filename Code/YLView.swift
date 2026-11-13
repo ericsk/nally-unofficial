@@ -45,9 +45,25 @@ public class YLView: NSView {
     // Active asynchronous paste streaming task
     public var activePasteTask: Task<Void, Never>?
     
+    // Cmd + Hover quick URL preview state
+    private var hoverTrackingArea: NSTrackingArea?
+    var hoveredPreviewURL: String?
+    var hoverPreviewTask: Task<Void, Never>?
+    weak var hoverPreviewer: YLImagePreviewer?
+    
     @objc public func cancelCurrentPaste() {
         activePasteTask?.cancel()
         activePasteTask = nil
+    }
+    
+    func cancelPendingHoverPreview(dismissActive: Bool = false) {
+        hoverPreviewTask?.cancel()
+        hoverPreviewTask = nil
+        hoveredPreviewURL = nil
+        if dismissActive {
+            hoverPreviewer?.closePreview()
+            hoverPreviewer = nil
+        }
     }
     
     static let ANSIColorPBoardType = NSPasteboard.PasteboardType("ANSIColorPBoardType")
@@ -137,6 +153,7 @@ public class YLView: NSView {
     
     public func removeTabViewItem(_ tabViewItem: NSTabViewItem) {
         cancelCurrentPaste()
+        cancelPendingHoverPreview(dismissActive: true)
         guard let index = tabViewItems.firstIndex(of: tabViewItem) else { return }
         notifyDelegateWillClose(tabViewItem)
         let wasSelected = (selectedTabViewItem == tabViewItem)
@@ -167,6 +184,7 @@ public class YLView: NSView {
     
     public func selectTabViewItem(_ tabViewItem: NSTabViewItem?) {
         cancelCurrentPaste()
+        cancelPendingHoverPreview(dismissActive: true)
         guard let item = tabViewItem else {
             selectedTabViewItem = nil
             updateBackedImage()
@@ -335,10 +353,13 @@ public class YLView: NSView {
     @objc(loadUrlOfString:)
     public func loadUrl(of urlString: String) {
         guard let url = URL(string: urlString) else { return }
+        cancelPendingHoverPreview()
         
         let isImage = YLContextualMenuManager.sharedInstance.isImageURL(url)
-        if isImage && _shouldUseImagePreviewer {
-            let previewer = YLImagePreviewer(url: url)
+        let isHTTPS = url.scheme?.lowercased() == "https"
+        if isImage && _shouldUseImagePreviewer && isHTTPS {
+            let previewer = YLImagePreviewer(url: url, allowBrowserFallback: true)
+            previewer.opensInBackground = _shouldOpenUrlInBackground
             let style = UserDefaults.standard.string(forKey: "ImagePreviewStyle") ?? "popover"
             if style == "popover" {
                 let centerRect = NSRect(x: bounds.midX, y: bounds.midY, width: 1, height: 1)
@@ -347,16 +368,21 @@ public class YLView: NSView {
                 previewer.showLoadingWindow()
             }
         } else {
-            let configuration = NSWorkspace.OpenConfiguration()
-            configuration.activates = !_shouldOpenUrlInBackground
-            NSWorkspace.shared.open(url, configuration: configuration, completionHandler: nil)
+            openInSystemBrowser(url)
         }
+    }
+    
+    func openInSystemBrowser(_ url: URL) {
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = !_shouldOpenUrlInBackground
+        NSWorkspace.shared.open(url, configuration: configuration, completionHandler: nil)
     }
     
     func resolveShortUrl(_ urlString: String) {
         guard let url = URL(string: urlString) else { return }
         
-        let session = URLSession(configuration: .default, delegate: URLSessionRedirectDelegate(owner: self), delegateQueue: .main)
+        let delegate = URLSessionRedirectDelegate(owner: self, originalURL: url)
+        let session = URLSession(configuration: .default, delegate: delegate, delegateQueue: .main)
         let task = session.dataTask(with: url)
         task.resume()
         session.finishTasksAndInvalidate()
@@ -544,6 +570,21 @@ public class YLView: NSView {
     }
     
     // MARK: - Overrides
+    public override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let existing = hoverTrackingArea {
+            removeTrackingArea(existing)
+        }
+        let area = NSTrackingArea(
+            rect: bounds,
+            options: [.mouseMoved, .mouseEnteredAndExited, .activeInKeyWindow, .inVisibleRect],
+            owner: self,
+            userInfo: nil
+        )
+        addTrackingArea(area)
+        hoverTrackingArea = area
+    }
+    
     public override var acceptsFirstResponder: Bool {
         return true
     }
@@ -753,24 +794,40 @@ public class YLView: NSView {
 // MARK: - URLSessionRedirectDelegate
 private final class URLSessionRedirectDelegate: NSObject, URLSessionTaskDelegate, @unchecked Sendable {
     private weak var owner: YLView?
+    private let originalURL: URL
+    private var didHandle: Bool = false
     
-    init(owner: YLView) {
+    init(owner: YLView, originalURL: URL) {
         self.owner = owner
+        self.originalURL = originalURL
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, willPerformHTTPRedirection response: HTTPURLResponse, newRequest request: URLRequest, completionHandler: @escaping (URLRequest?) -> Void) {
+        guard !didHandle else {
+            completionHandler(nil)
+            return
+        }
+        didHandle = true
         if let newUrlString = request.url?.absoluteString {
             Task { @MainActor [weak owner] in
                 owner?.loadUrl(of: newUrlString)
             }
         }
-        completionHandler(nil) // Cancel redirection since we only want the final URL
+        completionHandler(nil) // Cancel redirection since we only want the target URL
     }
     
     func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
+        guard !didHandle else { return }
+        didHandle = true
+        let fallbackURL = originalURL
         if error == nil, let finalUrlString = task.response?.url?.absoluteString {
             Task { @MainActor [weak owner] in
                 owner?.loadUrl(of: finalUrlString)
+            }
+        } else {
+            // ATS block (e.g. http://) or network error: fall back to system browser
+            Task { @MainActor [weak owner] in
+                owner?.openInSystemBrowser(fallbackURL)
             }
         }
     }

@@ -92,11 +92,13 @@ extension YLController {
             _mainWindow?.orderOut(self)
             return
         }
-        for item in tv.tabViewItems {
+        let items = tv.tabViewItems
+        for item in items {
             if let conn = item.connection {
                 conn.terminal?.hasMessage = false
                 conn.close()
             }
+            tv.removeTabViewItem(item)
         }
         _mainWindow?.orderOut(self)
     }
